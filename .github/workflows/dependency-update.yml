@@ -1,0 +1,48 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Update dependencies
+        run: |
+          pnpm update --latest
+
+      - name: Run tests
+        run: |
+          pnpm install
+          pnpm test
+        continue-on-error: true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update dependencies"
+          title: "chore: automated dependency updates"
+          body: |
+            Automated dependency updates.
+
+            Please review the changes and ensure all tests pass before merging.
+          branch: chore/update-dependencies
+          delete-branch: true
+          labels: dependencies

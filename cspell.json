@@ -1,0 +1,45 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "tappify",
+    "tappify-dev",
+    "commitlint",
+    "pnpm",
+    "tsconfig",
+    "codecov",
+    "commitizen",
+    "prettierrc",
+    "lcov",
+    "softprops",
+    "prepublish",
+    "prerelease",
+    "conventionalcommits",
+    "noreply",
+    "tarball",
+    "unittests",
+    "tsup",
+    "vitest",
+    "clsx",
+    "tailwindcss",
+    "tailwind",
+    "jsxs",
+    "tabindex",
+    "Tappify",
+    "workos",
+    "appstore"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "pnpm-lock.yaml",
+    "*.tgz"
+  ],
+  "ignoreRegExpList": [
+    "[0-9a-f]{40}",
+    "[0-9a-f]{7,}",
+    "0x[0-9a-fA-F]+",
+    "client_[0-9A-Z]+"
+  ]
+}

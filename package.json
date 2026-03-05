@@ -1,0 +1,194 @@
+{
+  "name": "@tappify/app-builder",
+  "version": "1.0.0",
+  "description": "SDK for building Tap integration apps",
+  "author": "Tappify Team",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "require": "./dist/server.cjs"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.mjs",
+      "require": "./dist/config.cjs"
+    },
+    "./vite-plugin": {
+      "types": "./dist/vite-plugin.d.ts",
+      "import": "./dist/vite-plugin.mjs",
+      "require": "./dist/vite-plugin.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tappify-dev/app-builder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tappify-dev/app-builder/issues"
+  },
+  "homepage": "https://docs.tappify.ai",
+  "keywords": [
+    "sdk",
+    "react",
+    "integration",
+    "app-builder",
+    "tappify"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.{json,md,mjs,cjs}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.{json,md,mjs,cjs}\"",
+    "lint": "eslint \"{src,test}/**/*.{ts,tsx}\" --fix",
+    "test": "vitest run --passWithNoTests --coverage",
+    "test:watch": "vitest --watch",
+    "prepare": "husky",
+    "commit": "cz",
+    "prepublishOnly": "npm run build && npm test",
+    "spellcheck": "cspell \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.{json,md,yml,mjs,cjs}\" \".github/**/*.yml\"",
+    "semantic-release": "semantic-release"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "@module-federation/vite": ">=0.2.8"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@module-federation/vite": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.3",
+    "@commitlint/config-conventional": "^20.4.3",
+    "@eslint/js": "^10.0.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "commitizen": "^4.3.1",
+    "conventional-changelog-conventionalcommits": "^9.3.0",
+    "cspell": "^9.7.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^17.4.0",
+    "happy-dom": "^17.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
+    "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "semantic-release": "^25.0.3",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.56.1",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog",
+      "types": {
+        "feat": {
+          "description": "New feature",
+          "title": "Features"
+        },
+        "fix": {
+          "description": "Bug fix",
+          "title": "Fixes"
+        },
+        "docs": {
+          "description": "Documentation changes",
+          "title": "Documentation"
+        },
+        "style": {
+          "description": "Code style changes (formatting, etc.)",
+          "title": "Styles"
+        },
+        "refactor": {
+          "description": "Code refactoring",
+          "title": "Refactoring"
+        },
+        "perf": {
+          "description": "Performance improvements",
+          "title": "Performance"
+        },
+        "test": {
+          "description": "Adding or updating tests",
+          "title": "Tests"
+        },
+        "build": {
+          "description": "Build system or dependencies",
+          "title": "Build"
+        },
+        "ci": {
+          "description": "CI/CD changes",
+          "title": "CI/CD"
+        },
+        "chore": {
+          "description": "Chore",
+          "title": "Chores"
+        },
+        "revert": {
+          "description": "Revert previous commit",
+          "title": "Reverts"
+        },
+        "wip": {
+          "description": "Work in progress / continuing a feature",
+          "title": "Work in Progress"
+        },
+        "cont": {
+          "description": "Continue/complete a feature",
+          "title": "Continue Feature"
+        },
+        "improve": {
+          "description": "Small improvements or enhancements",
+          "title": "Improvements"
+        }
+      }
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "cspell --no-must-find-files"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
+      "cspell --no-must-find-files"
+    ]
+  }
+}
