@@ -23,7 +23,11 @@ export default tseslint.config(
       sourceType: 'module',
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.config.ts', '*.config.mjs', 'commitlint.config.ts'],
+          allowDefaultProject: [
+            '*.config.ts',
+            '*.config.mjs',
+            'commitlint.config.ts',
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: {
