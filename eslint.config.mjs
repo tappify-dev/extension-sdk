@@ -22,13 +22,7 @@ export default tseslint.config(
       },
       sourceType: 'module',
       parserOptions: {
-        projectService: {
-          allowDefaultProject: [
-            '*.config.ts',
-            '*.config.mjs',
-            'commitlint.config.ts',
-          ],
-        },
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: {
           jsx: true,
