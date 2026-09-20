@@ -14,10 +14,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "rootDir": ".",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src", "test", "scripts"],
+  "exclude": ["node_modules", "dist", "test/tsdoc-examples.generated.tsx"]
 }
