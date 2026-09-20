@@ -1,0 +1,43 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "extends": ["./typedoc.json"],
+  "entryPoints": ["src/testing/index.ts"],
+  "validation": {
+    "notExported": true,
+    "invalidLink": false,
+    "notDocumented": true
+  },
+  "intentionallyNotExported": [
+    "ContextBlock",
+    "MentionItems",
+    "MetricDeclaration",
+    "MetricsInput",
+    "MetricsResponse",
+    "Tap",
+    "TapApp",
+    "TapChatCard",
+    "TapConfirmOptions",
+    "TapCrashesResult",
+    "TapFilters",
+    "TapHostEvents",
+    "TapKeyword",
+    "TapListing",
+    "TapPlatform",
+    "TapProjectResult",
+    "TapQuery",
+    "TapRelease",
+    "TapResult",
+    "TapRevenueResult",
+    "TapReviewsResult",
+    "TapSeriesMetric",
+    "TapSeriesResult",
+    "TapSize",
+    "TapToastTone",
+    "TappifyClaims",
+    "TappifyFetchHandler",
+    "TappifyHandlerOptions",
+    "TappifyHealth",
+    "TappifyInstall",
+    "WorkOperation"
+  ]
+}

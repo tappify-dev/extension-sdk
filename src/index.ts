@@ -1,44 +1,30 @@
-// Types
-export { TAP_ENVIRONMENT_URLS, TapSdkError, defineAppConfig } from './types';
-export type {
-  TapAppConfig,
-  TapAppManifest,
-  TapAuthContext,
-  TapConfigField,
-  TapEnvironment,
-  TapError,
-  TapOrganization,
-  TapUser,
-} from './types';
-
-// Frontend
+export { useTap } from './client/context';
+export { TAP_ERROR_CODES, TapError, TapServerError } from './client/errors';
+export type { TapErrorCode } from './client/errors';
 export {
-  TapAppProvider,
-  TapButton,
-  TapCard,
-  TapClient,
-  TapDialog,
-  TapEmptyState,
-  TapPageHeader,
-  TapSkeleton,
-  TapTable,
-  cn,
   useTapAuth,
-  useTapClient,
-  useTapConfig,
-  useTapNavigation,
-} from './frontend';
+  useTapContext,
+  useTapFilters,
+  useTapParams,
+  useTapProject,
+  useTapSize,
+  useTapState,
+  useTapTheme,
+} from './client/hooks';
+export {
+  dataQueryKey,
+  installPrefix,
+  procedurePrefix,
+  procedureQueryKey,
+  storageQueryKey,
+  useTapQuery,
+  useTapServer,
+  useTapStorage,
+} from './client/query';
 export type {
-  TapAppProviderProps,
-  TapButtonProps,
-  TapCardProps,
-  TapClientConfig,
-  TapDialogProps,
-  TapEmptyStateProps,
-  TapPageHeaderProps,
-  TapRequestOptions,
-  TapResponse,
-  TapSkeletonProps,
-  TapTableColumn,
-  TapTableProps,
-} from './frontend';
+  TapQueryOptions,
+  TapQueryResult,
+  TapStorageResult,
+} from './client/query';
+export type * from './client/types';
+export * from './client/ui';

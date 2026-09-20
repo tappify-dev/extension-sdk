@@ -1,0 +1,4 @@
+dist
+coverage
+test/.generated
+test/tsdoc-examples.generated.tsx

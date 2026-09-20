@@ -1,0 +1,21 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "extends": ["./typedoc.json"],
+  "entryPoints": ["src/server.ts"],
+  "validation": {
+    "notExported": true,
+    "invalidLink": false,
+    "notDocumented": true
+  },
+  "intentionallyNotExported": [
+    "HostEventName",
+    "TapActionMap",
+    "TapCredentials",
+    "TapDateRange",
+    "TapHostEventMap",
+    "TapPlatformFilter",
+    "TapSettings",
+    "TapToolMap",
+    "TapWebhookMap"
+  ]
+}

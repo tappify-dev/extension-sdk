@@ -10,7 +10,13 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'dist/', 'coverage/'],
+    ignores: [
+      'eslint.config.mjs',
+      'dist/',
+      'coverage/',
+      'test/.generated/',
+      'test/tsdoc-examples.generated.tsx',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -36,7 +42,7 @@ export default tseslint.config(
       ...reactHooksPlugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'warn',
@@ -65,6 +71,15 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       'no-inline-comments': 'off',
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['src/client/types.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'always' },
+      ],
     },
   },
   prettierConfigRecommended,

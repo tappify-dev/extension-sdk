@@ -119,6 +119,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Check the TSDoc examples
+        run: pnpm docs:examples
+
+      - name: Validate the API reference
+        run: pnpm docs:validate
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:

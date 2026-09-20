@@ -1,42 +1,45 @@
 import { defineConfig } from 'tsup';
 
+const shared = {
+  format: ['cjs', 'esm'] as const,
+  dts: true,
+  sourcemap: true,
+  outExtension({ format }: { format: string }) {
+    return { js: format === 'esm' ? '.mjs' : '.cjs' };
+  },
+};
+
 export default defineConfig([
   {
+    ...shared,
     entry: {
       index: 'src/index.ts',
-      config: 'src/config.ts',
-    },
-    format: ['cjs', 'esm'],
-    dts: true,
-    sourcemap: true,
-    clean: true,
-    external: ['react'],
-    outExtension({ format }) {
-      return { js: format === 'esm' ? '.mjs' : '.cjs' };
-    },
-  },
-  {
-    entry: {
+      manifest: 'src/manifest.ts',
+      host: 'src/host.ts',
       server: 'src/server.ts',
+      'testing/index': 'src/testing/index.ts',
+      'testing/vitest': 'src/testing/vitest.ts',
+      'testing/jest': 'src/testing/jest.ts',
     },
-    format: ['cjs', 'esm'],
-    dts: true,
-    sourcemap: true,
-    external: ['react'],
-    outExtension({ format }) {
-      return { js: format === 'esm' ? '.mjs' : '.cjs' };
-    },
+    splitting: true,
+    external: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      '@tanstack/react-query',
+      '@testing-library/react',
+      'jose',
+      'vitest',
+    ],
   },
   {
-    entry: {
-      'vite-plugin': 'src/vite-plugin.ts',
-    },
-    format: ['cjs', 'esm'],
-    dts: true,
-    sourcemap: true,
+    ...shared,
+    entry: { codegen: 'src/codegen.ts' },
+    external: ['json-schema-to-typescript'],
+  },
+  {
+    ...shared,
+    entry: { vite: 'src/vite.ts' },
     external: ['@module-federation/vite', 'vite'],
-    outExtension({ format }) {
-      return { js: format === 'esm' ? '.mjs' : '.cjs' };
-    },
   },
 ]);

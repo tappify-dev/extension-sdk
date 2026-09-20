@@ -1,0 +1,367 @@
+.tap-root {
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  color: var(--fg-default, #121212);
+  container-type: inline-size;
+  container-name: tap-mount;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.tap-root *,
+.tap-root *::before,
+.tap-root *::after {
+  box-sizing: border-box;
+}
+
+.tap-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tap-space, 8px);
+}
+
+.tap-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tap-space, 8px);
+}
+
+.tap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--tap-radius, 6px);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.tap-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tap-btn:focus-visible {
+  outline: 2px solid var(--tap-accent, #4f46e5);
+  outline-offset: 2px;
+}
+
+.tap-btn--sm {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.tap-btn--primary {
+  background: var(--tap-accent, #4f46e5);
+  color: var(--tap-accent-fg, #ffffff);
+}
+
+.tap-btn--secondary {
+  background: var(--bg-raised, #ffffff);
+  color: var(--fg-default, #121212);
+  border-color: var(--divider, rgba(18, 18, 18, 0.12));
+}
+
+.tap-btn--ghost {
+  background: transparent;
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+}
+
+.tap-btn--danger {
+  background: var(--tap-danger, #b42318);
+  color: var(--tap-accent-fg, #ffffff);
+}
+
+.tap-card {
+  background: var(--bg-raised, #ffffff);
+  border: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  border-radius: var(--tap-radius, 6px);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tap-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tap-space, 8px);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  font-weight: 600;
+}
+
+.tap-card__body {
+  padding: 12px;
+  min-width: 0;
+}
+
+.tap-card__foot {
+  padding: 8px 12px;
+  border-top: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+}
+
+.tap-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tap-space, 8px);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  margin-bottom: 16px;
+}
+
+.tap-page-header__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tap-page-header__description {
+  margin: 4px 0 0;
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+}
+
+.tap-skeleton {
+  display: block;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--bg-subtle, rgba(18, 18, 18, 0.06));
+  animation: tap-pulse 1.4s ease-in-out infinite;
+}
+
+.tap-skeleton + .tap-skeleton {
+  margin-top: 6px;
+}
+
+@keyframes tap-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-skeleton {
+    animation: none;
+  }
+}
+
+.tap-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+}
+
+.tap-state__title {
+  color: var(--fg-default, #121212);
+  font-weight: 600;
+}
+
+.tap-state--error .tap-state__title {
+  color: var(--tap-danger, #b42318);
+}
+
+.tap-state__code {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 11px;
+}
+
+.tap-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tap-stat__label {
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tap-stat__value {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.tap-stat__delta--up {
+  color: var(--tap-accent, #4f46e5);
+}
+
+.tap-stat__delta--down {
+  color: var(--tap-danger, #b42318);
+}
+
+.tap-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tap-field__label {
+  font-weight: 500;
+}
+
+.tap-field__hint,
+.tap-field__error {
+  font-size: 11px;
+}
+
+.tap-field__hint {
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+}
+
+.tap-field__error {
+  color: var(--tap-danger, #b42318);
+}
+
+.tap-control {
+  font: inherit;
+  color: inherit;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  border-radius: var(--tap-radius, 6px);
+  padding: 6px 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.tap-control:focus-visible {
+  outline: 2px solid var(--tap-accent, #4f46e5);
+  outline-offset: 1px;
+}
+
+.tap-control--invalid {
+  border-color: var(--tap-danger, #b42318);
+}
+
+.tap-control--checkbox {
+  width: auto;
+}
+
+textarea.tap-control {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.tap-table-wrap {
+  overflow-x: auto;
+}
+
+.tap-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tap-table th,
+.tap-table td {
+  text-align: start;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  white-space: nowrap;
+}
+
+.tap-table th {
+  color: var(--fg-muted, rgba(18, 18, 18, 0.6));
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tap-table__end {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.tap-table tr[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.tap-table tr[data-clickable='true']:hover td {
+  background: var(--bg-subtle, rgba(18, 18, 18, 0.04));
+}
+
+.tap-dialog-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--tap-scrim, rgba(18, 18, 18, 0.7));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1;
+}
+
+.tap-dialog {
+  background: var(--bg-raised, #ffffff);
+  color: var(--fg-default, #121212);
+  border-radius: var(--tap-radius, 6px);
+  border: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  width: min(520px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tap-dialog__head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  font-weight: 600;
+}
+
+.tap-dialog__body {
+  padding: 16px;
+  overflow: auto;
+}
+
+.tap-dialog__foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--divider, rgba(18, 18, 18, 0.12));
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tap-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@container tap-mount (max-width: 360px) {
+  .tap-page-header,
+  .tap-form__actions,
+  .tap-dialog__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tap-stat__value {
+    font-size: 18px;
+  }
+}
