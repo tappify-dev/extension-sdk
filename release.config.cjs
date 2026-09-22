@@ -58,12 +58,10 @@ module.exports = {
         tarballDir: '.',
       },
     ],
-    [
-      '@semantic-release/github',
-      {
-        assets: ['*.tgz'],
-      },
-    ],
+    // No asset upload: the package ships via npm, and uploading the .tgz to the
+    // GitHub release trips an octokit/undici "invalid content-length" bug on
+    // Node 24. Release notes are still published to GitHub.
+    '@semantic-release/github',
     [
       '@semantic-release/git',
       {
