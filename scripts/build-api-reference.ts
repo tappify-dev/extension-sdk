@@ -30,9 +30,6 @@ const ENTRIES: Entry[] = [
   },
 ];
 
-const NOTE =
-  "Generated from the SDK's TypeScript declarations. Do not edit it by hand; the next SDK release overwrites it.";
-
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const docsRoot = resolve(
   root,
@@ -147,8 +144,6 @@ for (const entry of ENTRIES) {
       `title: "${quote(title)}"`,
       `description: "${quote(description)}"`,
       '---',
-      '',
-      NOTE,
       '',
       rewriteLinks(rest.join('\n'), entry.directory).trim(),
       '',
