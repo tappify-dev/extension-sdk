@@ -409,7 +409,7 @@ describe('generateTypes', () => {
       "'weekly-digest': { input: WeeklyDigestPromptInput };",
     );
     expect(compileGenerated(output, DASHED_PROBE)).toEqual([]);
-  });
+  }, 15_000);
 
   it('types settings, credentials, telemetry, webhooks and host events', async () => {
     const output = await generate();

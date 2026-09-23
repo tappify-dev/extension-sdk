@@ -56,6 +56,22 @@ jobs:
       - name: Lint the documentation
         run: node documentation/scripts/check-docs.mjs --strict
 
+      - name: Check out the public edge
+        uses: actions/checkout@v4
+        with:
+          repository: tappify-dev/link
+          token: ${{ secrets.STATIC_ASSETS_TOKEN }}
+          path: link
+          ref: develop
+
+      - name: Sync and validate the hosted schema
+        id: hosted-schema
+        run: |
+          cp schema/extension-v2.json link/public/extension/v2.json
+          pnpm check:hosted-schema -- schema/extension-v2.json link/public/extension/v2.json
+          sha256sum schema/extension-v2.json
+          echo "sha256=$(sha256sum schema/extension-v2.json | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+
       - name: Open the documentation pull request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -72,14 +88,30 @@ jobs:
             extensions/reference/frontend-api
             extensions/reference/server-api
             extensions/reference/testing-api
-            schema/extension/v2.json
           body: |
             Generated from `@tappify/extension-sdk` at ${{ github.sha }}.
 
             - `extensions/reference/manifest.mdx` from `schema/extension-v2.json`
             - `extensions/reference/frontend-api/`, `server-api/`, `testing-api/` from the SDK's declarations
-            - `schema/extension/v2.json`, served at `schema.tappify.ai/extension/v2.json`
             - `docs.json` sidebar entries for the generated pages
 
             Do not hand-edit these files. Change the SDK and let this workflow run.
+          delete-branch: true
+
+      - name: Open the hosted schema pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: link
+          token: ${{ secrets.STATIC_ASSETS_TOKEN }}
+          branch: generated/extension-schema
+          base: develop
+          commit-message: 'chore: update extension schema'
+          title: 'Update hosted extension schema'
+          add-paths: public/extension/v2.json
+          body: |
+            Generated from `@tappify/extension-sdk` at ${{ github.sha }}.
+
+            Schema SHA-256: `${{ steps.hosted-schema.outputs.sha256 }}`
+
+            Do not edit the hosted copy by hand. Change the SDK schema and let this workflow run.
           delete-branch: true

@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,7 +35,6 @@ const docsRoot = resolve(
   process.argv[2] ?? process.env.TAPPIFY_DOCS_ROOT ?? '../documentation',
 );
 const pagePath = resolve(docsRoot, 'extensions/reference/manifest.mdx');
-const hostedSchemaPath = resolve(docsRoot, 'schema/extension/v2.json');
 
 const document = JSON.parse(readFileSync(schemaPath, 'utf8')) as Schema;
 const defs = document.$defs ?? {};
@@ -275,7 +274,4 @@ const page = [
 mkdirSync(dirname(pagePath), { recursive: true });
 writeFileSync(pagePath, `${page.trimEnd()}\n`);
 
-mkdirSync(dirname(hostedSchemaPath), { recursive: true });
-copyFileSync(schemaPath, hostedSchemaPath);
-
-process.stdout.write(`${pagePath}\n${hostedSchemaPath}\n`);
+process.stdout.write(`${pagePath}\n`);
