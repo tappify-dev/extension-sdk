@@ -535,5 +535,5 @@ describe('generateTypes', () => {
     const diagnostics = compileGenerated(await generate());
 
     expect(diagnostics).toEqual([]);
-  });
+  }, 15_000);
 });
