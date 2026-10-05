@@ -6,6 +6,7 @@
     "tappify-dev",
     "commitlint",
     "pnpm",
+    "npmjs",
     "tsconfig",
     "codecov",
     "commitizen",
