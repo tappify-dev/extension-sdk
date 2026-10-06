@@ -10,6 +10,7 @@ import {
 import { tappifyExtension } from '../../../src/vite/plugin';
 
 const fixtureRoot = resolve(__dirname, '../../fixtures/extension');
+const sdkStyles = resolve(__dirname, '../../../src/client/ui/styles.css');
 const servers: ViteDevServer[] = [];
 let previousTestOverride: string | undefined;
 
@@ -114,6 +115,15 @@ describe('local preview Vite server', () => {
       root: fixtureRoot,
       logLevel: 'silent',
       plugins: tappifyExtension({ root: fixtureRoot }),
+      // A published SDK resolves this export to dist/styles.css. The source
+      // checkout has not been built in a clean test job, so model that export
+      // with its source stylesheet instead of relying on stale local dist.
+      resolve: {
+        alias: {
+          '@tappify/extension-sdk/styles.css': sdkStyles,
+          '@tappify/extension-sdk/styles.css?inline': `${sdkStyles}?inline`,
+        },
+      },
       build: { outDir: output, emptyOutDir: true },
     });
 
