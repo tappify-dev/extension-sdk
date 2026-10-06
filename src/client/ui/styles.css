@@ -253,7 +253,30 @@
 }
 
 .tap-control--checkbox {
-  width: auto;
+  appearance: auto;
+  flex: 0 0 auto;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--tap-accent, #4f46e5);
+}
+
+.tap-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tap-checkbox-row .tap-field__label {
+  line-height: 1.4;
+}
+
+.tap-field--checkbox > .tap-field__hint,
+.tap-field--checkbox > .tap-field__error {
+  margin-inline-start: 24px;
 }
 
 textarea.tap-control {

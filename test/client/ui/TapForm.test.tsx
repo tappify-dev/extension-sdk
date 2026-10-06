@@ -57,6 +57,35 @@ describe('TapForm', () => {
     expect(screen.getByLabelText('Silent')).toHaveAttribute('type', 'checkbox');
   });
 
+  it('renders a boolean as a left-aligned checkbox row with its hint below', () => {
+    render(
+      <TapForm
+        schema={{
+          type: 'object',
+          properties: {
+            showDelta: {
+              type: 'boolean',
+              title: 'Show change',
+              description: 'Show the change against the previous period',
+            },
+          },
+        }}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const checkbox = screen.getByRole('checkbox', { name: 'Show change' });
+    const label = screen.getByText('Show change').closest('label');
+    const field = checkbox.closest('.tap-field');
+
+    expect(label).toHaveClass('tap-checkbox-row');
+    expect(label).toContainElement(checkbox);
+    expect(field).toHaveClass('tap-field--checkbox');
+    expect(checkbox).toHaveAccessibleDescription(
+      'Show the change against the previous period',
+    );
+  });
+
   it('blocks submit and shows the schema message when a value is invalid', async () => {
     const onSubmit = vi.fn();
     render(<TapForm schema={schema} onSubmit={onSubmit} />);

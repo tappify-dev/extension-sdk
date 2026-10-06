@@ -492,6 +492,40 @@ function TapSingleLineInput({
   const generated = useId();
   const fieldId = id ?? generated;
 
+  if (rest.type === 'checkbox') {
+    return (
+      <div className="tap-field tap-field--checkbox">
+        <label className="tap-checkbox-row" htmlFor={fieldId}>
+          <input
+            {...rest}
+            id={fieldId}
+            className={cn(
+              'tap-control',
+              'tap-control--checkbox',
+              error !== undefined && 'tap-control--invalid',
+              className,
+            )}
+            aria-invalid={error !== undefined || undefined}
+            aria-describedby={describedByOf(fieldId, hint, error)}
+          />
+          {label !== undefined && (
+            <span className="tap-field__label">{label}</span>
+          )}
+        </label>
+        {hint !== undefined && (
+          <span className="tap-field__hint" id={`${fieldId}-hint`}>
+            {hint}
+          </span>
+        )}
+        {error !== undefined && (
+          <span className="tap-field__error" id={`${fieldId}-error`}>
+            {error}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <FieldFrame
       id={fieldId}
