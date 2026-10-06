@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.tappify.ai/extension/v2.json",
+  "id": "fixture-lab",
+  "name": "Fixture Lab",
+  "description": "A fixture extension used by the SDK's own tests.",
+  "icon": "icon.svg",
+  "category": "product_analytics",
+  "sdk": "^2.0.0",
+  "visibility": "private",
+  "installScope": "project",
+  "scopes": [{ "key": "ui:render" }, { "key": "analytics:read" }],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "summary",
+        "title": "Summary",
+        "entry": "src/widgets/summary.tsx",
+        "page": "analytics",
+        "slot": "kpi-row",
+        "size": "1x1"
+      }
+    ],
+    "settings": {
+      "entry": "src/settings.tsx",
+      "schema": { "type": "object", "properties": {} }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "name": "@tappify/app-builder",
-  "version": "1.0.0",
-  "description": "SDK for building Tap integration apps",
+  "name": "@tappify/extension-sdk",
+  "version": "2.0.0",
+  "description": "Build extensions that run inside Tappify",
   "author": "Tappify Team",
   "license": "MIT",
   "type": "module",
@@ -11,45 +11,94 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
+    "./manifest": {
+      "types": "./dist/manifest.d.ts",
+      "import": "./dist/manifest.mjs",
+      "require": "./dist/manifest.cjs"
+    },
     "./server": {
       "types": "./dist/server.d.ts",
       "import": "./dist/server.mjs",
       "require": "./dist/server.cjs"
     },
-    "./config": {
-      "types": "./dist/config.d.ts",
-      "import": "./dist/config.mjs",
-      "require": "./dist/config.cjs"
+    "./host": {
+      "types": "./dist/host.d.ts",
+      "import": "./dist/host.mjs",
+      "require": "./dist/host.cjs"
     },
-    "./vite-plugin": {
-      "types": "./dist/vite-plugin.d.ts",
-      "import": "./dist/vite-plugin.mjs",
-      "require": "./dist/vite-plugin.cjs"
-    }
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.cjs"
+    },
+    "./vite/preview": {
+      "types": "./dist/vite-preview.d.ts",
+      "import": "./dist/vite-preview.mjs",
+      "require": "./dist/vite-preview.cjs"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.mjs",
+      "require": "./dist/testing/index.cjs"
+    },
+    "./testing/vitest": {
+      "types": "./dist/testing/vitest.d.ts",
+      "import": "./dist/testing/vitest.mjs",
+      "require": "./dist/testing/vitest.cjs"
+    },
+    "./testing/jest": {
+      "types": "./dist/testing/jest.d.ts",
+      "import": "./dist/testing/jest.mjs",
+      "require": "./dist/testing/jest.cjs"
+    },
+    "./codegen": {
+      "types": "./dist/codegen.d.ts",
+      "import": "./dist/codegen.mjs",
+      "require": "./dist/codegen.cjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./schema/extension-v2.json": "./schema/extension-v2.json",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "*.css",
+    "./dist/testing/vitest.*",
+    "./dist/testing/jest.*"
+  ],
   "files": [
-    "dist"
+    "dist",
+    "schema"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tappify-dev/app-builder.git"
+    "url": "https://github.com/tappify-dev/extension-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/tappify-dev/app-builder/issues"
+    "url": "https://github.com/tappify-dev/extension-sdk/issues"
   },
-  "homepage": "https://docs.tappify.ai",
+  "homepage": "https://docs.tappify.ai/extensions",
   "keywords": [
-    "sdk",
+    "tappify",
+    "extension",
+    "extension-sdk",
     "react",
-    "integration",
-    "app-builder",
-    "tappify"
+    "module-federation"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "rm -rf dist && tsup && node scripts/copy-styles.mjs",
+    "build:schema": "tsx scripts/build-json-schema.ts",
+    "build:manifest-reference": "tsx scripts/build-manifest-reference.ts",
+    "build:api-reference": "tsx scripts/build-api-reference.ts",
+    "check:hosted-schema": "node scripts/check-hosted-schema.mjs",
+    "docs:examples": "tsx scripts/check-tsdoc-examples.ts && tsc -p tsconfig.examples.json",
+    "docs:validate": "typedoc --options typedoc.frontend.json --emit none && typedoc --options typedoc.server.json --emit none && typedoc --options typedoc.testing.json --emit none",
+    "docs:reference": "pnpm docs:examples && pnpm docs:validate && pnpm build:schema && pnpm build:manifest-reference && pnpm build:api-reference",
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\" \"*.{json,md,mjs,cjs}\"",
@@ -64,34 +113,63 @@
     "semantic-release": "semantic-release"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "@module-federation/vite": ">=0.2.8"
+    "@module-federation/vite": ">=1.16.0",
+    "@tanstack/react-query": "^5.100.0",
+    "@testing-library/react": ">=16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": ">=8.0.0",
+    "vitest": ">=3.0.0"
   },
   "peerDependenciesMeta": {
+    "@module-federation/vite": {
+      "optional": true
+    },
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "@testing-library/react": {
+      "optional": true
+    },
     "react": {
       "optional": true
     },
-    "@module-federation/vite": {
+    "react-dom": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "vitest": {
       "optional": true
     }
   },
   "dependencies": {
+    "@module-federation/runtime": "~2.5.1",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "jose": "^6.2.12",
+    "json-schema-to-typescript": "^16.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.3",
     "@eslint/js": "^10.0.1",
+    "@module-federation/vite": "~1.16.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.5",
     "@semantic-release/release-notes-generator": "^14.1.0",
+    "@tanstack/react-query": "^5.100.14",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.13.0",
     "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.2.7",
     "@vitest/coverage-v8": "^3.0.0",
     "commitizen": "^4.3.1",
     "conventional-changelog-conventionalcommits": "^9.3.0",
@@ -112,9 +190,12 @@
     "react-dom": "^19.0.0",
     "semantic-release": "^25.0.3",
     "tsup": "^8.3.0",
+    "tsx": "^4.20.0",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-markdown": "^4.13.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
-    "vite": "^6.0.0",
+    "vite": "^8.0.14",
     "vitest": "^3.0.0"
   },
   "config": {

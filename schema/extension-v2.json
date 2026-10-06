@@ -1,0 +1,1500 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.tappify.ai/extension/v2.json",
+  "title": "Tappify extension manifest",
+  "description": "The tappify.extension.json file at the root of an extension repository.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "The URL of this JSON Schema. Editors read it for completion and inline validation."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{2,39}$",
+      "description": "The identifier for this extension, unique across the Tap Store and fixed after the first publish."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "description": "The name owners see in the Tap Store and on every surface this extension renders."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 200,
+      "description": "The one line owners read on the Tap Store card and on the install screen."
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "The icon file carried in the bundle, as a path relative to the manifest. Square png or svg, at most 512 KB."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "market_data",
+        "subscriptions",
+        "product_analytics",
+        "crashes",
+        "attribution",
+        "experiments",
+        "messaging",
+        "session_replay",
+        "localization",
+        "design",
+        "ci_cd",
+        "trackers",
+        "support",
+        "chat",
+        "ad_monetization",
+        "warehouse",
+        "compliance",
+        "additional_stores"
+      ],
+      "description": "The Tap Store section owners browse and filter by."
+    },
+    "sdk": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "description": "The SDK range this build targets, such as \"^2.0.0\". The host serves one major at a time and rejects a range that excludes it."
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "unlisted",
+        "private"
+      ],
+      "description": "Who can find and install this extension. \"public\" lists it in the Tap Store and needs all five listing fields; \"unlisted\" installs by link; \"private\" installs only in your own workspace."
+    },
+    "installScope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "organization"
+      ],
+      "description": "Whether one install belongs to a single project or to a whole organization. An organization install contributes no pages, tabs, widgets or series, because those render on a project."
+    },
+    "scopes": {
+      "minItems": 1,
+      "maxItems": 19,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "ui:render",
+              "projects:read",
+              "analytics:read",
+              "store.metadata:read",
+              "reviews:read",
+              "crashes:read",
+              "revenue:read",
+              "metrics:write",
+              "alerts:write",
+              "insights:write",
+              "ai:tools",
+              "ai:actions",
+              "store.metadata:write",
+              "autopilot:trigger",
+              "work:create",
+              "work:sync",
+              "storage:write",
+              "messaging:send",
+              "ai:skills"
+            ],
+            "description": "The scope key, from the scopes reference."
+          },
+          "justification": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 500,
+            "description": "Why this extension asks for the scope, in your own words. Shown on the consent screen, and required for the scopes that ask for one."
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "description": "The permissions an owner grants at install. Declare only what your contributions use."
+    },
+    "contributes": {
+      "type": "object",
+      "properties": {
+        "pages": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "entry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+              },
+              "nav": {
+                "type": "boolean",
+                "description": "Whether this page also gets an entry in the project navigation. The route `/projects/:projectId/ext/:extensionId/:pageId` exists either way."
+              },
+              "mobile": {
+                "type": "boolean",
+                "description": "Whether this surface is drawn on phone layouts. Defaults to true; set false to hide it there."
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "entry"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Pages of this extension's own, each on its own route under the project. `nav: true` also puts one in the project navigation."
+        },
+        "tabs": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "entry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+              },
+              "page": {
+                "type": "string",
+                "enum": [
+                  "overview",
+                  "analytics",
+                  "deployments",
+                  "ai_chat"
+                ],
+                "description": "The host page this tab sits on."
+              },
+              "mobile": {
+                "type": "boolean",
+                "description": "Whether this surface is drawn on phone layouts. Defaults to true; set false to hide it there."
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "entry",
+              "page"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Tabs beside the host's own on a named host page."
+        },
+        "widgets": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "entry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+              },
+              "page": {
+                "type": "string",
+                "enum": [
+                  "overview",
+                  "analytics",
+                  "deployments",
+                  "ai_chat"
+                ],
+                "description": "The host page this widget renders on."
+              },
+              "slot": {
+                "type": "string",
+                "enum": [
+                  "kpi-row",
+                  "insights",
+                  "sidebar",
+                  "below-chart",
+                  "below-list"
+                ],
+                "description": "The named anchor on that page. A slot that is not on the page fails validation."
+              },
+              "size": {
+                "type": "string",
+                "enum": [
+                  "1x1",
+                  "2x1",
+                  "2x2"
+                ],
+                "description": "The widget's footprint in the slot grid, as columns by rows. Every slot takes all three."
+              },
+              "expandable": {
+                "type": "boolean",
+                "description": "Whether owners can open the same component in the expand panel."
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "entry",
+              "page",
+              "slot",
+              "size"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Cards drawn into a named slot on a host page."
+        },
+        "series": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "chart": {
+                "type": "string",
+                "enum": [
+                  "installs-activity",
+                  "conversion",
+                  "release-cadence"
+                ],
+                "description": "The host chart this line is drawn on."
+              },
+              "metric": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The connector metric this line plots. It has to be one the connector declares."
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "chart",
+              "metric"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Lines drawn onto a host chart from a metric the connector writes. The host draws the line on the chart this names and puts the vendor in the chart legend; a stale metric is drawn dashed with the time of its last sync."
+        },
+        "banners": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "page": {
+                "type": "string",
+                "enum": [
+                  "overview",
+                  "analytics",
+                  "deployments",
+                  "ai_chat"
+                ],
+                "description": "The host page this banner appears on."
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+                "description": "The event that raises it. Declare the same name under `contributes.webhooks` with `as: \"banner\"`."
+              }
+            },
+            "required": [
+              "id",
+              "page",
+              "event"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Banners raised on a host page by a webhook declared with as: \"banner\". The host draws one at the top of that page, carrying the `why` sentence from the delivery, until the owner dismisses it."
+        },
+        "rowActions": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "table": {
+                "type": "string",
+                "enum": [
+                  "analytics.keywords",
+                  "analytics.reviews",
+                  "deployments.releases",
+                  "deployments.builds"
+                ],
+                "description": "The host table whose row menu gains this entry."
+              },
+              "entry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "table",
+              "entry"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Actions offered on a row of a host table."
+        },
+        "markers": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "The label owners read on this contribution."
+              },
+              "chart": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "installs-activity",
+                      "conversion",
+                      "release-cadence"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "const": "*"
+                  }
+                ],
+                "description": "The host chart this marker is drawn on, or `*` for every chart."
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+                "description": "The event that places it on the time axis. Declare the same name under `contributes.webhooks` with `as: \"event\"`."
+              },
+              "glyph": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2,
+                "description": "The one or two characters drawn at the marker."
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "chart",
+              "event",
+              "glyph"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Markers drawn on a host chart by a webhook declared with as: \"event\". Needs the `ui:render` and `alerts:write` scopes. The host draws the glyph on the chart time axis at the moment the delivery arrived, with the vendor named on hover."
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "entry": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+            },
+            "schema": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {},
+              "description": "The JSON Schema for the values owners fill in. It becomes `TapSettingsProps[\"values\"]` and the reserved `settings` singleton."
+            }
+          },
+          "required": [
+            "entry",
+            "schema"
+          ],
+          "additionalProperties": false,
+          "description": "The settings panel owners open for this install."
+        },
+        "storage": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "install",
+                  "organization"
+                ],
+                "description": "Who the documents belong to: one `user`, the whole `install`, or the `organization`."
+              },
+              "singleton": {
+                "type": "boolean",
+                "description": "Whether the collection holds exactly one document rather than many."
+              },
+              "schema": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "The JSON Schema for one document in this collection."
+              }
+            },
+            "required": [
+              "scope",
+              "schema"
+            ],
+            "additionalProperties": false
+          },
+          "description": "The hosted storage collections this extension reads and writes. At most 10, and the name \"settings\" is reserved. Needs the `storage:write` scope."
+        },
+        "connector": {
+          "type": "object",
+          "properties": {
+            "auth": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "api_key",
+                    "oauth"
+                  ],
+                  "description": "The credential flow owners go through at install."
+                },
+                "fields": {
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "description": "The key your server reads this value back as."
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60,
+                        "description": "The label owners read above the input."
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "text",
+                          "password",
+                          "textarea",
+                          "file",
+                          "select"
+                        ],
+                        "description": "How the input is drawn to the owner."
+                      },
+                      "required": {
+                        "type": "boolean",
+                        "description": "Whether owners have to fill it in before the install works."
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "The choices offered, for a `select` field."
+                      },
+                      "help": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "description": "The hint drawn under the input."
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "label",
+                      "type",
+                      "required"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The credentials owners enter. They reach your server as `credentials` on every call."
+                },
+                "oauth": {
+                  "type": "object",
+                  "properties": {
+                    "authorizationUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https:\\/\\/.*",
+                      "description": "Where owners are sent to approve access."
+                    },
+                    "tokenUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https:\\/\\/.*",
+                      "description": "Where the authorization code is exchanged for a token."
+                    },
+                    "scopes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The scopes asked of the outside service. These are that service's scopes, not Tappify's."
+                    }
+                  },
+                  "required": [
+                    "authorizationUrl",
+                    "tokenUrl",
+                    "scopes"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The endpoints, for `method: \"oauth\"`."
+                }
+              },
+              "required": [
+                "method"
+              ],
+              "additionalProperties": false,
+              "description": "How owners authenticate this connector."
+            },
+            "sync": {
+              "type": "string",
+              "enum": [
+                "5m",
+                "15m",
+                "1h",
+                "6h",
+                "24h"
+              ],
+              "description": "How often Tappify asks your server to sync."
+            },
+            "metrics": {
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "The metric key. A series names it to draw its line."
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "description": "The label owners read on the metric."
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "count",
+                      "ratio",
+                      "currency",
+                      "seconds",
+                      "bytes"
+                    ],
+                    "description": "How the value is formatted."
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "gauge",
+                      "counter"
+                    ],
+                    "description": "Whether the value is a level at a point in time (`gauge`) or accumulates (`counter`)."
+                  },
+                  "dimensions": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "description": "The dimension key."
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60,
+                          "description": "The label owners read on the dimension."
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "label"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "The breakdowns this metric can be split by."
+                  },
+                  "backfillDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "How many days of history to fetch on the first sync."
+                  }
+                },
+                "required": [
+                  "key",
+                  "label",
+                  "unit",
+                  "kind"
+                ],
+                "additionalProperties": false
+              },
+              "description": "The metrics this connector writes into the metrics store. Needs the `metrics:write` scope."
+            }
+          },
+          "additionalProperties": false,
+          "description": "How this extension authenticates against an outside service, how often it syncs, and the metrics it writes."
+        },
+        "webhooks": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+                "description": "The event name your server posts, as `domain.thing`."
+              },
+              "as": {
+                "type": "string",
+                "enum": [
+                  "alert",
+                  "banner",
+                  "event"
+                ],
+                "description": "What Tappify turns it into: an inbox `alert`, a page `banner`, or an `event` a chart marker and `tap.data.subscribe` can read."
+              },
+              "payload": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "The JSON Schema for the body your server posts. An alert or a banner has to carry `why`."
+              }
+            },
+            "required": [
+              "event",
+              "as",
+              "payload"
+            ],
+            "additionalProperties": false
+          },
+          "description": "The events this extension's server posts to Tappify, and what each one becomes. An `alert` or a `banner` needs the `alerts:write` scope."
+        },
+        "ai": {
+          "type": "object",
+          "properties": {
+            "tools": {
+              "maxItems": 15,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "description": "What this tool does, in the words the assistant reads when it decides whether to call it."
+                  },
+                  "input": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {},
+                    "description": "The JSON Schema for the arguments the assistant passes. The assistant reads the `title` and `description` strings inside it, so they are scanned at publish and the whole schema is bounded at 16 KB."
+                  },
+                  "returns": {
+                    "type": "string",
+                    "enum": [
+                      "comparison",
+                      "table",
+                      "series",
+                      "list",
+                      "value"
+                    ],
+                    "description": "The card the host draws from the result."
+                  },
+                  "cost": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Roughly what one call costs to serve, so the assistant can prefer a cheaper tool."
+                  },
+                  "cache": {
+                    "type": "string",
+                    "enum": [
+                      "1m",
+                      "5m",
+                      "1h"
+                    ],
+                    "description": "How long an identical call may be served from cache instead of reaching your server."
+                  }
+                },
+                "required": [
+                  "id",
+                  "description",
+                  "input",
+                  "returns",
+                  "cost"
+                ],
+                "additionalProperties": false
+              },
+              "description": "The tools the assistant may call on your server. Needs the `ai:tools` scope."
+            },
+            "mentions": {
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "description": "The label owners read on this contribution."
+                  },
+                  "list": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl` — the route `createTappifyHandler` serves — so write that path here; it records the route, it does not choose it."
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "list"
+                ],
+                "additionalProperties": false
+              },
+              "description": "The things owners can name with @ in chat, and where to list them. Needs the `ai:tools` scope."
+            },
+            "actions": {
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "description": "What this action does, in the words the owner will read on the approval card."
+                  },
+                  "input": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {},
+                    "description": "The JSON Schema for the arguments the assistant passes. The assistant reads the `title` and `description` strings inside it, so they are scanned at publish and the whole schema is bounded at 16 KB."
+                  },
+                  "approval": {
+                    "type": "boolean",
+                    "const": true,
+                    "description": "Always true. An action goes through an owner approval; there is no way to opt out."
+                  },
+                  "reversible": {
+                    "type": "boolean",
+                    "description": "Whether the owner can undo it after it runs."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "ui:render",
+                      "projects:read",
+                      "analytics:read",
+                      "store.metadata:read",
+                      "reviews:read",
+                      "crashes:read",
+                      "revenue:read",
+                      "metrics:write",
+                      "alerts:write",
+                      "insights:write",
+                      "ai:tools",
+                      "ai:actions",
+                      "store.metadata:write",
+                      "autopilot:trigger",
+                      "work:create",
+                      "work:sync",
+                      "storage:write",
+                      "messaging:send",
+                      "ai:skills"
+                    ],
+                    "description": "The scope this action needs. Declare it under `scopes` as well."
+                  },
+                  "estimatesCost": {
+                    "type": "boolean",
+                    "description": "Whether the approval card will show what the action costs."
+                  }
+                },
+                "required": [
+                  "id",
+                  "description",
+                  "input",
+                  "approval",
+                  "reversible",
+                  "scope"
+                ],
+                "additionalProperties": false
+              },
+              "description": "The actions the assistant may run, each behind an owner approval. Needs the `ai:actions` scope, and each action's own scope. `tap.actions.run` creates the run and resolves with it; the host draws the approval card and calls your server only once the owner approves."
+            },
+            "knowledge": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "metric_definitions",
+                      "gotchas",
+                      "setup"
+                    ],
+                    "description": "What kind of knowledge the file carries."
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The markdown file in the bundle, as a path relative to the manifest."
+                  }
+                },
+                "required": [
+                  "id",
+                  "category",
+                  "file"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Markdown the assistant indexes and cites when it answers about this extension."
+            },
+            "skills": {
+              "maxItems": 5,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "description": "The skill name the assistant matches on."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 300,
+                    "description": "When the assistant should reach for this skill."
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The markdown file in the bundle, as a path relative to the manifest."
+                  },
+                  "tools": {
+                    "maxItems": 15,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The tool ids this skill is allowed to use."
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "description",
+                  "file"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Markdown procedures that shape how the assistant works. Needs the `ai:skills` scope."
+            },
+            "prompts": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "description": "The label owners read on this contribution."
+                  },
+                  "template": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000,
+                    "description": "The prompt text, with `{{project.*}}`, `{{context.*}}` and `{{input.*}}` placeholders. The owner sees it resolved before it is sent."
+                  },
+                  "surfaces": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "chat_suggestion",
+                        "widget",
+                        "page",
+                        "result_card"
+                      ]
+                    },
+                    "description": "Where the host draws this prompt as a chip."
+                  },
+                  "after": {
+                    "maxItems": 15,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The tool ids whose results this prompt follows up on. They have to be this extension's own."
+                  },
+                  "input": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {},
+                    "description": "The JSON Schema for a short form the owner fills in before the prompt is sent."
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "template",
+                  "surfaces"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Prompt templates the host offers owners as chips. Needs the `ai:skills` scope."
+            },
+            "context": {
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                    "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 300,
+                    "description": "What context this provider adds to the turn."
+                  },
+                  "when": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "turn_start",
+                        "mention"
+                      ]
+                    },
+                    "description": "When the host calls your server for it."
+                  },
+                  "cache": {
+                    "type": "string",
+                    "enum": [
+                      "1m",
+                      "5m",
+                      "1h"
+                    ],
+                    "description": "How long the context may be reused before refetching."
+                  }
+                },
+                "required": [
+                  "id",
+                  "description",
+                  "when"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Providers the host calls to put your data in front of the assistant. Needs the `ai:skills` scope."
+            }
+          },
+          "additionalProperties": false,
+          "description": "What this extension offers the assistant: tools, mentions, actions, knowledge, skills, prompts and context providers."
+        },
+        "work": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "tracker",
+                "docs",
+                "chat"
+              ],
+              "description": "What kind of destination this is."
+            },
+            "container": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60,
+                  "description": "What you call a container, such as \"Project\", \"Space\" or \"Channel\". Owners read it when they pick one."
+                },
+                "list": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
+                }
+              },
+              "required": [
+                "label",
+                "list"
+              ],
+              "additionalProperties": false,
+              "description": "Where items land, and how owners pick one."
+            },
+            "creates": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "issue",
+                  "page",
+                  "message"
+                ]
+              },
+              "description": "What this destination can create."
+            },
+            "fields": {
+              "type": "object",
+              "properties": {
+                "priority": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Your own priority names, highest first."
+                },
+                "labels": {
+                  "type": "boolean",
+                  "description": "Whether items carry labels."
+                },
+                "assignee": {
+                  "type": "boolean",
+                  "description": "Whether items carry an assignee."
+                },
+                "required": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The fields an owner has to fill in before you can create."
+                }
+              },
+              "required": [
+                "required"
+              ],
+              "additionalProperties": false,
+              "description": "What a created item carries."
+            },
+            "attachments": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "image",
+                  "link"
+                ]
+              },
+              "description": "What can be attached to a created item."
+            },
+            "comments": {
+              "type": "string",
+              "enum": [
+                "two-way",
+                "none"
+              ],
+              "description": "Whether comments sync back and forth or not at all."
+            },
+            "status": {
+              "type": "object",
+              "properties": {
+                "webhook": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+                  "description": "The event your server posts when an item changes status."
+                },
+                "map": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Your own status names that mean not started."
+                    },
+                    "in_progress": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Your own status names that mean under way."
+                    },
+                    "done": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Your own status names that mean finished."
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "in_progress",
+                    "done"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Your status names, grouped into the three stages Tappify draws."
+                }
+              },
+              "required": [
+                "webhook",
+                "map"
+              ],
+              "additionalProperties": false,
+              "description": "How status travels back from your system."
+            },
+            "identity": {
+              "type": "string",
+              "enum": [
+                "user",
+                "install"
+              ],
+              "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
+            }
+          },
+          "required": [
+            "kind",
+            "container",
+            "creates",
+            "fields",
+            "attachments",
+            "comments",
+            "identity"
+          ],
+          "additionalProperties": false,
+          "description": "The work destination this extension creates issues, pages or messages in. Needs the `work:create` and `work:sync` scopes."
+        }
+      },
+      "additionalProperties": false,
+      "description": "What this extension adds to the host. At most 20 UI contributions in total, and a page, tab, widget, row action, marker or settings panel needs the `ui:render` scope."
+    },
+    "server": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https:\\/\\/.*",
+          "description": "Where the host calls your server. `<baseUrl>/tappify/health` answers 200 within three seconds at publish."
+        },
+        "sandboxBaseUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https:\\/\\/.*",
+          "description": "Where dev installs and sandbox projects call instead. Defaults to `baseUrl`."
+        },
+        "procedures": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{1,59}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "The JSON Schema for the argument your handler receives. The host validates against it before calling."
+              },
+              "output": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "The JSON Schema for what your handler returns."
+              },
+              "cache": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "1h"
+                ],
+                "description": "How long an identical call may be served from cache instead of reaching your server."
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "write"
+                ],
+                "description": "Whether this procedure only reads or also changes something."
+              }
+            },
+            "required": [
+              "input",
+              "output"
+            ],
+            "additionalProperties": false
+          },
+          "description": "The procedures the host may call on your server, by name, each with its input and output schema. At most 30."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "release.shipped",
+              "metadata.changed",
+              "keyword.set_changed",
+              "screenshots.updated",
+              "price.changed",
+              "featuring.started",
+              "score.changed",
+              "incident.opened",
+              "incident.resolved",
+              "playbook.step_approved",
+              "review.thread_opened",
+              "review.thread_resolved",
+              "approval.requested",
+              "digest.sent",
+              "install.created",
+              "install.paused",
+              "install.resumed",
+              "install.revoked",
+              "install.token_rotated",
+              "scopes.changed",
+              "settings.changed"
+            ]
+          },
+          "description": "The Tappify events your server subscribes to. Each is delivered to `POST /tappify/events` as it happens, with the same body every host-to-vendor call carries."
+        }
+      },
+      "required": [
+        "baseUrl"
+      ],
+      "additionalProperties": false,
+      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination or a procedure."
+    },
+    "telemetry": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 60,
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "description": "The telemetry names this extension may report. `tap.telemetry.event` rejects a name that is not declared here."
+    },
+    "listing": {
+      "type": "object",
+      "properties": {
+        "longDescription": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000,
+          "description": "The body of your listing page, in markdown."
+        },
+        "screenshots": {
+          "minItems": 1,
+          "maxItems": 6,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Screenshot files carried in the bundle, as paths relative to the manifest. png at 1600 by 1000."
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https:\\/\\/.*",
+          "description": "Where owners go to learn more about this extension."
+        },
+        "supportUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https:\\/\\/.*",
+          "description": "Where owners go when something breaks."
+        },
+        "privacyUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https:\\/\\/.*",
+          "description": "Your privacy policy, linked from the consent screen before anyone installs."
+        }
+      },
+      "additionalProperties": false,
+      "description": "What owners read on your Tap Store listing page. A public extension needs all five fields."
+    },
+    "pricing": {
+      "not": {},
+      "description": "Reserved. Tappify sets pricing outside the manifest, so a manifest that carries this field fails validation."
+    },
+    "score": {
+      "not": {},
+      "description": "Reserved. Tappify computes the quality score, so a manifest that carries this field fails validation."
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "icon",
+    "category",
+    "sdk",
+    "visibility",
+    "installScope",
+    "scopes",
+    "contributes"
+  ],
+  "additionalProperties": false
+}

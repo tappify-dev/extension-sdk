@@ -18,6 +18,8 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
+/test/.generated
+/test/tsdoc-examples.generated.tsx
 
 # IDEs and editors
 /.idea

@@ -1,0 +1,117 @@
+name: Docs
+
+on:
+  workflow_run:
+    workflows: ['Release']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference:
+    name: Regenerate the extension reference
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    env:
+      # Every generator resolves the documentation checkout from its first
+      # argument or from this variable. pnpm cannot forward an argument through
+      # the three scripts docs:reference chains, so it goes in as an env.
+      TAPPIFY_DOCS_ROOT: ${{ github.workspace }}/documentation
+    steps:
+      - name: Check out the SDK
+        uses: actions/checkout@v4
+
+      - name: Check out the documentation
+        uses: actions/checkout@v4
+        with:
+          repository: tappify-dev/documentation
+          token: ${{ secrets.DOCS_PR_TOKEN }}
+          path: documentation
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # No build step: typedoc reads src through tsconfig.json and the manifest
+      # generator calls manifestJsonSchema() from source, so neither needs dist.
+      - name: Generate the JSON Schema, the manifest reference and the API reference
+        run: pnpm docs:reference
+
+      - name: Sync the generated pages into the sidebar
+        run: node documentation/scripts/sync-reference-nav.mjs
+
+      - name: Lint the documentation
+        run: node documentation/scripts/check-docs.mjs --strict
+
+      - name: Check out the public edge
+        uses: actions/checkout@v4
+        with:
+          repository: tappify-dev/link
+          token: ${{ secrets.STATIC_ASSETS_TOKEN }}
+          path: link
+          ref: develop
+
+      - name: Sync and validate the hosted schema
+        id: hosted-schema
+        run: |
+          cp schema/extension-v2.json link/public/extension/v2.json
+          pnpm check:hosted-schema -- schema/extension-v2.json link/public/extension/v2.json
+          sha256sum schema/extension-v2.json
+          echo "sha256=$(sha256sum schema/extension-v2.json | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Open the documentation pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: documentation
+          token: ${{ secrets.DOCS_PR_TOKEN }}
+          branch: reference/extension-sdk
+          base: main
+          commit-message: 'docs: regenerate the extension SDK reference'
+          title: 'docs: regenerate the extension SDK reference'
+          add-paths: |
+            docs.json
+            extensions/reference/manifest.mdx
+            extensions/reference/_generated.json
+            extensions/reference/frontend-api
+            extensions/reference/server-api
+            extensions/reference/testing-api
+          body: |
+            Generated from `@tappify/extension-sdk` at ${{ github.sha }}.
+
+            - `extensions/reference/manifest.mdx` from `schema/extension-v2.json`
+            - `extensions/reference/frontend-api/`, `server-api/`, `testing-api/` from the SDK's declarations
+            - `docs.json` sidebar entries for the generated pages
+
+            Do not hand-edit these files. Change the SDK and let this workflow run.
+          delete-branch: true
+
+      - name: Open the hosted schema pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: link
+          token: ${{ secrets.STATIC_ASSETS_TOKEN }}
+          branch: generated/extension-schema
+          base: develop
+          commit-message: 'chore: update extension schema'
+          title: 'Update hosted extension schema'
+          add-paths: public/extension/v2.json
+          body: |
+            Generated from `@tappify/extension-sdk` at ${{ github.sha }}.
+
+            Schema SHA-256: `${{ steps.hosted-schema.outputs.sha256 }}`
+
+            Do not edit the hosted copy by hand. Change the SDK schema and let this workflow run.
+          delete-branch: true

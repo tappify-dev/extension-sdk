@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@tappify/extension-sdk": ["./src/index.ts"],
+      "@tappify/extension-sdk/manifest": ["./src/manifest.ts"],
+      "@tappify/extension-sdk/server": ["./src/server.ts"],
+      "@tappify/extension-sdk/host": ["./src/host.ts"],
+      "@tappify/extension-sdk/vite": ["./src/vite.ts"],
+      "@tappify/extension-sdk/codegen": ["./src/codegen.ts"],
+      "@tappify/extension-sdk/testing": ["./src/testing/index.ts"],
+      "@tappify/extension-sdk/testing/vitest": ["./src/testing/vitest.ts"],
+      "@tappify/extension-sdk/testing/jest": ["./src/testing/jest.ts"]
+    }
+  },
+  "include": ["test/tsdoc-examples.generated.tsx", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
