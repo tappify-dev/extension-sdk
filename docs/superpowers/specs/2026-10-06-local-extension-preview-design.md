@@ -1,7 +1,7 @@
 # Local Extension Preview Design
 
 **Date:** 2026-10-06
-**Status:** Draft for review; implementation pending
+**Status:** Approved; implementation pending
 
 ## Purpose
 
