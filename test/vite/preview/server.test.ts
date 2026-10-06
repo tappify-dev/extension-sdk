@@ -5,12 +5,26 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   build,
   createServer,
+  type Plugin,
   type ViteDevServer,
 } from '../../../node_modules/vite/dist/node/index.js';
 import { tappifyExtension } from '../../../src/vite/plugin';
 
 const fixtureRoot = resolve(__dirname, '../../fixtures/extension');
+const sdkEntry = resolve(__dirname, '../../../src/index.ts');
 const sdkStyles = resolve(__dirname, '../../../src/client/ui/styles.css');
+const sourceSdkExports: Plugin = {
+  name: 'test:source-sdk-exports',
+  enforce: 'pre',
+  resolveId(id) {
+    if (id === '@tappify/extension-sdk') return sdkEntry;
+    if (id === '@tappify/extension-sdk/styles.css') return sdkStyles;
+    if (id === '@tappify/extension-sdk/styles.css?inline') {
+      return `${sdkStyles}?inline`;
+    }
+    return null;
+  },
+};
 const servers: ViteDevServer[] = [];
 let previousTestOverride: string | undefined;
 
@@ -114,16 +128,11 @@ describe('local preview Vite server', () => {
     await build({
       root: fixtureRoot,
       logLevel: 'silent',
-      plugins: tappifyExtension({ root: fixtureRoot }),
+      plugins: [sourceSdkExports, ...tappifyExtension({ root: fixtureRoot })],
       // A published SDK resolves this export to dist/styles.css. The source
-      // checkout has not been built in a clean test job, so model that export
-      // with its source stylesheet instead of relying on stale local dist.
-      resolve: {
-        alias: {
-          '@tappify/extension-sdk/styles.css': sdkStyles,
-          '@tappify/extension-sdk/styles.css?inline': `${sdkStyles}?inline`,
-        },
-      },
+      // checkout has not been built in a clean test job, so model the package
+      // root and stylesheet exports from source instead of relying on stale
+      // local dist.
       build: { outDir: output, emptyOutDir: true },
     });
 
