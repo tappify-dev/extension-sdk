@@ -8,7 +8,7 @@ export interface TapHostProviderProps {
   children: ReactNode;
   /**
    * A host that already renders a QueryClientProvider leaves this out; a
-   * standalone host such as the portal preview passes one from
+   * standalone host such as the local preview passes one from
    * `createHostQueryClient()` so the data hooks find a client.
    */
   queryClient?: QueryClient;

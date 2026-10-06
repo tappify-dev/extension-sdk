@@ -257,7 +257,7 @@ export interface TapFixtures {
 }
 
 /**
- * The sandbox data the mock bridge and the portal preview both answer with, so a
+ * The sandbox data the mock bridge and the local preview both answer with, so a
  * component behaves the same in a test and in the preview.
  *
  * @remarks
