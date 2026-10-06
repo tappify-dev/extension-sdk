@@ -6,6 +6,7 @@ import { TapError } from '../client/errors';
 import { remoteName, uiContributions } from '../manifest/define';
 import { validateManifest } from '../manifest/schema';
 import type { ExtensionManifest } from '../manifest/types';
+import { PREVIEW_REMOTE_ENV, createPreviewPlugins } from './preview/plugin';
 import { collectEntryStyles, inlineCssImports } from './styles';
 
 export { collectEntryStyles, inlineCssImports };
@@ -52,22 +53,38 @@ function manifestFile(options: TappifyExtensionOptions): string {
   );
 }
 
-function loadManifest(options: TappifyExtensionOptions): ExtensionManifest {
-  const raw: unknown =
-    options.manifest ?? JSON.parse(readFileSync(manifestFile(options), 'utf8'));
-
-  const result = validateManifest(raw);
-  if (!result.ok) {
-    const lines = result.issues
-      .map(issue => `  ${issue.path}: ${issue.message}`)
-      .join('\n');
-    throw new TapError(
-      'TAP_MANIFEST_INVALID',
-      `tappify.extension.json does not validate:\n${lines}\nFix the fields above, or run \`tappify extension doctor\` for the same list with suggested fixes.`,
-    );
+function loadManifest(options: TappifyExtensionOptions) {
+  let raw: unknown;
+  try {
+    raw =
+      options.manifest ??
+      JSON.parse(readFileSync(manifestFile(options), 'utf8'));
+  } catch (error) {
+    return {
+      ok: false as const,
+      issues: [
+        {
+          path: '$',
+          message:
+            error instanceof Error
+              ? `The manifest is not valid JSON: ${error.message}`
+              : 'The manifest is not valid JSON.',
+        },
+      ],
+    };
   }
+  return validateManifest(raw);
+}
 
-  return result.manifest;
+function manifestError(result: ReturnType<typeof loadManifest>): TapError {
+  if (result.ok) throw new Error('A valid manifest has no validation error.');
+  const lines = result.issues
+    .map(issue => `  ${issue.path}: ${issue.message}`)
+    .join('\n');
+  return new TapError(
+    'TAP_MANIFEST_INVALID',
+    `tappify.extension.json does not validate:\n${lines}\nFix the fields above, or run \`tappify extension doctor\` for the same list with suggested fixes.`,
+  );
 }
 
 /**
@@ -82,8 +99,9 @@ export function tappifyExtension(
 ): Plugin[] {
   const root = options.root ?? process.cwd();
   const boundary = root.endsWith(sep) ? root : `${root}${sep}`;
-  const manifest = loadManifest(options);
-  const contributions = uiContributions(manifest);
+  const loaded = loadManifest(options);
+  const manifest = loaded.ok ? loaded.manifest : null;
+  const contributions = manifest === null ? [] : uiContributions(manifest);
   const port = options.port ?? DEFAULT_PORT;
 
   const entryByKey = new Map<string, string>();
@@ -98,7 +116,7 @@ export function tappifyExtension(
   const singleton = { singleton: true, requiredVersion: false } as const;
 
   const federationOptions: FederationOptions = {
-    name: remoteName(manifest.id),
+    name: remoteName(manifest?.id ?? 'invalid-extension'),
     filename: 'remoteEntry.js',
     manifest: true,
     exposes,
@@ -163,6 +181,17 @@ export function tappifyExtension(
     },
   };
 
+  const guard: Plugin = {
+    name: 'tappify:manifest',
+    enforce: 'pre',
+    config(_config, environment) {
+      if (environment.command !== 'build') return null;
+      const current = loadManifest(options);
+      if (!current.ok) throw manifestError(current);
+      return null;
+    },
+  };
+
   const css: Plugin = {
     name: 'tappify:css',
     enforce: 'pre',
@@ -178,36 +207,22 @@ export function tappifyExtension(
     },
   };
 
-  const dev: Plugin = {
-    name: 'tappify:dev',
-    apply: 'serve',
-    config() {
-      return {
-        server: {
-          port,
-          strictPort: true,
-          cors: { origin: true },
-          origin: `http://localhost:${String(port)}`,
-        },
-      };
-    },
-    configureServer(server) {
-      server.watcher.add(manifestFile(options));
-    },
-    /** Vite runs hotUpdate once per dev environment, and the manifest is one file. */
-    async hotUpdate(context) {
-      if (this.environment.name !== 'client') return;
-      if (context.file !== manifestFile(options)) return;
-      if (options.onManifestChange === undefined) return;
-      await options.onManifestChange(loadManifest(options));
-    },
-  };
-
   const plugins: Plugin[] = [
+    guard,
     expose,
     css,
     ...federation(federationOptions),
-    dev,
+    ...createPreviewPlugins({
+      manifestFile: manifestFile(options),
+      loadManifest: () => loadManifest(options),
+      port,
+      remote: process.env[PREVIEW_REMOTE_ENV],
+      onManifestChange: async result => {
+        if (result.ok && options.onManifestChange !== undefined) {
+          await options.onManifestChange(result.manifest);
+        }
+      },
+    }),
   ];
 
   federationOptionsByPlugins.set(plugins, federationOptions);

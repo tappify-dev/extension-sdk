@@ -76,9 +76,11 @@ describe('public entries', () => {
 
   it('exports the build-time surface the CLI and vite config use', () => {
     expect(Object.keys(vite).sort()).toEqual([
+      'PREVIEW_REMOTE_ENV',
       'VIRTUAL_PREFIX',
       'collectEntryStyles',
       'inlineCssImports',
+      'previewRemote',
       'tappifyExtension',
     ]);
     expect(Object.keys(codegen).sort()).toEqual([

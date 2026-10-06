@@ -11,6 +11,12 @@ import {
   tappifyExtension,
   type TappifyExtensionOptions,
 } from '../../src/vite/plugin';
+import {
+  PREVIEW_CLIENT_ID,
+  PREVIEW_MANIFEST_ID,
+  PREVIEW_REMOTE_ID,
+  previewRemote,
+} from '../../src/vite/preview/plugin';
 
 const root = resolve(__dirname, '../fixtures/extension');
 
@@ -48,7 +54,10 @@ interface HotUpdateThis {
 
 function isHotUpdateHook(
   value: unknown,
-): value is (this: HotUpdateThis, context: { file: string }) => Promise<void> {
+): value is (
+  this: HotUpdateThis,
+  context: { file: string; server: { ws: { send(event: unknown): void } } },
+) => Promise<void> {
   return typeof value === 'function';
 }
 
@@ -289,7 +298,7 @@ describe('tappifyExtension', () => {
     ).toBeNull();
   });
 
-  it('serves the dev remote entry on the configured port with open CORS', () => {
+  it('serves the local preview on loopback with the configured port', () => {
     const plugin = pluginNamed('tappify:dev', { port: 5999 });
     const hook: unknown = plugin.config;
     if (!isConfigHook(hook)) throw new Error('config is not a function');
@@ -297,28 +306,83 @@ describe('tappifyExtension', () => {
     const config = hook({}, { command: 'serve', mode: 'development' });
 
     expect(config.server?.port).toBe(5999);
+    expect(config.server?.host).toBe('127.0.0.1');
     expect(config.server?.cors).toEqual({ origin: true });
     expect(config.server?.origin).toBe('http://localhost:5999');
   });
 
-  it('refuses an invalid manifest with TAP_MANIFEST_INVALID', () => {
+  it('provides the preview client, validated manifest and local remote virtual modules', () => {
+    const plugin = pluginNamed('tappify:preview');
+
+    expect(moduleHook(plugin, 'resolveId')(PREVIEW_CLIENT_ID)).toBe(
+      `\0${PREVIEW_CLIENT_ID}`,
+    );
+    expect(moduleHook(plugin, 'resolveId')(PREVIEW_MANIFEST_ID)).toBe(
+      `\0${PREVIEW_MANIFEST_ID}`,
+    );
+    expect(moduleHook(plugin, 'resolveId')(PREVIEW_REMOTE_ID)).toBe(
+      `\0${PREVIEW_REMOTE_ID}`,
+    );
+
+    expect(moduleHook(plugin, 'load')(`\0${PREVIEW_CLIENT_ID}`)).toContain(
+      'mountLocalPreview',
+    );
+    expect(moduleHook(plugin, 'load')(`\0${PREVIEW_MANIFEST_ID}`)).toContain(
+      '"fixture-lab"',
+    );
+    expect(moduleHook(plugin, 'load')(`\0${PREVIEW_REMOTE_ID}`)).toContain(
+      'http://localhost:5273/remoteEntry.js',
+    );
+  });
+
+  it('accepts secure and loopback remotes but refuses other HTTP origins', () => {
+    expect(
+      previewRemote('https://cdn.example.com/remoteEntry.js', 5273),
+    ).toEqual({ ok: true, url: 'https://cdn.example.com/remoteEntry.js' });
+    expect(previewRemote('http://127.0.0.1:4000/remoteEntry.js', 5273)).toEqual(
+      { ok: true, url: 'http://127.0.0.1:4000/remoteEntry.js' },
+    );
+    expect(previewRemote(undefined, 5273)).toEqual({
+      ok: true,
+      url: 'http://localhost:5273/remoteEntry.js',
+    });
+    expect(
+      previewRemote('http://preview.example.com/remoteEntry.js', 5273),
+    ).toEqual({
+      ok: false,
+      message: 'A preview remote must use HTTPS or loopback HTTP.',
+    });
+    expect(previewRemote('not a URL', 5273)).toEqual({
+      ok: false,
+      message: 'The preview remote is not a valid URL.',
+    });
+  });
+
+  it('defers an invalid manifest in serve mode but refuses a production build', () => {
     let thrown: unknown;
+    const plugins = tappifyExtension({
+      manifest: {
+        id: 'Bad Id',
+        name: 'x',
+        description: 'short',
+        icon: 'i.svg',
+        category: 'product_analytics',
+        sdk: '^2.0.0',
+        visibility: 'private',
+        installScope: 'project',
+        scopes: [],
+        contributes: {},
+      },
+      root,
+    });
+    const guard = plugins.find(plugin => plugin.name === 'tappify:manifest');
+    if (!guard) throw new Error('no manifest guard');
+    const hook: unknown = guard.config;
+    if (!isConfigHook(hook)) throw new Error('config is not a function');
+    expect(federationOptionsOf(plugins).exposes).toEqual({});
+
     try {
-      tappifyExtension({
-        manifest: {
-          id: 'Bad Id',
-          name: 'x',
-          description: 'short',
-          icon: 'i.svg',
-          category: 'product_analytics',
-          sdk: '^2.0.0',
-          visibility: 'private',
-          installScope: 'project',
-          scopes: [],
-          contributes: {},
-        },
-        root,
-      });
+      hook({}, { command: 'build', mode: 'production' });
     } catch (error) {
       thrown = error;
     }
@@ -331,6 +395,7 @@ describe('tappifyExtension', () => {
 
   it('calls onManifestChange once when the manifest file changes in dev', async () => {
     const onManifestChange = vi.fn();
+    const send = vi.fn();
     const plugin = pluginNamed('tappify:dev', { onManifestChange });
     const hook: unknown = plugin.hotUpdate;
     if (!isHotUpdateHook(hook)) {
@@ -338,14 +403,16 @@ describe('tappifyExtension', () => {
     }
 
     const file = resolve(root, 'tappify.extension.json');
-    await hook.call({ environment: { name: 'client' } }, { file });
-    await hook.call({ environment: { name: 'ssr' } }, { file });
+    const server = { ws: { send } };
+    await hook.call({ environment: { name: 'client' } }, { file, server });
+    await hook.call({ environment: { name: 'ssr' } }, { file, server });
     await hook.call(
       { environment: { name: 'client' } },
-      { file: resolve(root, 'src/settings.tsx') },
+      { file: resolve(root, 'src/settings.tsx'), server },
     );
 
     expect(onManifestChange).toHaveBeenCalledTimes(1);
     expect(onManifestChange.mock.calls[0][0].id).toBe('fixture-lab');
+    expect(send).toHaveBeenCalledWith({ type: 'full-reload', path: '*' });
   });
 });
