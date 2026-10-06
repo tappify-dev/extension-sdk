@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@module-federation/runtime':
+        specifier: ~2.5.1
+        version: 2.5.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1077,17 +1080,34 @@ packages:
       vue-tsc:
         optional: true
 
+  '@module-federation/error-codes@2.5.1':
+    resolution: {integrity: sha512-3KIR8XbEW0Y+Fn8IAnxzDWMvXQWiS40Z1TE/Fft9aTeXP9dDAM7AiVhjTh5yF2csAwHSt/1LJVZbiCmS13mE8A==}
+
   '@module-federation/error-codes@2.7.0':
     resolution: {integrity: sha512-syToF3H77IbBhJ7auGMCIb5ZDmJ5tvaqSeEvncJrOCq7JBT96F4UDlQDyNh6kCVznvYqqHsPeEMrfI9b5/Omlg==}
 
   '@module-federation/managers@2.7.0':
     resolution: {integrity: sha512-cWohiUvSrY6dIfhwsRABmEWfvJiAD5u/gxU7XRk7bx5nYPj7qn5gvYWJtvLNWzenluHZR6sib+03QMlyo+MYKQ==}
 
+  '@module-federation/runtime-core@2.5.1':
+    resolution: {integrity: sha512-UMuMsWHXeMrm8Isl8YD6/s1jmTVau3SQhp9RO4Ln+eD2lrjM4hQSwOX2xPtfT1C1I4/E6hgyZQV1K1Q/3Zpr0Q==}
+
   '@module-federation/runtime-core@2.7.0':
     resolution: {integrity: sha512-5ROZLVIeV9YnWO2RwCwSHcy6sh48yclErO/2GZ2Xe8lFubPrFirgU8pbwBjZw+All0ZzN44BGS4ECRMVFzVcpg==}
 
+  '@module-federation/runtime@2.5.1':
+    resolution: {integrity: sha512-Tf33FIpnQMn8FjIUAQMtSTYQgGibfh5vEvJihFO3q/hG9LiWwLMErZvOz/+wcPsE81gzHjYPxQgMKGSP3BuG8g==}
+
   '@module-federation/runtime@2.7.0':
     resolution: {integrity: sha512-UtLozKKNvhT0D1+F0MEWsAmddJ39ItKW15E22LVMAwXmYZRSnzIvJQ2Y6kQ4LwhWABsw/GRSpUDex5OfhpSQPw==}
+
+  '@module-federation/sdk@2.5.1':
+    resolution: {integrity: sha512-FDhCx81ZCxX1oT/fyt/bW+gpPt287GR156E/Thv1yhb9XyNHGNkqe8zqJOipOMfb07E22OMzSzOulCBvAOgn3g==}
+    peerDependencies:
+      node-fetch: ^2.7.0 || ^3.3.2
+    peerDependenciesMeta:
+      node-fetch:
+        optional: true
 
   '@module-federation/sdk@2.7.0':
     resolution: {integrity: sha512-piiLEjaIdjbNq8E11Di6vsfryhcdN/+sBCH6NjG7gSU2VHHoHEayZQWWL7VVdS6rVjexF9McLhPTSrl0adUU+A==}
@@ -5439,6 +5459,8 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@module-federation/error-codes@2.5.1': {}
+
   '@module-federation/error-codes@2.7.0': {}
 
   '@module-federation/managers@2.7.0':
@@ -5446,16 +5468,33 @@ snapshots:
       '@module-federation/sdk': 2.7.0
       empathic: 2.0.0
 
+  '@module-federation/runtime-core@2.5.1':
+    dependencies:
+      '@module-federation/error-codes': 2.5.1
+      '@module-federation/sdk': 2.5.1
+    transitivePeerDependencies:
+      - node-fetch
+
   '@module-federation/runtime-core@2.7.0':
     dependencies:
       '@module-federation/error-codes': 2.7.0
       '@module-federation/sdk': 2.7.0
+
+  '@module-federation/runtime@2.5.1':
+    dependencies:
+      '@module-federation/error-codes': 2.5.1
+      '@module-federation/runtime-core': 2.5.1
+      '@module-federation/sdk': 2.5.1
+    transitivePeerDependencies:
+      - node-fetch
 
   '@module-federation/runtime@2.7.0':
     dependencies:
       '@module-federation/error-codes': 2.7.0
       '@module-federation/runtime-core': 2.7.0
       '@module-federation/sdk': 2.7.0
+
+  '@module-federation/sdk@2.5.1': {}
 
   '@module-federation/sdk@2.7.0': {}
 

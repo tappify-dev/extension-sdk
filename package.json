@@ -31,6 +31,11 @@
       "import": "./dist/vite.mjs",
       "require": "./dist/vite.cjs"
     },
+    "./vite/preview": {
+      "types": "./dist/vite-preview.d.ts",
+      "import": "./dist/vite-preview.mjs",
+      "require": "./dist/vite-preview.cjs"
+    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.mjs",
@@ -140,6 +145,7 @@
     }
   },
   "dependencies": {
+    "@module-federation/runtime": "~2.5.1",
     "clsx": "^2.1.1",
     "jose": "^6.2.12",
     "json-schema-to-typescript": "^16.0.0",
