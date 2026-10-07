@@ -36,6 +36,11 @@
       "import": "./dist/vite-preview.mjs",
       "require": "./dist/vite-preview.cjs"
     },
+    "./vite/preview/bootstrap": {
+      "types": "./dist/vite-preview-bootstrap.d.ts",
+      "import": "./dist/vite-preview-bootstrap.mjs",
+      "require": "./dist/vite-preview-bootstrap.cjs"
+    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.mjs",

@@ -1,4 +1,6 @@
-import type { Plugin } from 'vite';
+import { randomUUID } from 'node:crypto';
+import { relative, resolve } from 'node:path';
+import { normalizePath, type Plugin } from 'vite';
 import type { ManifestValidation } from '../../manifest/types';
 
 export const PREVIEW_CLIENT_ID = 'virtual:tappify-preview/client';
@@ -87,11 +89,14 @@ function previewDocument(
   if (!remote.ok)
     return messageDocument('Preview remote was refused', [remote.message]);
 
+  const icon = manifest.manifest.icon.replace(/^\.\//, '');
+
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/${escapeHtml(icon)}" />
     <title>${escapeHtml(manifest.manifest.name)} · Tappify local preview</title>
   </head>
   <body>
@@ -104,12 +109,45 @@ function previewDocument(
 const moduleSource = (value: unknown): string =>
   `export default ${JSON.stringify(value)};`;
 
+export function optimizedReactUrl(
+  root: string,
+  cacheDir: string,
+  cacheGeneration: string,
+): string {
+  const depsCacheDir = normalizePath(resolve(cacheDir, 'deps'));
+  const relativeCacheDir = normalizePath(relative(root, depsCacheDir));
+  const prefix = relativeCacheDir.startsWith('../')
+    ? `/@fs/${depsCacheDir.replace(/^\/+/, '')}`
+    : `/${relativeCacheDir}`;
+  return `${prefix}/react.js?tappify=${encodeURIComponent(cacheGeneration)}`;
+}
+
 export function createPreviewPlugins(options: PreviewPluginOptions): Plugin[] {
   const remote = previewRemote(options.remote, options.port);
+  const cacheGeneration = randomUUID();
+  let reactUrl = optimizedReactUrl(
+    resolve(options.manifestFile, '..'),
+    resolve(options.manifestFile, '../node_modules/.vite'),
+    cacheGeneration,
+  );
 
   const preview: Plugin = {
     name: 'tappify:preview',
     apply: 'serve',
+    config() {
+      return {
+        optimizeDeps: {
+          exclude: ['@tappify/extension-sdk/vite/preview/bootstrap'],
+        },
+      };
+    },
+    configResolved(config) {
+      reactUrl = optimizedReactUrl(
+        config.root,
+        config.cacheDir,
+        cacheGeneration,
+      );
+    },
     resolveId(id) {
       if (VIRTUAL_IDS.has(id)) return `\0${id}`;
       if (id.startsWith('\0') && VIRTUAL_IDS.has(id.slice(1))) return id;
@@ -122,11 +160,11 @@ export function createPreviewPlugins(options: PreviewPluginOptions): Plugin[] {
       if (id === `\0${PREVIEW_REMOTE_ID}`) return moduleSource(remote);
       if (id !== `\0${PREVIEW_CLIENT_ID}`) return null;
       return [
-        `import { mountLocalPreview } from '@tappify/extension-sdk/vite/preview';`,
+        `import { startLocalPreview } from '@tappify/extension-sdk/vite/preview/bootstrap';`,
         `import manifest from '${PREVIEW_MANIFEST_ID}';`,
         `import remote from '${PREVIEW_REMOTE_ID}';`,
         `const mount = document.getElementById('tappify-preview-root');`,
-        `if (mount && manifest.ok && remote.ok) mountLocalPreview({ manifest: manifest.manifest, remote: remote.url, mount });`,
+        `if (mount && manifest.ok && remote.ok) void startLocalPreview({ manifest: manifest.manifest, remote: remote.url, reactUrl: ${JSON.stringify(reactUrl)}, mount });`,
       ].join('\n');
     },
     configureServer(server) {

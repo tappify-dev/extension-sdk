@@ -1,7 +1,13 @@
 import type { ModuleFederation } from '@module-federation/runtime';
 import * as TanstackQuery from '@tanstack/react-query';
 import * as React from 'react';
-import { useEffect, useMemo, useState, type ComponentType } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+} from 'react';
 import * as ReactDom from 'react-dom';
 import * as JsxRuntime from 'react/jsx-runtime';
 import packageJson from '../../../package.json';
@@ -47,6 +53,7 @@ type LoadState =
       key: string;
       status: 'ready';
       Component: ComponentType<Record<string, unknown>>;
+      styles: string[];
     }
   | { key: string; status: 'failed'; message: string };
 
@@ -120,6 +127,20 @@ export function componentFromModule(
   return candidate as ComponentType<Record<string, unknown>>;
 }
 
+function stylesFromModule(module: unknown): string[] {
+  if (
+    typeof module !== 'object' ||
+    module === null ||
+    !('styles' in module) ||
+    !Array.isArray(module.styles)
+  ) {
+    return [];
+  }
+  return module.styles.filter(
+    (style): style is string => typeof style === 'string',
+  );
+}
+
 export async function loadContribution({
   extensionId,
   remote,
@@ -140,6 +161,21 @@ function isExternalRemote(remote: string): boolean {
   }
 }
 
+function localProcedureStubs(
+  manifest: ExtensionManifest,
+): Record<string, () => never> {
+  return Object.fromEntries(
+    Object.keys(manifest.server?.procedures ?? {}).map(name => [
+      name,
+      () => {
+        throw new Error(
+          'This view needs live server data. Run tappify extension dev --live to connect it.',
+        );
+      },
+    ]),
+  );
+}
+
 function Message({
   title,
   children,
@@ -151,6 +187,72 @@ function Message({
     <div className="tap-preview-message" role="status">
       <h2>{title}</h2>
       <span>{children}</span>
+    </div>
+  );
+}
+
+interface PreviewShadowNodes {
+  root: ShadowRoot;
+  content: HTMLElement;
+}
+
+function PreviewSurface({
+  portal,
+  styles,
+  children,
+}: {
+  portal: HTMLElement;
+  styles: string[];
+  children: React.ReactNode;
+}) {
+  const [nodes, setNodes] = useState<PreviewShadowNodes | null>(null);
+  const attachHost = useCallback((host: HTMLDivElement | null): void => {
+    if (host === null) return;
+    const root = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
+    let content = root.querySelector<HTMLElement>('[data-tap-content]');
+    if (content === null) {
+      content = document.createElement('div');
+      content.className = 'tap-root';
+      content.setAttribute('data-tap-content', '');
+      root.appendChild(content);
+    }
+    setNodes({ root, content });
+  }, []);
+
+  useEffect(() => {
+    if (nodes === null) return;
+    nodes.root.appendChild(portal);
+    return () => portal.remove();
+  }, [nodes, portal]);
+
+  useEffect(() => {
+    if (nodes === null) return;
+    const injected: HTMLStyleElement[] = [];
+    const inject = (kind: string, css: string): void => {
+      const element = document.createElement('style');
+      element.setAttribute('data-tap-style', kind);
+      element.textContent = css;
+      nodes.root.insertBefore(element, nodes.content);
+      injected.push(element);
+    };
+
+    inject(
+      'preview',
+      ':host { display: block; height: 100%; min-height: 0; overflow: auto; } .tap-root { box-sizing: border-box; height: 100%; min-height: 100%; padding: 24px; }',
+    );
+    for (const css of styles) inject('remote', css);
+    return () => {
+      for (const element of injected) element.remove();
+    };
+  }, [nodes, styles]);
+
+  return (
+    <div
+      ref={attachHost}
+      className="tap-preview-surface"
+      data-tap-preview-surface
+    >
+      {nodes === null ? null : ReactDom.createPortal(children, nodes.content)}
     </div>
   );
 }
@@ -195,6 +297,7 @@ export function LocalPreview({
           key: loadKey,
           status: 'ready',
           Component: componentFromModule(module, contribution.expose),
+          styles: stylesFromModule(module),
         });
       })
       .catch((error: unknown) => {
@@ -221,8 +324,9 @@ export function LocalPreview({
       project: fixtures.project.project,
       theme,
       size,
+      server: localProcedureStubs(manifest),
     });
-  }, [generation, manifest.id, manifest.name, size, theme]);
+  }, [generation, manifest, size, theme]);
   const queryClient = useMemo(() => {
     void generation;
     return createHostQueryClient();
@@ -254,11 +358,11 @@ export function LocalPreview({
     });
     content = (
       <TapHostProvider tap={host.tap} queryClient={queryClient}>
-        <PreviewErrorBoundary key={`${loadKey}|${String(generation)}`}>
-          <div className="tap-preview-surface">
+        <PreviewSurface portal={host.portal} styles={current.styles}>
+          <PreviewErrorBoundary key={`${loadKey}|${String(generation)}`}>
             <Component {...props} />
-          </div>
-        </PreviewErrorBoundary>
+          </PreviewErrorBoundary>
+        </PreviewSurface>
       </TapHostProvider>
     );
   } else {
@@ -272,85 +376,90 @@ export function LocalPreview({
       <style>{previewStyles}</style>
       <header className="tap-preview-bar">
         <div className="tap-preview-brand">
-          <strong>{manifest.name}</strong>
-          <span>
-            {isExternalRemote(remote) ? 'External remote' : 'Local preview'} ·
-            Fixture data
-          </span>
+          <img src={`/${manifest.icon.replace(/^\.\//, '')}`} alt="" />
+          <div>
+            <strong>{manifest.name}</strong>
+            <span>
+              <i aria-hidden="true" />
+              {isExternalRemote(remote) ? 'External remote' : 'Local preview'}
+              {' · Fixture data'}
+            </span>
+          </div>
         </div>
-        {selections.length > 0 ? (
+        <div className="tap-preview-controls">
+          {selections.length > 0 ? (
+            <label className="tap-preview-field tap-preview-field--contribution">
+              <span>Contribution</span>
+              <select
+                value={contribution?.expose ?? ''}
+                onChange={event => setExpose(event.target.value)}
+              >
+                {selections.map(item => (
+                  <option
+                    key={item.contribution.expose}
+                    value={item.contribution.expose}
+                  >
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="tap-preview-field">
-            Contribution
+            <span>Theme</span>
             <select
-              value={contribution?.expose ?? ''}
-              onChange={event => setExpose(event.target.value)}
+              value={theme}
+              onChange={event => setTheme(event.target.value as Theme)}
             >
-              {selections.map(item => (
-                <option
-                  key={item.contribution.expose}
-                  value={item.contribution.expose}
-                >
-                  {item.label}
-                </option>
-              ))}
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
             </select>
           </label>
-        ) : null}
-        <label className="tap-preview-field">
-          Theme
-          <select
-            value={theme}
-            onChange={event => setTheme(event.target.value as Theme)}
+          <label className="tap-preview-field">
+            <span>Viewport</span>
+            <select
+              value={viewport}
+              onChange={event => setViewport(event.target.value as Viewport)}
+            >
+              <option value="desktop">Desktop</option>
+              <option value="tablet">Tablet</option>
+              <option value="mobile">Mobile</option>
+            </select>
+          </label>
+          <label className="tap-preview-field">
+            <span>Surface</span>
+            <select
+              value={size}
+              aria-label="Surface size"
+              onChange={event => setSize(event.target.value as TapSize)}
+            >
+              <option value="slot">Slot</option>
+              <option value="panel">Panel</option>
+              <option value="page">Page</option>
+            </select>
+          </label>
+          <button
+            className="tap-preview-reset"
+            type="button"
+            aria-label="Reset fixtures"
+            onClick={() => {
+              setSettings({});
+              setGeneration(value => value + 1);
+            }}
           >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-        <label className="tap-preview-field">
-          Viewport
-          <select
-            value={viewport}
-            onChange={event => setViewport(event.target.value as Viewport)}
-          >
-            <option value="desktop">Desktop</option>
-            <option value="tablet">Tablet</option>
-            <option value="mobile">Mobile</option>
-          </select>
-        </label>
-        <label className="tap-preview-field">
-          Surface size
-          <select
-            value={size}
-            onChange={event => setSize(event.target.value as TapSize)}
-          >
-            <option value="slot">Slot</option>
-            <option value="panel">Panel</option>
-            <option value="page">Page</option>
-          </select>
-        </label>
-        <button
-          className="tap-preview-reset"
-          type="button"
-          onClick={() => {
-            setSettings({});
-            setGeneration(value => value + 1);
-          }}
-        >
-          Reset fixtures
-        </button>
+            Reset
+          </button>
+        </div>
       </header>
       <section className="tap-preview-stage">
         <div
           className="tap-preview-canvas"
           data-viewport={viewport}
+          data-size={size}
           aria-label="Preview canvas"
         >
           {content}
         </div>
-        <p className="tap-preview-note">
-          Server procedures are unavailable locally. Use `tappify extension dev
-          --live` for real host and server behavior.
-        </p>
       </section>
     </main>
   );

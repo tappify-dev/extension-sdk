@@ -15,8 +15,42 @@ import {
   PREVIEW_CLIENT_ID,
   PREVIEW_MANIFEST_ID,
   PREVIEW_REMOTE_ID,
+  optimizedReactUrl,
   previewRemote,
 } from '../../src/vite/preview/plugin';
+
+describe('optimizedReactUrl', () => {
+  it('uses the configured cache directory inside the Vite project', () => {
+    expect(
+      optimizedReactUrl(
+        '/workspace/extension',
+        '/workspace/extension/.cache',
+        'generation-one',
+      ),
+    ).toBe('/.cache/deps/react.js?tappify=generation-one');
+  });
+
+  it('uses a Vite filesystem URL for a cache outside the project', () => {
+    expect(
+      optimizedReactUrl(
+        '/workspace/extension',
+        '/shared/vite-cache',
+        'generation-one',
+      ),
+    ).toBe('/@fs/shared/vite-cache/deps/react.js?tappify=generation-one');
+  });
+
+  it('changes when a new preview server starts with a new cache generation', () => {
+    const first = optimizedReactUrl('/workspace/extension', '/cache', 'first');
+    const second = optimizedReactUrl(
+      '/workspace/extension',
+      '/cache',
+      'second',
+    );
+
+    expect(first).not.toBe(second);
+  });
+});
 
 const root = resolve(__dirname, '../fixtures/extension');
 
@@ -325,13 +359,25 @@ describe('tappifyExtension', () => {
     );
 
     expect(moduleHook(plugin, 'load')(`\0${PREVIEW_CLIENT_ID}`)).toContain(
-      'mountLocalPreview',
+      'startLocalPreview',
     );
     expect(moduleHook(plugin, 'load')(`\0${PREVIEW_MANIFEST_ID}`)).toContain(
       '"fixture-lab"',
     );
     expect(moduleHook(plugin, 'load')(`\0${PREVIEW_REMOTE_ID}`)).toContain(
       'http://localhost:5273/remoteEntry.js',
+    );
+  });
+
+  it('keeps the preview host out of Vite dependency prebundling', () => {
+    const plugin = pluginNamed('tappify:preview');
+    const hook: unknown = plugin.config;
+    if (!isConfigHook(hook)) throw new Error('config is not a function');
+
+    const config = hook({}, { command: 'serve', mode: 'development' });
+
+    expect(config.optimizeDeps?.exclude).toContain(
+      '@tappify/extension-sdk/vite/preview/bootstrap',
     );
   });
 

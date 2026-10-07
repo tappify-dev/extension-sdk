@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -9,6 +9,7 @@ import {
   type ViteDevServer,
 } from '../../../node_modules/vite/dist/node/index.js';
 import { tappifyExtension } from '../../../src/vite/plugin';
+import { PREVIEW_CLIENT_ID } from '../../../src/vite/preview/plugin';
 
 const fixtureRoot = resolve(__dirname, '../../fixtures/extension');
 const sdkEntry = resolve(__dirname, '../../../src/index.ts');
@@ -45,9 +46,14 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map(server => server.close()));
 });
 
-async function listen(root: string, manifest?: Record<string, unknown>) {
+async function listen(
+  root: string,
+  manifest?: Record<string, unknown>,
+  cacheDir?: string,
+) {
   const server = await createServer({
     root,
+    cacheDir,
     logLevel: 'silent',
     plugins: tappifyExtension({ root, port: 0, manifest: manifest as never }),
   });
@@ -84,8 +90,24 @@ describe('local preview Vite server', () => {
     expect(preview.status).toBe(200);
     expect(html).toContain('virtual:tappify-preview/client');
     expect(html).toContain('/@vite/client');
+    expect(html).toContain('<link rel="icon" href="/icon.svg" />');
     expect(remote.status).toBe(200);
     expect(await remote.text()).toContain('fixture_lab');
+  });
+
+  it('uses an external custom Vite cache when loading the React host share', async () => {
+    const cacheDir = mkdtempSync(join(tmpdir(), 'tappify-vite-cache-'));
+    try {
+      const origin = await listen(fixtureRoot, undefined, cacheDir);
+      const client = await fetch(`${origin}/@id/${PREVIEW_CLIENT_ID}`);
+      const source = await client.text();
+      const expected = `/@fs${cacheDir}/deps/react.js?tappify=`;
+
+      expect(client.status).toBe(200);
+      expect(source).toContain(expected);
+    } finally {
+      rmSync(cacheDir, { recursive: true, force: true });
+    }
   });
 
   it('renders manifest validation issues at root instead of a blank page', async () => {

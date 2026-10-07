@@ -17,6 +17,7 @@ export default defineConfig([
       manifest: 'src/manifest.ts',
       host: 'src/host.ts',
       'vite-preview': 'src/vite-preview.tsx',
+      'vite-preview-bootstrap': 'src/vite/preview/bootstrap.ts',
       server: 'src/server.ts',
       'testing/index': 'src/testing/index.ts',
       'testing/vitest': 'src/testing/vitest.ts',

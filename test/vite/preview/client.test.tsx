@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { useTap, useTapSize, useTapTheme } from '../../../src';
 import { defineManifest } from '../../../src/manifest/define';
@@ -70,6 +70,22 @@ const surfaceLoader: PreviewModuleLoader = vi.fn(async () => ({
   default: Surface,
 }));
 
+async function previewShadow(): Promise<ShadowRoot> {
+  let root: ShadowRoot | null = null;
+  await waitFor(() => {
+    const host = document.querySelector<HTMLElement>(
+      '[data-tap-preview-surface]',
+    );
+    root = host?.shadowRoot ?? null;
+    expect(root).not.toBeNull();
+  });
+  return root as unknown as ShadowRoot;
+}
+
+function inShadow(root: ShadowRoot) {
+  return within(root as unknown as HTMLElement);
+}
+
 describe('LocalPreview', () => {
   it('loads every local contribution and supplies its host props', async () => {
     const user = userEvent.setup();
@@ -81,40 +97,95 @@ describe('LocalPreview', () => {
       />,
     );
 
-    expect(await screen.findByLabelText('surface props')).toHaveTextContent(
-      '{"params":{"pageId":"explore","path":"/"}}',
-    );
+    const shadow = await previewShadow();
+    expect(
+      await inShadow(shadow).findByLabelText('surface props'),
+    ).toHaveTextContent('{"params":{"pageId":"explore","path":"/"}}');
 
     await user.selectOptions(
       screen.getByLabelText('Contribution'),
       './tabs/trends',
     );
-    expect(await screen.findByLabelText('surface props')).toHaveTextContent(
-      '{}',
-    );
+    const tabShadow = await previewShadow();
+    expect(
+      await inShadow(tabShadow).findByLabelText('surface props'),
+    ).toHaveTextContent('{}');
 
     await user.selectOptions(
       screen.getByLabelText('Contribution'),
       './widgets/summary',
     );
-    expect(await screen.findByLabelText('surface props')).toHaveTextContent(
-      '{"config":{}}',
-    );
+    const widgetShadow = await previewShadow();
+    expect(
+      await inShadow(widgetShadow).findByLabelText('surface props'),
+    ).toHaveTextContent('{"config":{}}');
 
     await user.selectOptions(
       screen.getByLabelText('Contribution'),
       './rowActions/inspect',
     );
-    expect(await screen.findByLabelText('surface props')).toHaveTextContent(
-      '"term":"photo editor"',
-    );
+    const actionShadow = await previewShadow();
+    expect(
+      await inShadow(actionShadow).findByLabelText('surface props'),
+    ).toHaveTextContent('"term":"photo editor"');
 
     await user.selectOptions(
       screen.getByLabelText('Contribution'),
       './settings',
     );
-    expect(await screen.findByLabelText('surface props')).toHaveTextContent(
-      '{"values":{}}',
+    const settingsShadow = await previewShadow();
+    expect(
+      await inShadow(settingsShadow).findByLabelText('surface props'),
+    ).toHaveTextContent('{"values":{}}');
+  });
+
+  it('isolates contribution styles and replaces each stylesheet on selection', async () => {
+    const user = userEvent.setup();
+    const loader: PreviewModuleLoader = async request => ({
+      default: Surface,
+      styles:
+        request.expose === './pages/explore'
+          ? [
+              '* { display: none !important; }',
+              '@import url("data:text/css,.surface%7Bcolor:blue%7D");',
+            ]
+          : ['.surface { color: rgb(65 43 21); }'],
+    });
+
+    render(
+      <LocalPreview
+        manifest={manifest}
+        remote="http://localhost:5273/remoteEntry.js"
+        loader={loader}
+      />,
+    );
+
+    const shadow = await previewShadow();
+    const styles = shadow.querySelectorAll('style[data-tap-style="remote"]');
+    expect(styles).toHaveLength(2);
+    expect(styles[0]).toHaveTextContent('* { display: none !important; }');
+    expect(styles[1]).toHaveTextContent('@import url');
+    expect(styles[0]?.getRootNode()).toBe(shadow);
+    expect(
+      screen.getByRole('button', { name: 'Reset fixtures' }).getRootNode(),
+    ).toBe(document);
+
+    await user.selectOptions(
+      screen.getByLabelText('Contribution'),
+      './widgets/summary',
+    );
+
+    const nextShadow = await previewShadow();
+    await waitFor(() =>
+      expect(
+        nextShadow.querySelectorAll('style[data-tap-style="remote"]'),
+      ).toHaveLength(1),
+    );
+    expect(
+      nextShadow.querySelector('style[data-tap-style="remote"]'),
+    ).toHaveTextContent('.surface { color: rgb(65 43 21); }');
+    expect(nextShadow.textContent).not.toContain(
+      '* { display: none !important; }',
     );
   });
 
@@ -135,19 +206,24 @@ describe('LocalPreview', () => {
       />,
     );
 
-    expect(await screen.findByLabelText('host context')).toHaveTextContent(
-      'light:slot',
-    );
+    const shadow = await previewShadow();
+    expect(
+      await inShadow(shadow).findByLabelText('host context'),
+    ).toHaveTextContent('light:slot');
     await user.selectOptions(screen.getByLabelText('Theme'), 'dark');
     await user.selectOptions(screen.getByLabelText('Surface size'), 'page');
     await user.selectOptions(screen.getByLabelText('Viewport'), 'mobile');
 
-    expect(await screen.findByLabelText('host context')).toHaveTextContent(
-      'dark:page',
-    );
+    expect(
+      await inShadow(shadow).findByLabelText('host context'),
+    ).toHaveTextContent('dark:page');
     expect(screen.getByLabelText('Preview canvas')).toHaveAttribute(
       'data-viewport',
       'mobile',
+    );
+    expect(screen.getByLabelText('Preview canvas')).toHaveAttribute(
+      'data-size',
+      'page',
     );
   });
 
@@ -171,11 +247,16 @@ describe('LocalPreview', () => {
       />,
     );
 
-    await user.click(await screen.findByRole('button', { name: 'Count 0' }));
-    expect(screen.getByRole('button', { name: 'Count 1' })).toBeInTheDocument();
+    const shadow = await previewShadow();
+    await user.click(
+      await inShadow(shadow).findByRole('button', { name: 'Count 0' }),
+    );
+    expect(
+      inShadow(shadow).getByRole('button', { name: 'Count 1' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Reset fixtures' }));
     expect(
-      await screen.findByRole('button', { name: 'Count 0' }),
+      await inShadow(shadow).findByRole('button', { name: 'Count 0' }),
     ).toBeInTheDocument();
   });
 
@@ -248,7 +329,8 @@ describe('LocalPreview', () => {
       />,
     );
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
+    const shadow = await previewShadow();
+    expect(await inShadow(shadow).findByRole('alert')).toHaveTextContent(
       'surface exploded',
     );
     consoleError.mockRestore();
@@ -257,8 +339,13 @@ describe('LocalPreview', () => {
   it('states that procedures require live preview', async () => {
     const ProcedureProbe = () => {
       const tap = useTap();
-      void tap.server.getSummary({}).catch(() => undefined);
-      return <div>Procedure requested</div>;
+      const [message, setMessage] = useState('Procedure requested');
+      useEffect(() => {
+        void tap.server.getSummary({}).catch((error: unknown) => {
+          setMessage(error instanceof Error ? error.message : 'Unknown error');
+        });
+      }, [tap]);
+      return <div>{message}</div>;
     };
     const loader: PreviewModuleLoader = async () => ({
       default: ProcedureProbe,
@@ -266,17 +353,33 @@ describe('LocalPreview', () => {
 
     render(
       <LocalPreview
-        manifest={manifest}
+        manifest={{
+          ...manifest,
+          server: {
+            baseUrl: 'https://api.example.com',
+            procedures: {
+              getSummary: {
+                input: { type: 'object' },
+                output: { type: 'object' },
+              },
+            },
+          },
+        }}
         remote="http://localhost:5273/remoteEntry.js"
         loader={loader}
       />,
     );
 
+    const shadow = await previewShadow();
     expect(
-      await screen.findByText(/Server procedures are unavailable locally/),
+      await inShadow(shadow).findByText(
+        'This view needs live server data. Run tappify extension dev --live to connect it.',
+      ),
     ).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByText('Procedure requested')).toBeInTheDocument(),
+      expect(
+        inShadow(shadow).queryByText(/No handler is registered/),
+      ).toBeNull(),
     );
   });
 });
