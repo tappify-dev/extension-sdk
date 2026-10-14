@@ -121,7 +121,7 @@ export function Dialog({
       value={{ close, contentRef, descriptionId, titleId }}
     >
       <div
-        className="tap-ui-dialog-overlay"
+        className="tap-root tap-ui-dialog-overlay"
         data-slot="dialog-overlay"
         onKeyDown={onKeyDown}
         onMouseDown={event => {

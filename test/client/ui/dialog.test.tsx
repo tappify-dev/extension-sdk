@@ -49,6 +49,9 @@ describe('Dialog', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Confirm' });
     expect(portal).toContainElement(dialog);
+    expect(portal.querySelector('[data-slot="dialog-overlay"]')).toHaveClass(
+      'tap-root',
+    );
     expect(dialog).toHaveClass('tap-ui-dialog', 'custom-dialog');
     expect(dialog).toHaveAttribute('data-size', 'large');
     expect(dialog).toHaveAttribute('data-surface', 'canvas');
