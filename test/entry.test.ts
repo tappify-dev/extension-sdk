@@ -37,7 +37,22 @@ describe('public entries', () => {
   });
 
   it('exports the One UI surface from the dedicated UI entry', () => {
-    expect(Object.keys(ui).sort()).toEqual(['Inline', 'Stack', 'cn']);
+    expect(Object.keys(ui).sort()).toEqual(
+      [
+        'Button',
+        'Card',
+        'CardAction',
+        'CardContent',
+        'CardDescription',
+        'CardFooter',
+        'CardHeader',
+        'CardTitle',
+        'Inline',
+        'PageHeader',
+        'Stack',
+        'cn',
+      ].sort(),
+    );
   });
 
   it('exports every vendor server symbol spec §12.1 lists and nothing else', () => {

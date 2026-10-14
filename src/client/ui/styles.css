@@ -114,3 +114,222 @@
 [data-justify='between'] {
   justify-content: space-between;
 }
+
+.tap-button {
+  min-height: var(--tappify-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tappify-space-8);
+  border: 1px solid transparent;
+  border-radius: var(--tappify-radius-control);
+  padding: 0 var(--tappify-space-16);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.tap-button:focus-visible {
+  outline: 2px solid var(--tappify-deep-green);
+  outline-offset: 2px;
+}
+
+.tap-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tap-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.tap-button[data-variant='primary'] {
+  color: var(--tappify-on-accent);
+  background: var(--tappify-deep-green);
+}
+
+.tap-button[data-variant='primary']:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tappify-deep-green) 88%, black);
+}
+
+.tap-button[data-variant='secondary'] {
+  color: var(--tappify-fg-primary);
+  background: var(--tappify-bg-paper);
+  border-color: var(--tappify-divider);
+}
+
+.tap-button[data-variant='secondary']:hover:not(:disabled),
+.tap-button[data-variant='tertiary']:hover:not(:disabled) {
+  background: var(--tappify-bg-light-gray);
+}
+
+.tap-button[data-variant='tertiary'] {
+  color: var(--tappify-fg-primary);
+  background: transparent;
+}
+
+.tap-button[data-variant='inverse'] {
+  color: var(--tappify-deep-green);
+  background: var(--tappify-lime);
+}
+
+.tap-button[data-variant='destructive'] {
+  color: var(--tappify-on-accent);
+  background: var(--tappify-danger);
+}
+
+.tap-button[data-size='compact'],
+.tap-button[data-size='sm'] {
+  min-height: 32px;
+  padding-inline: var(--tappify-space-12);
+  font-size: 13px;
+}
+
+.tap-button[data-size='xs'] {
+  min-height: 28px;
+  padding-inline: var(--tappify-space-8);
+  font-size: 12px;
+}
+
+.tap-button[data-size='lg'] {
+  min-height: 44px;
+  padding-inline: var(--tappify-space-24);
+}
+
+.tap-button[data-size^='icon'] {
+  width: var(--tappify-control-height);
+  padding: 0;
+}
+
+.tap-button[data-size='icon-xs'] {
+  width: 28px;
+  min-height: 28px;
+}
+
+.tap-button[data-size='icon-sm'] {
+  width: 32px;
+  min-height: 32px;
+}
+
+.tap-button[data-size='icon-lg'] {
+  width: 44px;
+  min-height: 44px;
+}
+
+.tap-button__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tappify-spin 700ms linear infinite;
+}
+
+@keyframes tappify-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.tap-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-16);
+  min-width: 0;
+  padding: var(--tappify-space-24);
+  background: var(--tappify-bg-paper);
+  border: 1px solid var(--tappify-divider);
+  border-radius: var(--tappify-radius-card);
+}
+
+.tap-card[data-size='sm'] {
+  gap: var(--tappify-space-12);
+  padding: var(--tappify-space-16);
+}
+
+.tap-card__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--tappify-space-4) var(--tappify-space-16);
+  align-items: start;
+}
+
+.tap-card__title {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.tap-card__description {
+  color: var(--tappify-fg-sub);
+  grid-column: 1;
+}
+
+.tap-card__action {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.tap-card__content,
+.tap-card__footer {
+  min-width: 0;
+}
+
+.tap-card__footer {
+  color: var(--tappify-fg-sub);
+}
+
+.tap-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tappify-space-24);
+}
+
+.tap-page-header__copy {
+  min-width: 0;
+}
+
+.tap-page-header__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.tap-page-header__description {
+  margin-top: var(--tappify-space-8);
+  color: var(--tappify-fg-sub);
+}
+
+.tap-page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tappify-space-8);
+  flex: 0 0 auto;
+}
+
+@container tap-mount (max-width: 520px) {
+  .tap-page-header {
+    flex-direction: column;
+  }
+
+  .tap-page-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-button,
+  .tap-button__spinner {
+    transition: none;
+    animation: none;
+  }
+}
