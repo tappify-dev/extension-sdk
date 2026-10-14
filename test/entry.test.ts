@@ -55,10 +55,12 @@ describe('public entries', () => {
         'Input',
         'Inline',
         'PageHeader',
+        'SchemaForm',
         'Select',
         'Stack',
         'Textarea',
         'cn',
+        'schemaFields',
       ].sort(),
     );
   });

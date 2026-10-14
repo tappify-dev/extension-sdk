@@ -33,3 +33,9 @@ export type {
 } from './layout';
 export { PageHeader } from './page-header';
 export type { PageHeaderProps } from './page-header';
+export { SchemaForm, schemaFields } from './schema-form';
+export type {
+  SchemaField,
+  SchemaFieldKind,
+  SchemaFormProps,
+} from './schema-form';

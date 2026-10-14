@@ -30,8 +30,8 @@ describe('One UI stylesheet', () => {
   });
 
   it('styles tokenized Stack and Inline layouts', () => {
-    expect(css).toContain("[data-slot='stack']");
-    expect(css).toContain("[data-slot='inline']");
+    expect(css).toContain('.tap-stack');
+    expect(css).toContain('.tap-inline');
     expect(css).toContain("[data-gap='24']");
     expect(css).toContain("[data-justify='between']");
   });
