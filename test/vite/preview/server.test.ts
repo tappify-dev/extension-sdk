@@ -19,8 +19,8 @@ const sourceSdkExports: Plugin = {
   enforce: 'pre',
   resolveId(id) {
     if (id === '@tappify/extension-sdk') return sdkEntry;
-    if (id === '@tappify/extension-sdk/styles.css') return sdkStyles;
-    if (id === '@tappify/extension-sdk/styles.css?inline') {
+    if (id === '@tappify/extension-sdk/ui/styles.css') return sdkStyles;
+    if (id === '@tappify/extension-sdk/ui/styles.css?inline') {
       return `${sdkStyles}?inline`;
     }
     return null;
@@ -151,7 +151,7 @@ describe('local preview Vite server', () => {
       root: fixtureRoot,
       logLevel: 'silent',
       plugins: [sourceSdkExports, ...tappifyExtension({ root: fixtureRoot })],
-      // A published SDK resolves this export to dist/styles.css. The source
+      // A published SDK resolves this export to dist/ui/styles.css. The source
       // checkout has not been built in a clean test job, so model the package
       // root and stylesheet exports from source instead of relying on stale
       // local dist.

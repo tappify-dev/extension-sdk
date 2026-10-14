@@ -1,4 +1,4 @@
-import '@tappify/extension-sdk/styles.css';
+import '@tappify/extension-sdk/ui/styles.css';
 import '../summary.css';
 
 export default function Summary() {

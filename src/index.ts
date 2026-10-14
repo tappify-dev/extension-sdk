@@ -27,4 +27,3 @@ export type {
   TapStorageResult,
 } from './client/query';
 export type * from './client/types';
-export * from './client/ui';

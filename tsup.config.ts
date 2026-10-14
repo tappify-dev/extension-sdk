@@ -14,6 +14,7 @@ export default defineConfig([
     ...shared,
     entry: {
       index: 'src/index.ts',
+      ui: 'src/ui.ts',
       manifest: 'src/manifest.ts',
       host: 'src/host.ts',
       'vite-preview': 'src/vite-preview.tsx',

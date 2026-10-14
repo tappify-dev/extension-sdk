@@ -26,6 +26,11 @@
       "import": "./dist/host.mjs",
       "require": "./dist/host.cjs"
     },
+    "./ui": {
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.mjs",
+      "require": "./dist/ui.cjs"
+    },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.mjs",
@@ -61,7 +66,7 @@
       "import": "./dist/codegen.mjs",
       "require": "./dist/codegen.cjs"
     },
-    "./styles.css": "./dist/styles.css",
+    "./ui/styles.css": "./dist/ui/styles.css",
     "./schema/extension-v2.json": "./schema/extension-v2.json",
     "./package.json": "./package.json"
   },

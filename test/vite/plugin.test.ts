@@ -148,7 +148,7 @@ describe('collectEntryStyles', () => {
     );
 
     expect(styles).toEqual([
-      '@tappify/extension-sdk/styles.css',
+      '@tappify/extension-sdk/ui/styles.css',
       resolve(root, 'src/summary.css'),
     ]);
   });
@@ -174,7 +174,7 @@ describe('inlineCssImports', () => {
         "import styles from './card.module.css';",
         "import inlined from './already.css?inline';",
         "import { useTap } from '@tappify/extension-sdk';",
-        "import '@tappify/extension-sdk/styles.css';",
+        "import '@tappify/extension-sdk/ui/styles.css';",
       ].join('\n'),
     );
 
@@ -184,7 +184,7 @@ describe('inlineCssImports', () => {
         "import styles from './card.module.css';",
         "import inlined from './already.css?inline';",
         "import { useTap } from '@tappify/extension-sdk';",
-        "import '@tappify/extension-sdk/styles.css?inline';",
+        "import '@tappify/extension-sdk/ui/styles.css?inline';",
       ].join('\n'),
     );
   });
@@ -253,7 +253,7 @@ describe('tappifyExtension', () => {
       `import Component from ${JSON.stringify(resolve(root, 'src/widgets/summary.tsx'))};`,
     );
     expect(code).toContain(
-      'import style0 from "@tappify/extension-sdk/styles.css?inline";',
+      'import style0 from "@tappify/extension-sdk/ui/styles.css?inline";',
     );
     expect(code).toContain(
       `import style1 from ${JSON.stringify(`${resolve(root, 'src/summary.css')}?inline`)};`,
@@ -309,12 +309,12 @@ describe('tappifyExtension', () => {
     const entry = resolve(root, 'src/widgets/summary.tsx');
 
     const result = transform(
-      "import '@tappify/extension-sdk/styles.css';\nimport '../summary.css';\n",
+      "import '@tappify/extension-sdk/ui/styles.css';\nimport '../summary.css';\n",
       entry,
     );
 
     expect(result?.code).toBe(
-      "import '@tappify/extension-sdk/styles.css?inline';\nimport '../summary.css?inline';\n",
+      "import '@tappify/extension-sdk/ui/styles.css?inline';\nimport '../summary.css?inline';\n",
     );
   });
 

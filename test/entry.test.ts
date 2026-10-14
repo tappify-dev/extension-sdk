@@ -5,30 +5,17 @@ import * as client from '../src/index';
 import * as manifest from '../src/manifest';
 import * as server from '../src/server';
 import * as testing from '../src/testing';
+import * as ui from '../src/ui';
 import * as vite from '../src/vite';
 
 describe('public entries', () => {
-  it('exports every vendor UI symbol spec §12.1 lists', () => {
+  it('keeps UI components out of the root client entry', () => {
     expect(Object.keys(client).sort()).toEqual(
       [
         'TAP_ERROR_CODES',
-        'TapButton',
-        'TapCard',
-        'TapDialog',
-        'TapEmptyState',
         'TapError',
-        'TapErrorState',
-        'TapForm',
-        'TapInput',
-        'TapPageHeader',
-        'TapSelect',
         'TapServerError',
-        'TapSkeleton',
-        'TapStat',
-        'TapTable',
-        'cn',
         'dataQueryKey',
-        'formFields',
         'installPrefix',
         'procedurePrefix',
         'procedureQueryKey',
@@ -47,6 +34,10 @@ describe('public entries', () => {
         'useTapTheme',
       ].sort(),
     );
+  });
+
+  it('exports the One UI surface from the dedicated UI entry', () => {
+    expect(Object.keys(ui).sort()).toEqual(['Inline', 'Stack', 'cn']);
   });
 
   it('exports every vendor server symbol spec §12.1 lists and nothing else', () => {

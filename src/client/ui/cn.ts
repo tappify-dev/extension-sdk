@@ -15,7 +15,7 @@ export type ClassValue = ClsxClassValue;
  *
  * @example
  * ```tsx
- * import { cn } from '@tappify/extension-sdk';
+ * import { cn } from '@tappify/extension-sdk/ui';
  *
  * function Row({ compact }: { compact: boolean }) {
  *   return <div className={cn('starter-row', compact && 'starter-row--compact')} />;
