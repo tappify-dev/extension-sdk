@@ -13,6 +13,19 @@ declare module 'vitest' {
     toHaveStored(collection: string, document: unknown): T;
   }
 }
+
+/* eslint-disable @typescript-eslint/no-namespace -- Chai exposes its matcher contract as a global namespace */
+declare global {
+  namespace Chai {
+    interface Assertion {
+      toHaveNavigatedTo(path: string): void;
+      toHaveToasted(expected: string | RegExp): void;
+      toHaveRunAction(actionId: string, input?: unknown): void;
+      toHaveStored(collection: string, document: unknown): void;
+    }
+  }
+}
+/* eslint-enable @typescript-eslint/no-namespace */
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 installHostTheme(document.documentElement);
