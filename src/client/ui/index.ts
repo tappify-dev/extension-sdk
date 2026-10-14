@@ -23,6 +23,13 @@ export {
   DialogTitle,
 } from './dialog';
 export type { DialogContentProps, DialogProps, DialogSize } from './dialog';
+export { EmptyState, ErrorState, Metric, Skeleton } from './feedback';
+export type {
+  EmptyStateProps,
+  ErrorStateProps,
+  MetricProps,
+  SkeletonProps,
+} from './feedback';
 export {
   Checkbox,
   Field,
@@ -50,3 +57,12 @@ export type {
   SchemaFieldKind,
   SchemaFormProps,
 } from './schema-form';
+export {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
+export type { TableRowProps } from './table';
