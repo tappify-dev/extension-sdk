@@ -333,3 +333,109 @@
     animation: none;
   }
 }
+
+.tap-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-8);
+  min-width: 0;
+}
+
+.tap-field__label {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.tap-field__description,
+.tap-field__error {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tap-field__description {
+  color: var(--tappify-fg-sub);
+}
+
+.tap-field__error {
+  color: var(--tappify-danger);
+}
+
+.tap-control {
+  width: 100%;
+  min-width: 0;
+  min-height: 49px;
+  padding: 0 var(--tappify-space-12);
+  color: var(--tappify-fg-primary);
+  background: var(--tappify-bg-paper);
+  border: 1px solid var(--tappify-divider);
+  border-radius: var(--tappify-radius-control);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.tap-textarea {
+  min-height: 112px;
+  padding-block: var(--tappify-space-12);
+  resize: vertical;
+}
+
+.tap-control:focus-visible,
+.tap-checkbox:focus-visible {
+  border-color: var(--tappify-deep-green);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tappify-lime) 55%, transparent);
+}
+
+.tap-control:disabled,
+.tap-checkbox:disabled {
+  color: var(--tappify-fg-sub);
+  background: var(--tappify-bg-light-gray);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tap-control[aria-invalid='true'],
+.tap-checkbox[aria-invalid='true'] {
+  border-color: var(--tappify-danger);
+}
+
+.tap-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 auto;
+  background: var(--tappify-bg-paper);
+  border: 1px solid var(--tappify-divider);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tap-checkbox::before {
+  width: 9px;
+  height: 5px;
+  content: '';
+  border: solid var(--tappify-on-accent);
+  border-width: 0 0 2px 2px;
+  transform: rotate(-45deg) scale(0);
+}
+
+.tap-checkbox[data-state='checked'],
+.tap-checkbox[data-state='indeterminate'] {
+  background: var(--tappify-deep-green);
+  border-color: var(--tappify-deep-green);
+}
+
+.tap-checkbox[data-state='checked']::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+.tap-checkbox[data-state='indeterminate']::before {
+  height: 0;
+  border-width: 0 0 2px;
+  transform: rotate(0) scale(1);
+}

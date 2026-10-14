@@ -12,6 +12,17 @@ export {
 export type { CardProps } from './card';
 export { cn } from './cn';
 export type { ClassValue } from './cn';
+export {
+  Checkbox,
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  Input,
+  Select,
+  Textarea,
+} from './field';
+export type { CheckboxProps } from './field';
 export { Inline, Stack } from './layout';
 export type {
   InlineAlign,
