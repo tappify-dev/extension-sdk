@@ -13,6 +13,17 @@ export type { CardProps } from './card';
 export { cn } from './cn';
 export type { ClassValue } from './cn';
 export {
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './dialog';
+export type { DialogContentProps, DialogProps, DialogSize } from './dialog';
+export {
   Checkbox,
   Field,
   FieldDescription,

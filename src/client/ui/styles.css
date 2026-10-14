@@ -468,3 +468,123 @@
     flex-direction: column-reverse;
   }
 }
+
+.tap-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--tappify-space-24);
+  background: rgb(18 18 18 / 58%);
+  backdrop-filter: blur(2px);
+  animation: tappify-fade-in 140ms ease-out;
+}
+
+.tap-dialog {
+  width: min(100%, 520px);
+  max-height: min(88vh, 860px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--tappify-fg-primary);
+  background: var(--tappify-bg-paper);
+  border: 1px solid var(--tappify-divider);
+  border-radius: var(--tappify-radius-panel);
+  box-shadow: 0 24px 80px rgb(18 18 18 / 24%);
+  animation: tappify-dialog-in 160ms ease-out;
+}
+
+.tap-dialog[data-surface='canvas'] {
+  background: var(--tappify-bg-canvas);
+}
+
+.tap-dialog[data-size='compact'] {
+  width: min(100%, 360px);
+}
+
+.tap-dialog[data-size='medium'],
+.tap-dialog[data-size='confirmation'] {
+  width: min(100%, 440px);
+}
+
+.tap-dialog[data-size='large'] {
+  width: min(100%, 680px);
+}
+
+.tap-dialog[data-size='wide'] {
+  width: min(100%, 880px);
+}
+
+.tap-dialog__header,
+.tap-dialog__body,
+.tap-dialog__footer {
+  padding-inline: var(--tappify-space-24);
+}
+
+.tap-dialog__header {
+  position: relative;
+  padding-block: var(--tappify-space-24) var(--tappify-space-16);
+}
+
+.tap-dialog__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.tap-dialog__description {
+  margin-top: var(--tappify-space-8);
+  color: var(--tappify-fg-sub);
+}
+
+.tap-dialog__body {
+  min-height: 0;
+  padding-block: var(--tappify-space-16) var(--tappify-space-24);
+  overflow: auto;
+}
+
+.tap-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tappify-space-8);
+  padding-block: var(--tappify-space-16) var(--tappify-space-24);
+  border-top: 1px solid var(--tappify-divider);
+}
+
+@keyframes tappify-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tappify-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-dialog-overlay,
+  .tap-dialog {
+    animation: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .tap-dialog-overlay {
+    padding: var(--tappify-space-12);
+  }
+
+  .tap-dialog {
+    max-height: calc(100vh - 24px);
+  }
+
+  .tap-dialog__footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+}

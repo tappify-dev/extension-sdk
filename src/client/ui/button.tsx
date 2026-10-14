@@ -20,6 +20,7 @@ export type ButtonSize =
   | 'icon-lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  'data-slot'?: string;
   loading?: boolean;
   size?: ButtonSize;
   variant?: ButtonVariant;
@@ -27,6 +28,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button({
   'aria-busy': ariaBusy,
+  'data-slot': slot = 'button',
   children,
   className,
   disabled,
@@ -43,7 +45,7 @@ export function Button({
       className={cn('tap-button', className)}
       data-loading={loading || undefined}
       data-size={size}
-      data-slot="button"
+      data-slot={slot}
       data-variant={variant}
       disabled={loading ? true : disabled}
       type={type}
