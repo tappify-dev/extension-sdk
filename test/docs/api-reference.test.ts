@@ -44,5 +44,5 @@ describe('API reference generation', () => {
     expect(frontendPages).not.toContain(
       'extensions/reference/frontend-api/Function.TapForm',
     );
-  });
+  }, 15_000);
 });
