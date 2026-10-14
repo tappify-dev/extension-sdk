@@ -66,7 +66,8 @@ const CODE_SET = new Set<string>(TAP_ERROR_CODES);
  *
  * @example
  * ```tsx
- * import { TapError, ErrorState, useTapQuery } from '@tappify/extension-sdk';
+ * import { TapError, useTapQuery } from '@tappify/extension-sdk';
+ * import { ErrorState } from '@tappify/extension-sdk/ui';
  *
  * function Revenue() {
  *   const revenue = useTapQuery({

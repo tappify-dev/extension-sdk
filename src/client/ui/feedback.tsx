@@ -3,6 +3,7 @@ import { Button } from './button';
 import { cn } from './cn';
 import { Stack } from './layout';
 
+/** Props for a compact labeled metric. */
 export interface MetricProps {
   delta?: number;
   description?: ReactNode;
@@ -10,6 +11,7 @@ export interface MetricProps {
   value: ReactNode;
 }
 
+/** Displays a value with its label and optional trend context. */
 export function Metric({ delta, description, label, value }: MetricProps) {
   const percent = delta === undefined ? undefined : Math.round(delta * 100);
   const direction =
@@ -45,12 +47,14 @@ export function Metric({ delta, description, label, value }: MetricProps) {
   );
 }
 
+/** Props for a reduced-motion-aware loading placeholder. */
 export interface SkeletonProps {
   className?: string;
   lines?: number;
   width?: CSSProperties['width'];
 }
 
+/** Displays one or more loading placeholder lines. */
 export function Skeleton({ className, lines = 1, width }: SkeletonProps) {
   return (
     <div className={cn('tap-ui-skeleton', className)} data-slot="skeleton">
@@ -66,12 +70,14 @@ export function Skeleton({ className, lines = 1, width }: SkeletonProps) {
   );
 }
 
+/** Props for an empty collection or unconfigured surface. */
 export interface EmptyStateProps {
   action?: ReactNode;
   description?: ReactNode;
   title: ReactNode;
 }
 
+/** Explains an empty state and optionally presents a recovery action. */
 export function EmptyState({ action, description, title }: EmptyStateProps) {
   return (
     <Stack className="tap-ui-state" data-slot="empty-state" gap={12}>
@@ -84,13 +90,16 @@ export function EmptyState({ action, description, title }: EmptyStateProps) {
   );
 }
 
+/** Props for an inline error surface. */
 export interface ErrorStateProps {
   code?: ReactNode;
   description?: ReactNode;
+  /** Called when the user chooses to retry the failed operation. */
   onRetry?: () => void;
   title: ReactNode;
 }
 
+/** Displays a recoverable inline error with an optional retry control. */
 export function ErrorState({
   code,
   description,

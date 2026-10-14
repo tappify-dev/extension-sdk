@@ -52,7 +52,8 @@ export interface RenderWithTapResult extends RenderResult {
  *
  * @example
  * ```tsx
- * import { Metric, useTapQuery } from '@tappify/extension-sdk';
+ * import { useTapQuery } from '@tappify/extension-sdk';
+ * import { Metric } from '@tappify/extension-sdk/ui';
  * import { renderWithTap } from '@tappify/extension-sdk/testing';
  * import { screen, waitFor } from '@testing-library/react';
  * import { expect, it } from 'vitest';

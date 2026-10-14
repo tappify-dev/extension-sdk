@@ -1,3 +1,7 @@
+/**
+ * @module index
+ * @mergeModuleWith <project>
+ */
 export { useTap } from './client/context';
 export { TAP_ERROR_CODES, TapError, TapServerError } from './client/errors';
 export type { TapErrorCode } from './client/errors';

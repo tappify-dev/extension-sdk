@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 import { cn } from './cn';
 
+/** Visual emphasis available for a {@link Button}. */
 export type ButtonVariant =
   | 'primary'
   | 'secondary'
@@ -8,6 +9,7 @@ export type ButtonVariant =
   | 'inverse'
   | 'destructive';
 
+/** Density and icon-only sizes available for a {@link Button}. */
 export type ButtonSize =
   | 'default'
   | 'compact'
@@ -19,6 +21,7 @@ export type ButtonSize =
   | 'icon-sm'
   | 'icon-lg';
 
+/** Props for the One UI button primitive. */
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   'data-slot'?: string;
   loading?: boolean;
@@ -26,6 +29,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
 }
 
+/** Renders an accessible One UI button with loading, size, and tone states. */
 export function Button({
   'aria-busy': ariaBusy,
   'data-slot': slot = 'button',

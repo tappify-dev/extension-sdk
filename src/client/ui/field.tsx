@@ -20,6 +20,7 @@ interface FieldContextValue {
 
 const FieldContext = createContext<FieldContextValue | null>(null);
 
+/** Connects a label, description, error, and control as one field. */
 export function Field({
   children,
   className,
@@ -67,6 +68,7 @@ export function Field({
   );
 }
 
+/** Labels the control in the containing {@link Field}. */
 export function FieldLabel({
   className,
   ...props
@@ -82,6 +84,7 @@ export function FieldLabel({
   );
 }
 
+/** Adds supporting text to the containing {@link Field}. */
 export function FieldDescription({
   className,
   ...props
@@ -97,6 +100,7 @@ export function FieldDescription({
   );
 }
 
+/** Adds an accessible validation error to the containing {@link Field}. */
 export function FieldError({
   className,
   ...props
@@ -137,6 +141,7 @@ function fieldControlProps(
   } as const;
 }
 
+/** Renders a One UI text input and consumes optional field context. */
 export const Input = forwardRef<
   HTMLInputElement,
   ComponentPropsWithoutRef<'input'>
@@ -162,6 +167,7 @@ export const Input = forwardRef<
   );
 });
 
+/** Renders a One UI multiline input and consumes optional field context. */
 export const Textarea = forwardRef<
   HTMLTextAreaElement,
   ComponentPropsWithoutRef<'textarea'>
@@ -187,6 +193,7 @@ export const Textarea = forwardRef<
   );
 });
 
+/** Renders a One UI native select and consumes optional field context. */
 export const Select = forwardRef<
   HTMLSelectElement,
   ComponentPropsWithoutRef<'select'>
@@ -212,6 +219,7 @@ export const Select = forwardRef<
   );
 });
 
+/** Props for the One UI checkbox primitive. */
 export interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'type'
@@ -219,6 +227,7 @@ export interface CheckboxProps extends Omit<
   indeterminate?: boolean;
 }
 
+/** Renders a native checkbox with checked and indeterminate visual states. */
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   function Checkbox(
     {

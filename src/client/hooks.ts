@@ -33,7 +33,8 @@ const selectContext = (tap: Tap): Record<string, unknown> => tap.context;
  *
  * @example
  * ```tsx
- * import { EmptyState, useTapAuth } from '@tappify/extension-sdk';
+ * import { useTapAuth } from '@tappify/extension-sdk';
+ * import { EmptyState } from '@tappify/extension-sdk/ui';
  *
  * function RevenuePanel() {
  *   const auth = useTapAuth();
@@ -136,17 +137,30 @@ export function useTapTheme(): Tap['theme'] {
  *
  * @example
  * ```tsx
- * import { Table, useTapSize } from '@tappify/extension-sdk';
+ * import { useTapSize } from '@tappify/extension-sdk';
+ * import {
+ *   Table,
+ *   TableBody,
+ *   TableCell,
+ *   TableHead,
+ *   TableHeader,
+ *   TableRow,
+ * } from '@tappify/extension-sdk/ui';
  *
  * function Keywords({ rows }: { rows: { term: string }[] }) {
  *   const size = useTapSize();
  *   const shown = size === 'slot' ? rows.slice(0, 3) : rows;
  *   return (
- *     <Table
- *       columns={[{ key: 'term', label: 'Term' }]}
- *       rows={shown}
- *       rowKey={row => row.term}
- *     />
+ *     <Table>
+ *       <TableHeader>
+ *         <TableRow variant="header"><TableHead>Term</TableHead></TableRow>
+ *       </TableHeader>
+ *       <TableBody>
+ *         {shown.map(row => (
+ *           <TableRow key={row.term}><TableCell>{row.term}</TableCell></TableRow>
+ *         ))}
+ *       </TableBody>
+ *     </Table>
  *   );
  * }
  * ```
@@ -218,7 +232,8 @@ export function useTapContext(): Record<string, unknown> {
  *
  * @example
  * ```tsx
- * import { Button, useTapState } from '@tappify/extension-sdk';
+ * import { useTapState } from '@tappify/extension-sdk';
+ * import { Button } from '@tappify/extension-sdk/ui';
  *
  * function StepPicker() {
  *   const [step, setStep] = useTapState<string>('selectedStep');

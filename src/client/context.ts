@@ -33,7 +33,8 @@ export const TapContext: Context<Tap | null> = resolveContext();
  *
  * @example
  * ```tsx
- * import { Button, useTap } from '@tappify/extension-sdk';
+ * import { useTap } from '@tappify/extension-sdk';
+ * import { Button } from '@tappify/extension-sdk/ui';
  *
  * function CopyId() {
  *   const tap = useTap();

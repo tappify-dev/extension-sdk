@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from './cn';
 
+/** Provides a horizontally scrollable semantic table surface. */
 export function Table({
   className,
   ...props
@@ -16,6 +17,7 @@ export function Table({
   );
 }
 
+/** Groups table header rows. */
 export function TableHeader({
   className,
   ...props
@@ -29,6 +31,7 @@ export function TableHeader({
   );
 }
 
+/** Groups table body rows. */
 export function TableBody({
   className,
   ...props
@@ -42,10 +45,12 @@ export function TableBody({
   );
 }
 
+/** Props for a semantic table row. */
 export interface TableRowProps extends ComponentPropsWithoutRef<'tr'> {
   variant?: 'header' | 'body';
 }
 
+/** Renders a table row with header or body styling. */
 export function TableRow({
   className,
   variant = 'body',
@@ -61,6 +66,7 @@ export function TableRow({
   );
 }
 
+/** Renders a semantic table column heading. */
 export function TableHead({
   className,
   ...props
@@ -74,6 +80,7 @@ export function TableHead({
   );
 }
 
+/** Renders a semantic table data cell. */
 export function TableCell({
   className,
   ...props

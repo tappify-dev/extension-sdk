@@ -1,10 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from './cn';
 
+/** Props for a One UI card surface. */
 export interface CardProps extends ComponentPropsWithoutRef<'div'> {
   size?: 'default' | 'sm';
 }
 
+/** Provides the root surface for compound card parts. */
 export function Card({ className, size = 'default', ...props }: CardProps) {
   return (
     <div
@@ -16,6 +18,7 @@ export function Card({ className, size = 'default', ...props }: CardProps) {
   );
 }
 
+/** Lays out a card title, description, and optional action. */
 export function CardHeader({
   className,
   ...props
@@ -29,6 +32,7 @@ export function CardHeader({
   );
 }
 
+/** Renders a card's primary heading. */
 export function CardTitle({
   className,
   ...props
@@ -42,6 +46,7 @@ export function CardTitle({
   );
 }
 
+/** Renders supporting copy below a card title. */
 export function CardDescription({
   className,
   ...props
@@ -55,6 +60,7 @@ export function CardDescription({
   );
 }
 
+/** Positions a control in the card header. */
 export function CardAction({
   className,
   ...props
@@ -68,6 +74,7 @@ export function CardAction({
   );
 }
 
+/** Wraps the main contents of a card. */
 export function CardContent({
   className,
   ...props
@@ -81,6 +88,7 @@ export function CardContent({
   );
 }
 
+/** Wraps actions or metadata at the bottom of a card. */
 export function CardFooter({
   className,
   ...props

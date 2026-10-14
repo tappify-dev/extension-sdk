@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from './cn';
 
+/** Props for an extension page heading with optional actions. */
 export interface PageHeaderProps extends Omit<
   ComponentPropsWithoutRef<'header'>,
   'title'
@@ -10,6 +11,7 @@ export interface PageHeaderProps extends Omit<
   title: ReactNode;
 }
 
+/** Introduces a page with a title, supporting copy, and optional actions. */
 export function PageHeader({
   actions,
   className,

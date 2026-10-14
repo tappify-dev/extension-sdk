@@ -11,20 +11,24 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 interface Entry {
-  entryPoint: string;
+  entryPoints: string[];
   directory: string;
   label: string;
 }
 
 const ENTRIES: Entry[] = [
   {
-    entryPoint: 'src/index.ts',
+    entryPoints: ['src/index.ts', 'src/ui.ts'],
     directory: 'frontend-api',
     label: 'Frontend API',
   },
-  { entryPoint: 'src/server.ts', directory: 'server-api', label: 'Server API' },
   {
-    entryPoint: 'src/testing/index.ts',
+    entryPoints: ['src/server.ts'],
+    directory: 'server-api',
+    label: 'Server API',
+  },
+  {
+    entryPoints: ['src/testing/index.ts'],
     directory: 'testing-api',
     label: 'Testing API',
   },
@@ -114,7 +118,7 @@ for (const entry of ENTRIES) {
 
   execFileSync(
     'pnpm',
-    ['exec', 'typedoc', '--entryPoints', entry.entryPoint, '--out', target],
+    ['exec', 'typedoc', '--entryPoints', ...entry.entryPoints, '--out', target],
     { cwd: root, stdio: 'inherit' },
   );
 

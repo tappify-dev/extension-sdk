@@ -19,6 +19,7 @@ import {
 } from './field';
 import { Inline } from './layout';
 
+/** Controls rendered by {@link SchemaForm} for supported schema properties. */
 export type SchemaFieldKind =
   | 'text'
   | 'textarea'
@@ -27,6 +28,7 @@ export type SchemaFieldKind =
   | 'boolean'
   | 'enum';
 
+/** Normalized presentation metadata for one JSON Schema property. */
 export interface SchemaField {
   name: string;
   label: string;
@@ -61,6 +63,7 @@ function fieldKind(property: Record<string, unknown>): SchemaFieldKind {
   return 'text';
 }
 
+/** Converts supported JSON Schema properties into ordered form fields. */
 export function schemaFields(schema: JsonSchema): SchemaField[] {
   if (typeof schema.properties !== 'object' || schema.properties === null)
     return [];
@@ -137,16 +140,20 @@ function validate(
   return errors;
 }
 
+/** Props for a JSON Schema-driven One UI form. */
 export interface SchemaFormProps<T> {
   schema: JsonSchema;
   value?: Partial<T>;
   submitLabel?: string;
   cancelLabel?: string;
   busy?: boolean;
+  /** Receives the cleaned, validated value when the form is submitted. */
   onSubmit: (value: T) => void | Promise<void>;
+  /** Called when the optional cancel action is selected. */
   onCancel?: () => void;
 }
 
+/** Renders supported JSON Schema properties as accessible One UI fields. */
 export function SchemaForm<T>({
   schema,
   value,

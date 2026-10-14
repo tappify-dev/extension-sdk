@@ -44,12 +44,15 @@ function useDialogPart(): DialogContextValue {
   return value;
 }
 
+/** Props for the controlled dialog root. */
 export interface DialogProps {
   children: ReactNode;
+  /** Called when the dialog requests an open-state change. */
   onOpenChange: (open: boolean) => void;
   open: boolean;
 }
 
+/** Coordinates a controlled, host-portaled modal dialog. */
 export function Dialog({
   children,
   onOpenChange,
@@ -132,6 +135,7 @@ export function Dialog({
   );
 }
 
+/** Supported dialog widths and purpose-built layouts. */
 export type DialogSize =
   | 'compact'
   | 'default'
@@ -140,11 +144,13 @@ export type DialogSize =
   | 'large'
   | 'wide';
 
+/** Props for the modal surface rendered inside {@link Dialog}. */
 export interface DialogContentProps extends ComponentPropsWithoutRef<'div'> {
   size?: DialogSize;
   surface?: 'paper' | 'canvas';
 }
 
+/** Renders the accessible dialog surface and focus-trap boundary. */
 export function DialogContent({
   className,
   size = 'default',
@@ -168,6 +174,7 @@ export function DialogContent({
   );
 }
 
+/** Wraps a dialog title and description. */
 export function DialogHeader({
   className,
   ...props
@@ -181,6 +188,7 @@ export function DialogHeader({
   );
 }
 
+/** Labels the containing dialog. */
 export function DialogTitle({
   className,
   ...props
@@ -196,6 +204,7 @@ export function DialogTitle({
   );
 }
 
+/** Describes the containing dialog for assistive technology. */
 export function DialogDescription({
   className,
   ...props
@@ -211,6 +220,7 @@ export function DialogDescription({
   );
 }
 
+/** Wraps the main dialog content. */
 export function DialogBody({
   className,
   ...props
@@ -224,6 +234,7 @@ export function DialogBody({
   );
 }
 
+/** Wraps dialog actions. */
 export function DialogFooter({
   className,
   ...props
@@ -237,6 +248,7 @@ export function DialogFooter({
   );
 }
 
+/** Renders a button that requests closure of the containing dialog. */
 export function DialogClose({
   children = '×',
   ...props

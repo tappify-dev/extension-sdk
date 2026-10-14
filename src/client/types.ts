@@ -631,7 +631,8 @@ export interface TapInternals {
  *
  * @example
  * ```tsx
- * import { Metric, useTap } from '@tappify/extension-sdk';
+ * import { useTap } from '@tappify/extension-sdk';
+ * import { Metric } from '@tappify/extension-sdk/ui';
  *
  * function Installs({ count }: { count: number }) {
  *   const tap = useTap();

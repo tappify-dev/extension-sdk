@@ -225,7 +225,8 @@ function useHostQueryClient(): QueryClient {
  *
  * @example
  * ```tsx
- * import { Metric, useTapFilters, useTapQuery } from '@tappify/extension-sdk';
+ * import { useTapFilters, useTapQuery } from '@tappify/extension-sdk';
+ * import { Metric } from '@tappify/extension-sdk/ui';
  *
  * function Downloads() {
  *   const filters = useTapFilters();
@@ -241,19 +242,35 @@ function useHostQueryClient(): QueryClient {
  *
  * @example
  * ```tsx
- * import { Table, useTapQuery } from '@tappify/extension-sdk';
+ * import { useTapQuery } from '@tappify/extension-sdk';
+ * import {
+ *   Table,
+ *   TableBody,
+ *   TableCell,
+ *   TableHead,
+ *   TableHeader,
+ *   TableRow,
+ * } from '@tappify/extension-sdk/ui';
  *
  * function Keywords() {
  *   const keywords = useTapQuery({ kind: 'keywords' });
  *   return (
- *     <Table
- *       columns={[
- *         { key: 'term', label: 'Term' },
- *         { key: 'position', label: 'Rank', align: 'end' },
- *       ]}
- *       rows={keywords.data?.keywords ?? []}
- *       rowKey={keyword => keyword.id}
- *     />
+ *     <Table>
+ *       <TableHeader>
+ *         <TableRow variant="header">
+ *           <TableHead>Term</TableHead>
+ *           <TableHead>Rank</TableHead>
+ *         </TableRow>
+ *       </TableHeader>
+ *       <TableBody>
+ *         {(keywords.data?.keywords ?? []).map(keyword => (
+ *           <TableRow key={keyword.id}>
+ *             <TableCell>{keyword.term}</TableCell>
+ *             <TableCell>{keyword.position}</TableCell>
+ *           </TableRow>
+ *         ))}
+ *       </TableBody>
+ *     </Table>
  *   );
  * }
  * ```
@@ -305,7 +322,8 @@ export function useTapQuery<Q extends TapQuery>(
  *
  * @example
  * ```tsx
- * import { Button, ErrorState, useTapFilters, useTapServer } from '@tappify/extension-sdk';
+ * import { useTapFilters, useTapServer } from '@tappify/extension-sdk';
+ * import { Button, ErrorState } from '@tappify/extension-sdk/ui';
  *
  * function Summary() {
  *   const filters = useTapFilters();
@@ -404,7 +422,8 @@ function asSingleton<T>(handle: unknown, collection: string): TapSingleton<T> {
  *
  * @example
  * ```tsx
- * import { Button, useTapStorage } from '@tappify/extension-sdk';
+ * import { useTapStorage } from '@tappify/extension-sdk';
+ * import { Button } from '@tappify/extension-sdk/ui';
  *
  * function CompactToggle() {
  *   const preferences = useTapStorage('preferences');
