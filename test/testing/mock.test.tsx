@@ -10,7 +10,10 @@ import {
   useTapQuery,
   useTapStorage,
 } from '../../src/client/query';
-import { clearTapPortals } from '../../src/testing/environment';
+import {
+  clearTapPortals,
+  installHostTheme,
+} from '../../src/testing/environment';
 import {
   answerFixtureQuery,
   fixtureKeywords,
@@ -321,7 +324,7 @@ describe('renderWithTap', () => {
     );
   });
 
-  it('attaches the portal node so TapDialog has somewhere to render', () => {
+  it('attaches the portal node so SDK dialogs have somewhere to render', () => {
     const { mock, baseElement } = renderWithTap(<Widget />);
 
     expect(baseElement.contains(mock.portal)).toBe(true);
@@ -329,6 +332,36 @@ describe('renderWithTap', () => {
     clearTapPortals();
 
     expect(baseElement.contains(mock.portal)).toBe(false);
+  });
+
+  it('installs only the One UI host token contract', () => {
+    const root = document.createElement('div');
+    installHostTheme(root);
+    for (const token of [
+      '--bg-paper',
+      '--bg-canvas',
+      '--bg-light-gray',
+      '--fg-primary',
+      '--fg-sub',
+      '--divider',
+      '--lime',
+      '--deep-green',
+      '--danger',
+      '--on-accent',
+      '--font-one-ui',
+    ]) {
+      expect(root.style.getPropertyValue(token)).not.toBe('');
+    }
+    for (const token of [
+      '--tap-accent',
+      '--tap-radius',
+      '--fg-default',
+      '--fg-muted',
+      '--bg-raised',
+      '--bg-subtle',
+    ]) {
+      expect(root.style.getPropertyValue(token)).toBe('');
+    }
   });
 
   it('wires tap.invalidate() to the install and procedure prefixes', () => {

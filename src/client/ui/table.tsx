@@ -6,10 +6,10 @@ export function Table({
   ...props
 }: ComponentPropsWithoutRef<'table'>) {
   return (
-    <div className="tap-table-container" data-slot="table-container">
+    <div className="tap-ui-table-container" data-slot="table-container">
       <table
         {...props}
-        className={cn('tap-table', className)}
+        className={cn('tap-ui-table', className)}
         data-slot="table"
       />
     </div>

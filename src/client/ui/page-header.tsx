@@ -20,7 +20,7 @@ export function PageHeader({
   return (
     <header
       {...props}
-      className={cn('tap-page-header', className)}
+      className={cn('tap-ui-page-header', className)}
       data-slot="page-header"
     >
       <div className="tap-page-header__copy" data-slot="page-header-copy">

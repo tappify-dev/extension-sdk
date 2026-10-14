@@ -53,7 +53,7 @@ export interface SkeletonProps {
 
 export function Skeleton({ className, lines = 1, width }: SkeletonProps) {
   return (
-    <div className={cn('tap-skeleton', className)} data-slot="skeleton">
+    <div className={cn('tap-ui-skeleton', className)} data-slot="skeleton">
       {Array.from({ length: Math.max(0, lines) }, (_, index) => (
         <span
           className="tap-skeleton__line"
@@ -74,7 +74,7 @@ export interface EmptyStateProps {
 
 export function EmptyState({ action, description, title }: EmptyStateProps) {
   return (
-    <Stack className="tap-state" data-slot="empty-state" gap={12}>
+    <Stack className="tap-ui-state" data-slot="empty-state" gap={12}>
       <div className="tap-state__title">{title}</div>
       {description ? (
         <div className="tap-state__description">{description}</div>
@@ -99,7 +99,7 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <Stack
-      className="tap-state tap-state--error"
+      className="tap-ui-state tap-ui-state--error"
       data-slot="error-state"
       gap={12}
       role="alert"

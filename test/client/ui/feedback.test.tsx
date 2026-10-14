@@ -35,7 +35,10 @@ describe('data and feedback primitives', () => {
     expect(
       container.querySelectorAll('[data-slot="skeleton-line"]'),
     ).toHaveLength(3);
-    expect(container.firstChild).toHaveClass('tap-skeleton', 'custom-skeleton');
+    expect(container.firstChild).toHaveClass(
+      'tap-ui-skeleton',
+      'custom-skeleton',
+    );
     expect(container.querySelector('[data-slot="skeleton-line"]')).toHaveStyle({
       width: '60%',
     });

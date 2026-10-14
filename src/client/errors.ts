@@ -66,7 +66,7 @@ const CODE_SET = new Set<string>(TAP_ERROR_CODES);
  *
  * @example
  * ```tsx
- * import { TapError, TapErrorState, useTapQuery } from '@tappify/extension-sdk';
+ * import { TapError, ErrorState, useTapQuery } from '@tappify/extension-sdk';
  *
  * function Revenue() {
  *   const revenue = useTapQuery({
@@ -74,7 +74,7 @@ const CODE_SET = new Set<string>(TAP_ERROR_CODES);
  *     range: { from: '2026-09-01', to: '2026-09-08' },
  *   });
  *   if (TapError.is(revenue.error) && revenue.error.code === 'TAP_SCOPE_MISSING') {
- *     return <TapErrorState title="Revenue is not shared with this extension" />;
+ *     return <ErrorState title="Revenue is not shared with this extension" />;
  *   }
  *   return <span>{revenue.data?.mrr ?? 0}</span>;
  * }

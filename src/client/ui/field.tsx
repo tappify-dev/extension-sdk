@@ -46,7 +46,7 @@ export function Field({
   const hasError = items.some(
     child => isValidElement(child) && child.type === FieldError,
   );
-  const baseId = `tap-field-${generatedId.replace(/:/g, '')}`;
+  const baseId = `tap-ui-field-${generatedId.replace(/:/g, '')}`;
   const value: FieldContextValue = {
     controlId: customId ?? `${baseId}-control`,
     descriptionId: hasDescription ? `${baseId}-description` : undefined,
@@ -57,7 +57,7 @@ export function Field({
     <FieldContext.Provider value={value}>
       <div
         {...props}
-        className={cn('tap-field', className)}
+        className={cn('tap-ui-field', className)}
         data-invalid={hasError || undefined}
         data-slot="field"
       >
@@ -155,7 +155,7 @@ export const Input = forwardRef<
     <input
       {...props}
       {...fieldControlProps(field, id, describedBy, invalid)}
-      className={cn('tap-control tap-input', className)}
+      className={cn('tap-ui-control tap-input', className)}
       data-slot="input"
       ref={ref}
     />
@@ -180,7 +180,7 @@ export const Textarea = forwardRef<
     <textarea
       {...props}
       {...fieldControlProps(field, id, describedBy, invalid)}
-      className={cn('tap-control tap-textarea', className)}
+      className={cn('tap-ui-control tap-textarea', className)}
       data-slot="textarea"
       ref={ref}
     />
@@ -205,7 +205,7 @@ export const Select = forwardRef<
     <select
       {...props}
       {...fieldControlProps(field, id, describedBy, invalid)}
-      className={cn('tap-control tap-select', className)}
+      className={cn('tap-ui-control tap-select', className)}
       data-slot="select"
       ref={ref}
     />

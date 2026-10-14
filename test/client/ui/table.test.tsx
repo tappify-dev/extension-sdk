@@ -26,7 +26,7 @@ describe('Table', () => {
       </Table>,
     );
     const table = screen.getByRole('table', { name: 'Releases' });
-    expect(table).toHaveClass('tap-table', 'custom-table');
+    expect(table).toHaveClass('tap-ui-table', 'custom-table');
     expect(table.parentElement).toHaveAttribute('data-slot', 'table-container');
     expect(screen.getAllByRole('rowgroup')[0]).toHaveAttribute(
       'data-slot',

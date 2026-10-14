@@ -631,11 +631,11 @@ export interface TapInternals {
  *
  * @example
  * ```tsx
- * import { TapStat, useTap } from '@tappify/extension-sdk';
+ * import { Metric, useTap } from '@tappify/extension-sdk';
  *
  * function Installs({ count }: { count: number }) {
  *   const tap = useTap();
- *   return <TapStat label="Installs" value={tap.format.number(count)} />;
+ *   return <Metric label="Installs" value={tap.format.number(count)} />;
  * }
  * ```
  */

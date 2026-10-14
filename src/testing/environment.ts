@@ -1,23 +1,19 @@
 const HOST_THEME: Record<string, string> = {
-  '--bg-base': '#ffffff',
-  '--bg-subtle': 'rgba(18, 18, 18, 0.04)',
-  '--bg-raised': '#ffffff',
-  '--fg-default': '#121212',
-  '--fg-muted': 'rgba(18, 18, 18, 0.6)',
-  '--fg-inverse': '#ffffff',
-  '--tap-accent': '#4f46e5',
-  '--tap-accent-fg': '#ffffff',
-  '--tap-danger': '#b42318',
-  '--tap-scrim': 'rgba(18, 18, 18, 0.7)',
-  '--tap-radius': '6px',
-  '--tap-space': '8px',
-  '--font-sans': 'system-ui, -apple-system, sans-serif',
-  '--font-mono': 'ui-monospace, SFMono-Regular, monospace',
-  '--divider': 'rgba(18, 18, 18, 0.12)',
+  '--bg-paper': '#fdfdfd',
+  '--bg-canvas': '#f2f3ee',
+  '--bg-light-gray': '#edf1f5',
+  '--fg-primary': '#121212',
+  '--fg-sub': 'rgba(18, 18, 18, 0.7)',
+  '--divider': '#d5d7da',
+  '--lime': '#b4d773',
+  '--deep-green': '#234e20',
+  '--danger': '#b42318',
+  '--on-accent': '#ffffff',
+  '--font-one-ui': "'Inter Variable', 'Inter', system-ui, sans-serif",
 };
 
 /**
- * Sets the host's fifteen CSS variables on an element, so a component renders in
+ * Sets the host's eleven One UI CSS variables on an element, so a component renders in
  * a test the way it renders in the host.
  *
  * @remarks

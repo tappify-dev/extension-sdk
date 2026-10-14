@@ -196,7 +196,7 @@ export function SchemaForm<T>({
 
         if (field.kind === 'boolean') {
           return (
-            <Field className="tap-field--checkbox" key={field.name}>
+            <Field className="tap-ui-field--checkbox" key={field.name}>
               <FieldLabel className="tap-checkbox-row">
                 <Checkbox
                   checked={raw === true}

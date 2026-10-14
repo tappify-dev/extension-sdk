@@ -41,7 +41,7 @@ export interface RenderWithTapResult extends RenderResult {
  * It builds a mock from the same options `createTapMock` takes unless you pass
  * `mock`, wraps the component in the host provider and a `QueryClient` that does
  * not retry and does not cache between tests, and appends the mock's portal to the
- * rendered document so `TapDialog` has somewhere to go. It rewires
+ * rendered document so SDK dialogs have somewhere to go. It rewires
  * `tap.invalidate` onto that client, so a component calling it drops the right
  * cache entries. Scopes default to all of them, so pass `scopes` to cover the
  * refused path; a `handler` has to be built with `jwks: await testJwks()` and the
@@ -52,7 +52,7 @@ export interface RenderWithTapResult extends RenderResult {
  *
  * @example
  * ```tsx
- * import { TapStat, useTapQuery } from '@tappify/extension-sdk';
+ * import { Metric, useTapQuery } from '@tappify/extension-sdk';
  * import { renderWithTap } from '@tappify/extension-sdk/testing';
  * import { screen, waitFor } from '@testing-library/react';
  * import { expect, it } from 'vitest';
@@ -62,7 +62,7 @@ export interface RenderWithTapResult extends RenderResult {
  *     kind: 'crashes',
  *     range: { from: '2026-09-01', to: '2026-09-08' },
  *   });
- *   return <TapStat label="Issues" value={crashes.data?.issues.length ?? 0} />;
+ *   return <Metric label="Issues" value={crashes.data?.issues.length ?? 0} />;
  * }
  *
  * it('renders the issues the fixtures answer with', async () => {

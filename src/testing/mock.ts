@@ -100,7 +100,7 @@ export interface TapMock {
   /** The bridge itself, which `renderWithTap` puts above the component. */
   tap: Tap;
   calls: TapMockCalls;
-  /** The node `TapDialog` renders into, appended to the document by `renderWithTap`. */
+  /** The node SDK dialogs render into, appended to the document by `renderWithTap`. */
   portal: HTMLElement;
   /** What a collection holds now, or just the one document under `documentId`. */
   documents(collection: string, documentId?: string): unknown[];

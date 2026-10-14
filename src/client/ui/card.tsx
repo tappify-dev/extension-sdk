@@ -9,7 +9,7 @@ export function Card({ className, size = 'default', ...props }: CardProps) {
   return (
     <div
       {...props}
-      className={cn('tap-card', className)}
+      className={cn('tap-ui-card', className)}
       data-size={size}
       data-slot="card"
     />

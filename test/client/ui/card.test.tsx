@@ -28,7 +28,10 @@ describe('Card', () => {
 
     expect(screen.getByTestId('card')).toHaveAttribute('data-slot', 'card');
     expect(screen.getByTestId('card')).toHaveAttribute('data-size', 'sm');
-    expect(screen.getByTestId('card')).toHaveClass('tap-card', 'custom-card');
+    expect(screen.getByTestId('card')).toHaveClass(
+      'tap-ui-card',
+      'custom-card',
+    );
     expect(screen.getByTestId('header')).toHaveAttribute(
       'data-slot',
       'card-header',

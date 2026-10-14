@@ -33,12 +33,12 @@ const selectContext = (tap: Tap): Record<string, unknown> => tap.context;
  *
  * @example
  * ```tsx
- * import { TapEmptyState, useTapAuth } from '@tappify/extension-sdk';
+ * import { EmptyState, useTapAuth } from '@tappify/extension-sdk';
  *
  * function RevenuePanel() {
  *   const auth = useTapAuth();
  *   if (!auth.can('revenue:read')) {
- *     return <TapEmptyState title="Revenue is not shared with this extension" />;
+ *     return <EmptyState title="Revenue is not shared with this extension" />;
  *   }
  *   return <span>Signed in as {auth.user.id}</span>;
  * }
@@ -136,13 +136,13 @@ export function useTapTheme(): Tap['theme'] {
  *
  * @example
  * ```tsx
- * import { TapTable, useTapSize } from '@tappify/extension-sdk';
+ * import { Table, useTapSize } from '@tappify/extension-sdk';
  *
  * function Keywords({ rows }: { rows: { term: string }[] }) {
  *   const size = useTapSize();
  *   const shown = size === 'slot' ? rows.slice(0, 3) : rows;
  *   return (
- *     <TapTable
+ *     <Table
  *       columns={[{ key: 'term', label: 'Term' }]}
  *       rows={shown}
  *       rowKey={row => row.term}
@@ -218,14 +218,14 @@ export function useTapContext(): Record<string, unknown> {
  *
  * @example
  * ```tsx
- * import { TapButton, useTapState } from '@tappify/extension-sdk';
+ * import { Button, useTapState } from '@tappify/extension-sdk';
  *
  * function StepPicker() {
  *   const [step, setStep] = useTapState<string>('selectedStep');
  *   return (
- *     <TapButton onClick={() => setStep('install')}>
+ *     <Button onClick={() => setStep('install')}>
  *       {step ?? 'Pick a step'}
- *     </TapButton>
+ *     </Button>
  *   );
  * }
  * ```

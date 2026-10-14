@@ -118,7 +118,7 @@ export function Dialog({
       value={{ close, contentRef, descriptionId, titleId }}
     >
       <div
-        className="tap-dialog-overlay"
+        className="tap-ui-dialog-overlay"
         data-slot="dialog-overlay"
         onKeyDown={onKeyDown}
         onMouseDown={event => {
@@ -158,7 +158,7 @@ export function DialogContent({
       aria-describedby={props['aria-describedby'] ?? dialog.descriptionId}
       aria-labelledby={props['aria-labelledby'] ?? dialog.titleId}
       aria-modal="true"
-      className={cn('tap-dialog', className)}
+      className={cn('tap-ui-dialog', className)}
       data-size={size}
       data-slot="dialog-content"
       data-surface={surface}

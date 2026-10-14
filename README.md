@@ -26,7 +26,8 @@ The SDK requires Node.js 20 or newer and React 19.
 
 | Import                                  | Purpose                                                                |
 | --------------------------------------- | ---------------------------------------------------------------------- |
-| `@tappify/extension-sdk`                | React hooks, host types, query helpers, and UI components              |
+| `@tappify/extension-sdk`                | React hooks, host types, and query helpers                             |
+| `@tappify/extension-sdk/ui`             | One UI components and layout primitives                                |
 | `@tappify/extension-sdk/manifest`       | Manifest schema, validation, registry constants, and manifest types    |
 | `@tappify/extension-sdk/server`         | Request handler, token verification, events, and Node/Express adapters |
 | `@tappify/extension-sdk/vite`           | Vite and Module Federation configuration                               |
@@ -34,7 +35,7 @@ The SDK requires Node.js 20 or newer and React 19.
 | `@tappify/extension-sdk/testing/vitest` | Vitest matcher setup                                                   |
 | `@tappify/extension-sdk/testing/jest`   | Jest matcher setup                                                     |
 | `@tappify/extension-sdk/codegen`        | Manifest-driven TypeScript generation                                  |
-| `@tappify/extension-sdk/styles.css`     | Base styles for SDK UI components                                      |
+| `@tappify/extension-sdk/ui/styles.css`  | One UI component styles                                                |
 
 ## Build a contribution
 
@@ -44,14 +45,19 @@ available only when the manifest declares the corresponding scope.
 
 ```tsx
 import {
-  TapCard,
-  TapSkeleton,
-  TapStat,
   useTapFilters,
   useTapQuery,
   type TapWidgetProps,
 } from '@tappify/extension-sdk';
-import '@tappify/extension-sdk/styles.css';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Metric,
+  Skeleton,
+} from '@tappify/extension-sdk/ui';
+import '@tappify/extension-sdk/ui/styles.css';
 
 export default function DownloadsWidget(_props: TapWidgetProps) {
   const filters = useTapFilters();
@@ -62,21 +68,51 @@ export default function DownloadsWidget(_props: TapWidgetProps) {
   });
 
   return (
-    <TapCard title="Downloads">
-      {downloads.isLoading && <TapSkeleton lines={1} />}
-      {downloads.data && (
-        <TapStat
-          label="Total"
-          value={downloads.data.points.reduce(
-            (total, point) => total + point.value,
-            0,
-          )}
-        />
-      )}
-    </TapCard>
+    <Card>
+      <CardHeader>
+        <CardTitle>Downloads</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {downloads.isLoading && <Skeleton lines={1} />}
+        {downloads.data && (
+          <Metric
+            label="Total"
+            value={downloads.data.points.reduce(
+              (total, point) => total + point.value,
+              0,
+            )}
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 }
 ```
+
+## Migrating UI imports
+
+Version 2 replaces the legacy UI surface with One UI. Import frontend components
+from `@tappify/extension-sdk/ui` and load
+`@tappify/extension-sdk/ui/styles.css`. The package root remains the entry for
+hooks, host types, and query helpers.
+
+```tsx
+// Before
+import { TapButton, TapCard } from '@tappify/extension-sdk';
+import '@tappify/extension-sdk/styles.css';
+
+// After
+import { Button, Card } from '@tappify/extension-sdk/ui';
+import '@tappify/extension-sdk/ui/styles.css';
+```
+
+Removed names map as follows: `TapButton` → `Button`, `TapCard` → the compound
+`Card` parts, `TapPageHeader` → `PageHeader`, `TapSkeleton` → `Skeleton`,
+`TapEmptyState` → `EmptyState`, `TapErrorState` → `ErrorState`, `TapStat` →
+`Metric`, `TapInput` → `Field` with `Input` or `Textarea`, `TapSelect` → `Field`
+with `Select`, `TapTable` → the compound `Table` parts, `TapDialog` → the
+compound `Dialog` parts, `TapForm` → `SchemaForm`, and `formFields` →
+`schemaFields`. No compatibility aliases are retained.
 
 Add the SDK plugin to the extension's Vite config:
 

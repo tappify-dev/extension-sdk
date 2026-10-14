@@ -225,7 +225,7 @@ function useHostQueryClient(): QueryClient {
  *
  * @example
  * ```tsx
- * import { TapStat, useTapFilters, useTapQuery } from '@tappify/extension-sdk';
+ * import { Metric, useTapFilters, useTapQuery } from '@tappify/extension-sdk';
  *
  * function Downloads() {
  *   const filters = useTapFilters();
@@ -235,18 +235,18 @@ function useHostQueryClient(): QueryClient {
  *   );
  *   const points = downloads.data?.points ?? [];
  *   const total = points.reduce((sum, point) => sum + point.value, 0);
- *   return <TapStat label="Downloads" value={total} />;
+ *   return <Metric label="Downloads" value={total} />;
  * }
  * ```
  *
  * @example
  * ```tsx
- * import { TapTable, useTapQuery } from '@tappify/extension-sdk';
+ * import { Table, useTapQuery } from '@tappify/extension-sdk';
  *
  * function Keywords() {
  *   const keywords = useTapQuery({ kind: 'keywords' });
  *   return (
- *     <TapTable
+ *     <Table
  *       columns={[
  *         { key: 'term', label: 'Term' },
  *         { key: 'position', label: 'Rank', align: 'end' },
@@ -305,7 +305,7 @@ export function useTapQuery<Q extends TapQuery>(
  *
  * @example
  * ```tsx
- * import { TapButton, TapErrorState, useTapFilters, useTapServer } from '@tappify/extension-sdk';
+ * import { Button, ErrorState, useTapFilters, useTapServer } from '@tappify/extension-sdk';
  *
  * function Summary() {
  *   const filters = useTapFilters();
@@ -315,9 +315,9 @@ export function useTapQuery<Q extends TapQuery>(
  *     { invalidateOn: ['settings.changed'] },
  *   );
  *   if (summary.error !== null) {
- *     return <TapErrorState title="The summary did not load" description={summary.error.message} />;
+ *     return <ErrorState title="The summary did not load" description={summary.error.message} />;
  *   }
- *   return <TapButton loading={summary.isLoading} onClick={summary.refetch}>Refresh</TapButton>;
+ *   return <Button loading={summary.isLoading} onClick={summary.refetch}>Refresh</Button>;
  * }
  * ```
  */
@@ -404,17 +404,17 @@ function asSingleton<T>(handle: unknown, collection: string): TapSingleton<T> {
  *
  * @example
  * ```tsx
- * import { TapButton, useTapStorage } from '@tappify/extension-sdk';
+ * import { Button, useTapStorage } from '@tappify/extension-sdk';
  *
  * function CompactToggle() {
  *   const preferences = useTapStorage('preferences');
  *   return (
- *     <TapButton
+ *     <Button
  *       loading={preferences.isLoading}
  *       onClick={() => void preferences.patch({ compact: true })}
  *     >
  *       Compact
- *     </TapButton>
+ *     </Button>
  *   );
  * }
  * ```

@@ -23,7 +23,7 @@ describe('PageHeader', () => {
 
     const header = screen.getByRole('banner');
     expect(header).toHaveAttribute('data-slot', 'page-header');
-    expect(header).toHaveClass('tap-page-header', 'custom-header');
+    expect(header).toHaveClass('tap-ui-page-header', 'custom-header');
     expect(screen.getByText('Subscription performance')).toHaveAttribute(
       'data-slot',
       'page-header-description',

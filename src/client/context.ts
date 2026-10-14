@@ -33,14 +33,14 @@ export const TapContext: Context<Tap | null> = resolveContext();
  *
  * @example
  * ```tsx
- * import { TapButton, useTap } from '@tappify/extension-sdk';
+ * import { Button, useTap } from '@tappify/extension-sdk';
  *
  * function CopyId() {
  *   const tap = useTap();
  *   return (
- *     <TapButton onClick={() => void tap.ui.copy(tap.project.id)}>
+ *     <Button onClick={() => void tap.ui.copy(tap.project.id)}>
  *       Copy project id
- *     </TapButton>
+ *     </Button>
  *   );
  * }
  * ```
