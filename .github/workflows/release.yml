@@ -21,7 +21,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Prepare release branches
+        env:
+          RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # semantic-release resolves tags against local release branch refs.
+          git fetch --tags origin \
+            '+refs/heads/main:refs/heads/main' \
+            '+refs/heads/develop:refs/heads/develop'
+          # Keep the triggering branch attached at the commit that passed CI.
+          git checkout -B "$RELEASE_BRANCH" "$RELEASE_SHA"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -47,8 +59,14 @@ jobs:
       # No NPM_TOKEN: publishing authenticates via GitHub OIDC (trusted
       # publisher configured on npmjs). id-token: write is granted above.
       - name: Release
-        run: npx semantic-release
+        # workflow_run defaults to main; pass the triggering run's identity.
+        run: |
+          GITHUB_REF="refs/heads/$RELEASE_BRANCH" \
+            GITHUB_SHA="$RELEASE_SHA" \
+            npx semantic-release
         env:
+          RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # semantic-release creates and pushes the version tag before it publishes.
