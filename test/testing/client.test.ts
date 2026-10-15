@@ -32,6 +32,86 @@ describe('signTestToken and testJwks', () => {
 });
 
 describe('createTestClient', () => {
+  it('sends typed work input within the existing envelope and returns its output', async () => {
+    const client = createTestClient(
+      {
+        extensionId: 'starter',
+        work: {
+          configure: request => ({
+            generation: request.input.generation,
+            configurationRevision: request.input.configurationRevision,
+            registeredWebhookIds: [
+              request.credentials.apiKey,
+              String(request.documents.settings?.refreshMinutes),
+              request.install.id,
+            ],
+          }),
+        },
+      },
+      {
+        credentials: { apiKey: 'key_1' },
+        documents: { settings: { refreshMinutes: 15 } },
+      },
+    );
+    expect(
+      await client.work('configure', {
+        idempotencyKey: 'configure_1',
+        occurredAt: '2026-10-15T12:00:00Z',
+        callbackUrl: 'https://tappify.test/hooks',
+        secret: 'secret',
+        generation: 2,
+        configurationRevision: 3,
+        containerId: 'container_1',
+        itemTypeId: 'issue',
+        fields: {},
+        openStatusId: 'todo',
+        resolvedStatusId: 'done',
+        commentsEnabled: true,
+      }),
+    ).toEqual({
+      generation: 2,
+      configurationRevision: 3,
+      registeredWebhookIds: ['key_1', '15', 'ins_test'],
+    });
+  });
+
+  it('keeps the deprecated status and resolve client routes usable', async () => {
+    const client = createTestClient({
+      extensionId: 'starter',
+      work: {
+        status: request => ({ status: request.input.id }),
+        resolve: request => ({ resolved: request.input.id }),
+      },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Assert SDK v2 compatibility.
+    expect(await client.work('status', { id: 'ISS-1' })).toEqual({
+      status: 'ISS-1',
+    });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Assert SDK v2 compatibility.
+    expect(await client.work('resolve', { id: 'ISS-1' })).toEqual({
+      resolved: 'ISS-1',
+    });
+  });
+
+  it('rethrows work handler errors with their wire code and status', async () => {
+    const client = createTestClient({
+      extensionId: 'starter',
+      work: {
+        disconnect: () => {
+          throw new TapServerError('CLEANUP_FAILED', 'Retry cleanup.', 503);
+        },
+      },
+    });
+    await expect(
+      client.work('disconnect', {
+        idempotencyKey: 'disconnect_1',
+        occurredAt: '2026-10-15T12:00:00Z',
+        generation: 2,
+        registeredWebhookIds: [],
+      }),
+    ).rejects.toMatchObject({ code: 'CLEANUP_FAILED', status: 503 });
+  });
+
   const options: TappifyHandlerOptions = {
     extensionId: 'starter',
     health: () => ({ ok: true }),

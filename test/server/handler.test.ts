@@ -87,6 +87,185 @@ async function call(
 }
 
 describe('createTappifyHandler', () => {
+  it.each([
+    'configure',
+    'list_containers',
+    'describe_container',
+    'create',
+    'attach',
+    'comment',
+    'set_status',
+    'hydrate_event',
+    'disconnect',
+    'status',
+    'resolve',
+  ])(
+    'routes work/%s with the generic authenticated envelope',
+    async operation => {
+      const response = await call(
+        {
+          work: {
+            [operation]: (request: Parameters<TappifyRouteHandler>[0]) => ({
+              operation,
+              input: request.input,
+              install: request.install,
+              context: request.context,
+              credentials: request.credentials,
+              documents: request.documents,
+              eventId: request.eventId,
+            }),
+          },
+        },
+        `/tappify/work/${operation}`,
+        { method: 'POST', body: body({ marker: operation }) },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        operation,
+        input: { marker: operation },
+        install: { id: 'ins_1', organizationId: 'org_1' },
+        context: { projectId: 'prj_1', filters: { country: 'all' } },
+        credentials: { apiKey: 'k' },
+        documents: { settings: { refreshMinutes: 15 } },
+        eventId: 'evt_1',
+      });
+    },
+  );
+
+  it('rejects unknown and unregistered work operations', async () => {
+    for (const operation of ['archive', 'configure']) {
+      const undeclared: string = 'archive';
+      const response = await call(
+        { work: { [undeclared]: () => ({ shouldNotRun: true }) } },
+        `/tappify/work/${operation}`,
+        { method: 'POST', body: body() },
+      );
+      expect(response.status).toBe(404);
+      expect(await response.json()).toMatchObject({
+        error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+      });
+    }
+  });
+
+  it('adapts a resolved target to legacy resolve only when set_status is absent', async () => {
+    const input = {
+      linkId: 'link_1',
+      externalItemId: 'ISS-1',
+      threadId: 'thread_1',
+      tappifyStatus: 'resolved',
+      providerStatusId: 'done',
+      idempotencyKey: 'status_1',
+      occurredAt: '2026-10-15T12:00:00Z',
+    };
+    const response = await call(
+      {
+        work: {
+          resolve: request => ({
+            legacy: request.input,
+            credentials: request.credentials,
+          }),
+        },
+      },
+      '/tappify/work/set_status',
+      { method: 'POST', body: body(input) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      legacy: { ...input, id: 'ISS-1' },
+      credentials: { apiKey: 'k' },
+    });
+  });
+
+  it('does not resolve an open target through the legacy handler', async () => {
+    const response = await call(
+      {
+        work: {
+          resolve: () => {
+            throw new Error('Legacy handler must not run');
+          },
+        },
+      },
+      '/tappify/work/set_status',
+      {
+        method: 'POST',
+        body: body({ tappifyStatus: 'open', externalItemId: 'ISS-1' }),
+      },
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+  });
+
+  it('prefers the modern status handler over legacy resolve', async () => {
+    const response = await call(
+      {
+        work: {
+          set_status: request => ({
+            status: {
+              id: request.input.providerStatusId,
+              label: 'Done',
+              stage: 'done',
+            },
+          }),
+          resolve: () => {
+            throw new Error('Legacy handler must not run');
+          },
+        },
+      },
+      '/tappify/work/set_status',
+      {
+        method: 'POST',
+        body: body({ tappifyStatus: 'resolved', providerStatusId: 'done' }),
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: { id: 'done', label: 'Done', stage: 'done' },
+    });
+  });
+
+  it.each(['vendor', 'unexpected'])(
+    'preserves a %s modern status failure without falling back',
+    async failure => {
+      let legacyCalls = 0;
+      const response = await call(
+        {
+          work: {
+            set_status: () => {
+              if (failure === 'vendor')
+                throw new TapServerError(
+                  'STATUS_CONFLICT',
+                  'Refresh the item.',
+                  409,
+                );
+              throw new Error('private provider failure');
+            },
+            resolve: () => {
+              legacyCalls += 1;
+              return { legacy: true };
+            },
+          },
+        },
+        '/tappify/work/set_status',
+        {
+          method: 'POST',
+          body: body({ tappifyStatus: 'resolved', externalItemId: 'ISS-1' }),
+        },
+      );
+      expect(response.status).toBe(failure === 'vendor' ? 409 : 500);
+      expect(await response.json()).toMatchObject({
+        error: {
+          code:
+            failure === 'vendor'
+              ? 'STATUS_CONFLICT'
+              : SERVER_ERROR_CODES.INTERNAL_ERROR,
+        },
+      });
+      expect(legacyCalls).toBe(0);
+    },
+  );
+
   it('answers health without a token', async () => {
     const response = await call(
       { health: () => ({ ok: true, version: '1.0.0' }) },
@@ -252,7 +431,7 @@ describe('createTappifyHandler', () => {
       },
       actions: { send_push: () => ({ sent: 3 }) },
       context: { glossary: () => ({ summary: 'Funnel means…' }) },
-      work: { create: () => ({ id: 'ISS-1' }) },
+      work: { resolve: () => ({ id: 'ISS-1' }) },
       events: { 'release.shipped': vi.fn() },
     };
 
@@ -280,7 +459,7 @@ describe('createTappifyHandler', () => {
     expect((await call(options, '/tappify/context/glossary')).status).toBe(200);
     expect(
       (
-        await call(options, '/tappify/work/create', {
+        await call(options, '/tappify/work/resolve', {
           method: 'POST',
           body: body(),
         })

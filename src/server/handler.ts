@@ -5,6 +5,7 @@ import { SERVER_ERROR_CODES, type TapServerErrorCode } from './codes';
 import { verifyTappifyToken } from './token';
 import type {
   ContextBlock,
+  LegacyWorkHandlers,
   MentionItems,
   MetricsInput,
   MetricsResponse,
@@ -35,11 +36,16 @@ export type TappifyFetchHandler = (request: Request) => Promise<Response>;
 
 const MAX_BODY_BYTES = 1_048_576;
 
-const WORK_OPERATIONS: readonly WorkOperation[] = [
+const WORK_OPERATIONS: readonly (WorkOperation | keyof LegacyWorkHandlers)[] = [
+  'configure',
   'list_containers',
+  'describe_container',
   'create',
   'attach',
   'comment',
+  'set_status',
+  'hydrate_event',
+  'disconnect',
   'status',
   'resolve',
 ];
@@ -204,10 +210,20 @@ function resolveRoute(
   }
   if (head === 'work' && method === 'POST' && name !== undefined) {
     const operation = WORK_OPERATIONS.find(candidate => candidate === name);
-    return route(
-      operation === undefined ? undefined : options.work?.[operation],
-      bodyInput,
-    );
+    const handler =
+      operation === undefined ? undefined : options.work?.[operation];
+    if (operation === 'set_status' && handler === undefined) {
+      const input = readRecord(payload, 'input');
+      if (readText(input, 'tappifyStatus') === 'resolved') {
+        // SDK v2 resolve handlers conventionally read the provider item as id.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- SDK v2 compatibility adapter.
+        return route(options.work?.resolve, {
+          ...input,
+          id: readUnknown(input, 'externalItemId'),
+        });
+      }
+    }
+    return route(handler, bodyInput);
   }
   if (head === 'events' && method === 'POST') {
     const envelope = readRecord(payload, 'event');

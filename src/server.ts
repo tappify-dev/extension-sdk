@@ -27,3 +27,4 @@ export { createTappifyHandler } from './server/handler';
 export type { TappifyFetchHandler } from './server/handler';
 export { DEFAULT_JWKS_URL, verifyTappifyToken } from './server/token';
 export type * from './server/types';
+export type * from './server/work';

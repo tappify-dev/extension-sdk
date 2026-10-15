@@ -17,8 +17,8 @@ import type {
   TappifyHandlerOptions,
   TappifyHealth,
   TappifyInstall,
-  WorkOperation,
 } from '../server/types';
+import type { WorkOperationMap } from '../server/work';
 import {
   callEnvelope,
   DEFAULT_FILTERS,
@@ -157,7 +157,12 @@ export interface TestClient {
   /** Posts one Tappify event, which the handler answers with 204. */
   event(name: string, payload: Record<string, unknown>): Promise<void>;
   /** Calls one work operation. */
-  work(operation: WorkOperation, input: unknown): Promise<unknown>;
+  work<O extends keyof WorkOperationMap>(
+    operation: O,
+    input: WorkOperationMap[O]['input'],
+  ): Promise<WorkOperationMap[O]['output']>;
+  /** @deprecated Call set_status or describe_container using the current work protocol. */
+  work(operation: 'status' | 'resolve', input: unknown): Promise<unknown>;
   /**
    * Sends any method and path and returns the `Response`, for a test that asserts
    * on a status rather than a body.
@@ -313,8 +318,12 @@ export function createTestClient(
     event: async (name, payload) => {
       await call('POST', '/tappify/events', envelope({}, { name, payload }));
     },
-    work: (operation, input) =>
-      call('POST', `/tappify/work/${operation}`, envelope(input)),
+    work: (async (operation: string, input: unknown) =>
+      call(
+        'POST',
+        `/tappify/work/${operation}`,
+        envelope(input),
+      )) as TestClient['work'],
     raw: (method, path, body) =>
       send(method, path, body === undefined ? undefined : JSON.stringify(body)),
   };

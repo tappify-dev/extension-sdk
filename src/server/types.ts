@@ -13,6 +13,7 @@ import type {
   ToolId,
   ToolInput,
 } from '../client/types';
+import type { WorkOperationMap } from './work';
 
 /** Which install made the call, as the token's claims name it. */
 export interface TappifyInstall {
@@ -142,13 +143,15 @@ export interface ContextBlock {
 }
 
 /** The work-tracker operations a handler's `work` table can answer. */
-export type WorkOperation =
-  | 'list_containers'
-  | 'create'
-  | 'attach'
-  | 'comment'
-  | 'status'
-  | 'resolve';
+export type WorkOperation = keyof WorkOperationMap;
+
+/** SDK v2 compatibility routes, excluded from the current work protocol. */
+export interface LegacyWorkHandlers {
+  /** @deprecated Implement set_status and use describe_container for status metadata. */
+  status?: TappifyRouteHandler<Record<string, unknown>, unknown>;
+  /** @deprecated Implement set_status to support both resolving and reopening. */
+  resolve?: TappifyRouteHandler<Record<string, unknown>, unknown>;
+}
 
 /** The second argument of `verifyTappifyToken`. */
 export interface VerifyTokenOptions {
@@ -208,11 +211,16 @@ export interface TappifyHandlerOptions {
       TapHostEvents[E]
     >;
   };
-  /** One handler per work operation, answering `POST /tappify/work/<operation>`. */
+  /**
+   * One handler per work operation, answering `POST /tappify/work/<operation>`.
+   * If set_status is absent, a resolved target can invoke legacy resolve with
+   * id set to externalItemId. Its legacy result is returned unchanged; reopening
+   * needs set_status. Failures from a present set_status handler never fall back.
+   */
   work?: {
-    [O in WorkOperation]?: TappifyRouteHandler<
-      Record<string, unknown>,
-      unknown
+    [O in keyof WorkOperationMap]?: TappifyRouteHandler<
+      WorkOperationMap[O]['input'],
+      WorkOperationMap[O]['output']
     >;
-  };
+  } & LegacyWorkHandlers;
 }
