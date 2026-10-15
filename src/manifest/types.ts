@@ -197,23 +197,58 @@ export interface AiContribution {
   context?: ContextDeclaration[];
 }
 
+export type WorkDirection =
+  | 'none'
+  | 'to_provider'
+  | 'from_provider'
+  | 'two-way';
+
+export type WorkAuth =
+  | { method: 'oauth'; provider: string; scopes: string[] }
+  | { method: 'api_key'; fields: CredentialField[] };
+
 export interface WorkContribution {
   kind: 'tracker' | 'docs' | 'chat';
-  container: { label: string; list: string };
   creates: ('issue' | 'page' | 'message')[];
-  fields: {
+  identity: 'install' | 'user';
+  comments:
+    | 'two-way'
+    | 'none'
+    | {
+        direction: WorkDirection;
+        supportsEdits: false;
+        supportsDeletes: false;
+      };
+  status?: {
+    direction: WorkDirection;
+    webhook?: string;
+    map?: Record<'open' | 'in_progress' | 'done', string[]>;
+  };
+  attachments: ('image' | 'link')[];
+  auth: WorkAuth;
+  /** @deprecated resolved dynamically by describe_container */
+  container?: { label: string; list: string };
+  /** @deprecated resolved dynamically by describe_container */
+  fields?: {
     priority?: string[];
     labels?: boolean;
     assignee?: boolean;
     required: string[];
   };
-  attachments: ('image' | 'link')[];
+}
+
+/** @deprecated Migrate to WorkContribution during the SDK v2 compatibility window. */
+export interface LegacyWorkContribution extends Omit<
+  WorkContribution,
+  'auth' | 'container' | 'fields' | 'comments' | 'status'
+> {
+  container: NonNullable<WorkContribution['container']>;
+  fields: NonNullable<WorkContribution['fields']>;
   comments: 'two-way' | 'none';
   status?: {
     webhook: string;
     map: Record<'open' | 'in_progress' | 'done', string[]>;
   };
-  identity: 'user' | 'install';
 }
 
 export interface ExtensionListing {
@@ -248,7 +283,8 @@ export interface ExtensionManifest {
     connector?: ConnectorContribution;
     webhooks?: WebhookContribution[];
     ai?: AiContribution;
-    work?: WorkContribution;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Published v2 manifests retain the legacy contract.
+    work?: WorkContribution | LegacyWorkContribution;
   };
   server?: {
     baseUrl: string;

@@ -81,7 +81,7 @@
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 19,
+      "maxItems": 20,
       "type": "array",
       "items": {
         "type": "object",
@@ -94,6 +94,7 @@
               "analytics:read",
               "store.metadata:read",
               "reviews:read",
+              "review.threads:read",
               "crashes:read",
               "revenue:read",
               "metrics:write",
@@ -915,6 +916,7 @@
                       "analytics:read",
                       "store.metadata:read",
                       "reviews:read",
+                      "review.threads:read",
                       "crashes:read",
                       "revenue:read",
                       "metrics:write",
@@ -1150,172 +1152,481 @@
           "description": "What this extension offers the assistant: tools, mentions, actions, knowledge, skills, prompts and context providers."
         },
         "work": {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "enum": [
-                "tracker",
-                "docs",
-                "chat"
-              ],
-              "description": "What kind of destination this is."
-            },
-            "container": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "label": {
+                "kind": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 60,
-                  "description": "What you call a container, such as \"Project\", \"Space\" or \"Channel\". Owners read it when they pick one."
+                  "enum": [
+                    "tracker",
+                    "docs",
+                    "chat"
+                  ],
+                  "description": "What kind of destination this is."
                 },
-                "list": {
-                  "type": "string",
-                  "minLength": 1,
-                  "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
-                }
-              },
-              "required": [
-                "label",
-                "list"
-              ],
-              "additionalProperties": false,
-              "description": "Where items land, and how owners pick one."
-            },
-            "creates": {
-              "minItems": 1,
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "issue",
-                  "page",
-                  "message"
-                ]
-              },
-              "description": "What this destination can create."
-            },
-            "fields": {
-              "type": "object",
-              "properties": {
-                "priority": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "description": "Your own priority names, highest first."
-                },
-                "labels": {
-                  "type": "boolean",
-                  "description": "Whether items carry labels."
-                },
-                "assignee": {
-                  "type": "boolean",
-                  "description": "Whether items carry an assignee."
-                },
-                "required": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "description": "The fields an owner has to fill in before you can create."
-                }
-              },
-              "required": [
-                "required"
-              ],
-              "additionalProperties": false,
-              "description": "What a created item carries."
-            },
-            "attachments": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "image",
-                  "link"
-                ]
-              },
-              "description": "What can be attached to a created item."
-            },
-            "comments": {
-              "type": "string",
-              "enum": [
-                "two-way",
-                "none"
-              ],
-              "description": "Whether comments sync back and forth or not at all."
-            },
-            "status": {
-              "type": "object",
-              "properties": {
-                "webhook": {
-                  "type": "string",
-                  "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
-                  "description": "The event your server posts when an item changes status."
-                },
-                "map": {
+                "container": {
                   "type": "object",
                   "properties": {
-                    "open": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "Your own status names that mean not started."
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 60,
+                      "description": "What you call a container, such as \"Project\", \"Space\" or \"Channel\". Owners read it when they pick one."
                     },
-                    "in_progress": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "Your own status names that mean under way."
-                    },
-                    "done": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "Your own status names that mean finished."
+                    "list": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
                     }
                   },
                   "required": [
-                    "open",
-                    "in_progress",
-                    "done"
+                    "label",
+                    "list"
                   ],
                   "additionalProperties": false,
-                  "description": "Your status names, grouped into the three stages Tappify draws."
+                  "description": "Deprecated. Resolve containers dynamically with describe_container."
+                },
+                "creates": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "issue",
+                      "page",
+                      "message"
+                    ]
+                  },
+                  "description": "What this destination can create."
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "priority": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Your own priority names, highest first."
+                    },
+                    "labels": {
+                      "type": "boolean",
+                      "description": "Whether items carry labels."
+                    },
+                    "assignee": {
+                      "type": "boolean",
+                      "description": "Whether items carry an assignee."
+                    },
+                    "required": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The fields an owner has to fill in before you can create."
+                    }
+                  },
+                  "required": [
+                    "required"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Deprecated. Resolve fields dynamically with describe_container."
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "link"
+                    ]
+                  },
+                  "description": "What can be attached to a created item."
+                },
+                "comments": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "two-way",
+                        "none"
+                      ],
+                      "description": "Deprecated. Declare a comments capability object."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "to_provider",
+                            "from_provider",
+                            "two-way"
+                          ]
+                        },
+                        "supportsEdits": {
+                          "type": "boolean",
+                          "const": false
+                        },
+                        "supportsDeletes": {
+                          "type": "boolean",
+                          "const": false
+                        }
+                      },
+                      "required": [
+                        "direction",
+                        "supportsEdits",
+                        "supportsDeletes"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "direction": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "to_provider",
+                        "from_provider",
+                        "two-way"
+                      ]
+                    },
+                    "webhook": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+                    },
+                    "map": {
+                      "type": "object",
+                      "properties": {
+                        "open": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean not started."
+                        },
+                        "in_progress": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean under way."
+                        },
+                        "done": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean finished."
+                        }
+                      },
+                      "required": [
+                        "open",
+                        "in_progress",
+                        "done"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Deprecated. Resolve statuses dynamically with describe_container."
+                    }
+                  },
+                  "required": [
+                    "direction"
+                  ],
+                  "additionalProperties": false
+                },
+                "identity": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "install"
+                  ],
+                  "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
+                },
+                "auth": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "const": "oauth"
+                        },
+                        "provider": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "The OAuth provider identifier."
+                        },
+                        "scopes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "The scopes requested from the provider."
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "provider",
+                        "scopes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "const": "api_key"
+                        },
+                        "fields": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9_]*$",
+                                "description": "The key your server reads this value back as."
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60,
+                                "description": "The label owners read above the input."
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "text",
+                                  "password",
+                                  "textarea",
+                                  "file",
+                                  "select"
+                                ],
+                                "description": "How the input is drawn to the owner."
+                              },
+                              "required": {
+                                "type": "boolean",
+                                "description": "Whether owners have to fill it in before the install works."
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "description": "The choices offered, for a `select` field."
+                              },
+                              "help": {
+                                "type": "string",
+                                "maxLength": 200,
+                                "description": "The hint drawn under the input."
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "label",
+                              "type",
+                              "required"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "fields"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ],
+                  "description": "How owners authenticate the work destination."
                 }
               },
               "required": [
-                "webhook",
-                "map"
+                "kind",
+                "creates",
+                "attachments",
+                "comments",
+                "identity",
+                "auth"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "tracker",
+                    "docs",
+                    "chat"
+                  ],
+                  "description": "What kind of destination this is."
+                },
+                "container": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 60,
+                      "description": "What you call a container, such as \"Project\", \"Space\" or \"Channel\". Owners read it when they pick one."
+                    },
+                    "list": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "list"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Where items land, and how owners pick one."
+                },
+                "creates": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "issue",
+                      "page",
+                      "message"
+                    ]
+                  },
+                  "description": "What this destination can create."
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "priority": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Your own priority names, highest first."
+                    },
+                    "labels": {
+                      "type": "boolean",
+                      "description": "Whether items carry labels."
+                    },
+                    "assignee": {
+                      "type": "boolean",
+                      "description": "Whether items carry an assignee."
+                    },
+                    "required": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The fields an owner has to fill in before you can create."
+                    }
+                  },
+                  "required": [
+                    "required"
+                  ],
+                  "additionalProperties": false,
+                  "description": "What a created item carries."
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "link"
+                    ]
+                  },
+                  "description": "What can be attached to a created item."
+                },
+                "comments": {
+                  "type": "string",
+                  "enum": [
+                    "two-way",
+                    "none"
+                  ],
+                  "description": "Whether comments sync back and forth or not at all."
+                },
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "webhook": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+                      "description": "The event your server posts when an item changes status."
+                    },
+                    "map": {
+                      "type": "object",
+                      "properties": {
+                        "open": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean not started."
+                        },
+                        "in_progress": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean under way."
+                        },
+                        "done": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Your own status names that mean finished."
+                        }
+                      },
+                      "required": [
+                        "open",
+                        "in_progress",
+                        "done"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Your status names, grouped into the three stages Tappify draws."
+                    }
+                  },
+                  "required": [
+                    "webhook",
+                    "map"
+                  ],
+                  "additionalProperties": false,
+                  "description": "How status travels back from your system."
+                },
+                "identity": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "install"
+                  ],
+                  "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
+                }
+              },
+              "required": [
+                "kind",
+                "container",
+                "creates",
+                "fields",
+                "attachments",
+                "comments",
+                "identity"
               ],
               "additionalProperties": false,
-              "description": "How status travels back from your system."
-            },
-            "identity": {
-              "type": "string",
-              "enum": [
-                "user",
-                "install"
-              ],
-              "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
+              "description": "Deprecated SDK v2 work declaration. Migrate to work capabilities and auth."
             }
-          },
-          "required": [
-            "kind",
-            "container",
-            "creates",
-            "fields",
-            "attachments",
-            "comments",
-            "identity"
           ],
-          "additionalProperties": false,
-          "description": "The work destination this extension creates issues, pages or messages in. Needs the `work:create` and `work:sync` scopes."
+          "description": "The work destination this extension creates issues, pages or messages in. Needs `review.threads:read` and `work:create`; active comment or status sync also needs `work:sync`."
         }
       },
       "additionalProperties": false,

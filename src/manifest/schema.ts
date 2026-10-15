@@ -15,6 +15,7 @@ import type {
   ExtensionManifest,
   ManifestIssue,
   ManifestValidation,
+  WorkDirection,
 } from './types';
 
 const SLUG = /^[a-z][a-z0-9-]{2,39}$/;
@@ -651,7 +652,7 @@ const aiContribution = z
 const statusNames = (stage: string) =>
   z.array(z.string()).describe(`Your own status names that mean ${stage}.`);
 
-const workContribution = z
+const legacyWorkContribution = z
   .object({
     kind: z
       .enum(['tracker', 'docs', 'chat'])
@@ -730,6 +731,80 @@ const workContribution = z
       ),
   })
   .strict();
+
+const workDirection = z.enum([
+  'none',
+  'to_provider',
+  'from_provider',
+  'two-way',
+]);
+
+const workAuth = z.discriminatedUnion('method', [
+  z
+    .object({
+      method: z.literal('oauth'),
+      provider: z.string().min(1).describe('The OAuth provider identifier.'),
+      scopes: z
+        .array(z.string())
+        .describe('The scopes requested from the provider.'),
+    })
+    .strict(),
+  z
+    .object({
+      method: z.literal('api_key'),
+      fields: z.array(credentialField).max(20),
+    })
+    .strict(),
+]);
+
+const currentWorkContribution = legacyWorkContribution.extend({
+  container: legacyWorkContribution.shape.container
+    .describe(
+      'Deprecated. Resolve containers dynamically with describe_container.',
+    )
+    .optional(),
+  fields: legacyWorkContribution.shape.fields
+    .describe('Deprecated. Resolve fields dynamically with describe_container.')
+    .optional(),
+  comments: z.union([
+    z
+      .enum(['two-way', 'none'])
+      .describe('Deprecated. Declare a comments capability object.'),
+    z
+      .object({
+        direction: workDirection,
+        supportsEdits: z.literal(false),
+        supportsDeletes: z.literal(false),
+      })
+      .strict(),
+  ]),
+  status: z
+    .object({
+      direction: workDirection,
+      webhook: z.string().regex(DOMAIN_EVENT).optional(),
+      map: z
+        .object({
+          open: statusNames('not started'),
+          in_progress: statusNames('under way'),
+          done: statusNames('finished'),
+        })
+        .strict()
+        .describe(
+          'Deprecated. Resolve statuses dynamically with describe_container.',
+        )
+        .optional(),
+    })
+    .strict()
+    .optional(),
+  auth: workAuth.describe('How owners authenticate the work destination.'),
+});
+
+const workContribution = z.union([
+  currentWorkContribution,
+  legacyWorkContribution.describe(
+    'Deprecated SDK v2 work declaration. Migrate to work capabilities and auth.',
+  ),
+]);
 
 // Every field is optional so a vendor can fill the listing one value at a time;
 // the public-visibility refinement below requires all five before publishing.
@@ -930,7 +1005,7 @@ const manifestObject = z
           .optional(),
         work: workContribution
           .describe(
-            'The work destination this extension creates issues, pages or messages in. Needs the `work:create` and `work:sync` scopes.',
+            'The work destination this extension creates issues, pages or messages in. Needs `review.threads:read` and `work:create`; active comment or status sync also needs `work:sync`.',
           )
           .optional(),
       })
@@ -1235,16 +1310,44 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
   }
 
   if (contributes.work) {
+    const work = contributes.work;
+    const legacy = isLegacyWork(work);
+    if (!legacy || !granted.has('reviews:read')) {
+      requireScope(
+        'review.threads:read',
+        ['scopes'],
+        'the work destination reads Review threads.',
+      );
+    }
     requireScope(
       'work:create',
       ['scopes'],
       'the work destination creates items.',
     );
-    requireScope(
-      'work:sync',
-      ['scopes'],
-      'the work destination syncs comments and status.',
-    );
+    const comments: WorkDirection =
+      typeof work.comments === 'string'
+        ? work.comments
+        : work.comments.direction;
+    const status: WorkDirection = work.status
+      ? 'direction' in work.status
+        ? work.status.direction
+        : 'from_provider'
+      : 'none';
+    if (comments !== 'none' || status !== 'none') {
+      requireScope(
+        'work:sync',
+        ['scopes'],
+        'the work destination syncs comments or status.',
+      );
+    }
+    if (work.identity === 'user') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['contributes', 'work', 'identity'],
+        message:
+          'Per-user work identity is not supported. Set identity to "install".',
+      });
+    }
   }
 
   const needsServer =
@@ -1355,4 +1458,62 @@ export function validateManifest(value: unknown): ManifestValidation {
   }));
 
   return { ok: false, issues };
+}
+
+function isLegacyWork(
+  work: NonNullable<ExtensionManifest['contributes']['work']>,
+): boolean {
+  return !('auth' in work);
+}
+
+/** Migration warnings are separate from validation during SDK v2 compatibility. */
+export function workManifestWarnings(
+  manifest: ExtensionManifest,
+): ManifestIssue[] {
+  const work = manifest.contributes.work;
+  if (!work) return [];
+
+  const warnings: ManifestIssue[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Migration diagnostics must inspect legacy fields.
+  if (work.container) {
+    warnings.push({
+      path: 'contributes.work.container',
+      message:
+        'Static work containers are deprecated. Resolve containers dynamically with describe_container.',
+    });
+  }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Migration diagnostics must inspect legacy fields.
+  if (work.fields) {
+    warnings.push({
+      path: 'contributes.work.fields',
+      message:
+        'Static work fields are deprecated. Resolve fields dynamically with describe_container.',
+    });
+  }
+  if (typeof work.comments === 'string') {
+    warnings.push({
+      path: 'contributes.work.comments',
+      message:
+        'String work comments are deprecated. Declare direction, supportsEdits: false and supportsDeletes: false.',
+    });
+  }
+  if (work.status?.map) {
+    warnings.push({
+      path: 'contributes.work.status.map',
+      message:
+        'Static work status maps are deprecated. Resolve statuses dynamically with describe_container.',
+    });
+  }
+  if (
+    isLegacyWork(work) &&
+    manifest.scopes.some(scope => scope.key === 'reviews:read') &&
+    !manifest.scopes.some(scope => scope.key === 'review.threads:read')
+  ) {
+    warnings.push({
+      path: 'scopes',
+      message:
+        'Using reviews:read for work is deprecated. Add review.threads:read for Review threads; reviews:read grants store-review access.',
+    });
+  }
+  return warnings;
 }

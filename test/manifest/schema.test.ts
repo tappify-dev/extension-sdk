@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
+import { workManifestWarnings } from '../../src/manifest';
 import {
   AI_INPUT_SCHEMA_MAX_BYTES,
   AI_SCHEMA_TEXT_MAX,
@@ -8,7 +9,10 @@ import {
   sdkMajors,
   validateManifest,
 } from '../../src/manifest/schema';
-import type { ExtensionManifest } from '../../src/manifest/types';
+import type {
+  ExtensionManifest,
+  WorkContribution,
+} from '../../src/manifest/types';
 
 function base(): ExtensionManifest {
   return {
@@ -60,6 +64,277 @@ function issues(manifest: unknown): string[] {
     ? []
     : result.issues.map(issue => `${issue.path}: ${issue.message}`);
 }
+
+function withWork() {
+  const manifest = base();
+  manifest.scopes.push(
+    { key: 'review.threads:read' },
+    {
+      key: 'work:create',
+      justification:
+        'Create issues from Review threads in the selected project.',
+    },
+  );
+  manifest.server = { baseUrl: 'https://api.funnel-lab.dev' };
+  const work: WorkContribution = {
+    kind: 'tracker',
+    creates: ['issue'],
+    identity: 'install',
+    comments: {
+      direction: 'none',
+      supportsEdits: false,
+      supportsDeletes: false,
+    },
+    attachments: ['image', 'link'],
+    auth: { method: 'oauth', provider: 'clickup', scopes: [] },
+  };
+  return { ...manifest, contributes: { ...manifest.contributes, work } };
+}
+
+function legacyWork(): ExtensionManifest {
+  const manifest: ExtensionManifest = withWork();
+  manifest.scopes = manifest.scopes.filter(
+    scope => scope.key !== 'review.threads:read',
+  );
+  manifest.scopes.push(
+    { key: 'reviews:read' },
+    {
+      key: 'work:sync',
+      justification: 'Sync comments and status with the linked work item.',
+    },
+  );
+  manifest.contributes.work = {
+    kind: 'tracker',
+    creates: ['issue'],
+    identity: 'install',
+    container: { label: 'Project', list: '/projects' },
+    fields: { priority: ['High', 'Low'], labels: true, required: ['title'] },
+    comments: 'two-way',
+    status: {
+      webhook: 'issue.updated',
+      map: { open: ['Open'], in_progress: ['Working'], done: ['Done'] },
+    },
+    attachments: ['image', 'link'],
+  };
+  return manifest;
+}
+
+describe('work capabilities', () => {
+  it('accepts current comments and status capabilities with OAuth', () => {
+    const manifest = withWork();
+    manifest.contributes.work!.status = { direction: 'none' };
+
+    expect(issues(manifest)).toEqual([]);
+    expect(workManifestWarnings(manifest)).toEqual([]);
+  });
+
+  it('accepts work API-key credential fields', () => {
+    const manifest = withWork();
+    manifest.contributes.work!.auth = {
+      method: 'api_key',
+      fields: [
+        { name: 'token', label: 'Token', type: 'password', required: true },
+      ],
+    };
+
+    expect(issues(manifest)).toEqual([]);
+  });
+
+  it('requires work:create even when no capability syncs', () => {
+    const manifest = withWork();
+    manifest.scopes = manifest.scopes.filter(
+      scope => scope.key !== 'work:create',
+    );
+
+    expect(issues(manifest).join()).toContain('Add the work:create scope');
+  });
+
+  it('requires Review-thread access for the current shape even with store reviews', () => {
+    const manifest = withWork();
+    manifest.scopes = manifest.scopes.filter(
+      scope => scope.key !== 'review.threads:read',
+    );
+    manifest.scopes.push({ key: 'reviews:read' });
+
+    expect(issues(manifest).join()).toContain(
+      'Add the review.threads:read scope',
+    );
+  });
+
+  it.each(['to_provider', 'from_provider', 'two-way'] as const)(
+    'requires work:sync for %s comments',
+    direction => {
+      const manifest = withWork();
+      manifest.contributes.work!.comments = {
+        direction,
+        supportsEdits: false,
+        supportsDeletes: false,
+      };
+
+      expect(issues(manifest).join()).toContain('Add the work:sync scope');
+
+      manifest.scopes.push({
+        key: 'work:sync',
+        justification:
+          'Sync comments with the linked work item in this project.',
+      });
+      expect(issues(manifest)).toEqual([]);
+    },
+  );
+
+  it.each(['to_provider', 'from_provider', 'two-way'] as const)(
+    'requires work:sync for %s status',
+    direction => {
+      const manifest = withWork();
+      manifest.contributes.work!.status = { direction };
+
+      expect(issues(manifest).join()).toContain('Add the work:sync scope');
+
+      manifest.scopes.push({
+        key: 'work:sync',
+        justification: 'Sync status with the linked work item in this project.',
+      });
+      expect(issues(manifest)).toEqual([]);
+    },
+  );
+
+  it('rejects current work without auth, including mixed legacy fields', () => {
+    const manifest = withWork();
+    const { auth: _auth, ...work } = manifest.contributes.work!;
+
+    expect(validateManifest({ ...manifest, contributes: { work } }).ok).toBe(
+      false,
+    );
+    expect(
+      validateManifest({
+        ...manifest,
+        contributes: {
+          work: {
+            ...work,
+            container: { label: 'Project', list: '/projects' },
+            fields: { required: [] },
+          },
+        },
+      }).ok,
+    ).toBe(false);
+  });
+
+  it.each(['current', 'legacy'] as const)(
+    'explains unsupported per-user identity for %s work',
+    shape => {
+      const manifest = shape === 'current' ? withWork() : legacyWork();
+      manifest.contributes.work!.identity = 'user';
+
+      expect(issues(manifest).join()).toContain(
+        'Per-user work identity is not supported',
+      );
+    },
+  );
+
+  it.each(['supportsEdits', 'supportsDeletes'] as const)(
+    'rejects unsupported comment capability %s',
+    capability => {
+      const manifest = withWork();
+      expect(
+        validateManifest({
+          ...manifest,
+          contributes: {
+            work: {
+              ...manifest.contributes.work,
+              comments: {
+                direction: 'none',
+                supportsEdits: false,
+                supportsDeletes: false,
+                [capability]: true,
+              },
+            },
+          },
+        }).ok,
+      ).toBe(false);
+    },
+  );
+
+  it('preserves complete legacy work and reports each migration separately', () => {
+    const result = validateManifest(legacyWork());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const warnings = workManifestWarnings(result.manifest);
+    expect(warnings.map(warning => warning.path)).toEqual([
+      'contributes.work.container',
+      'contributes.work.fields',
+      'contributes.work.comments',
+      'contributes.work.status.map',
+      'scopes',
+    ]);
+    expect(warnings.map(warning => warning.message).join()).toContain(
+      'describe_container',
+    );
+    expect(warnings.map(warning => warning.message).join()).toContain(
+      'review.threads:read',
+    );
+  });
+
+  it('normalizes a legacy status map as inbound status sync', () => {
+    const manifest = legacyWork();
+    manifest.contributes.work!.comments = 'none';
+    manifest.scopes = manifest.scopes.filter(
+      scope => scope.key !== 'work:sync',
+    );
+
+    expect(issues(manifest).join()).toContain('Add the work:sync scope');
+    delete manifest.contributes.work!.status;
+    expect(issues(manifest)).toEqual([]);
+  });
+
+  it('requires work:create for legacy work', () => {
+    const manifest = legacyWork();
+    manifest.scopes = manifest.scopes.filter(
+      scope => scope.key !== 'work:create',
+    );
+
+    expect(issues(manifest).join()).toContain('Add the work:create scope');
+  });
+
+  it('allows legacy work to migrate to the Review-thread scope', () => {
+    const manifest = legacyWork();
+    manifest.scopes = manifest.scopes.filter(
+      scope => scope.key !== 'reviews:read',
+    );
+    manifest.scopes.push({ key: 'review.threads:read' });
+
+    expect(issues(manifest)).toEqual([]);
+    expect(
+      workManifestWarnings(manifest).map(warning => warning.path),
+    ).not.toContain('scopes');
+  });
+
+  it('warns on deprecated fields in an authenticated work manifest', () => {
+    const manifest = withWork();
+    manifest.contributes.work = {
+      ...manifest.contributes.work,
+      comments: 'none',
+      container: { label: 'Project', list: '/projects' },
+      fields: { required: [] },
+    };
+
+    expect(issues(manifest)).toEqual([]);
+    expect(workManifestWarnings(manifest).map(warning => warning.path)).toEqual(
+      [
+        'contributes.work.container',
+        'contributes.work.fields',
+        'contributes.work.comments',
+      ],
+    );
+  });
+
+  it('does not deprecate store-review access for manifests without work', () => {
+    const manifest = base();
+    manifest.scopes.push({ key: 'reviews:read' });
+
+    expect(workManifestWarnings(manifest)).toEqual([]);
+  });
+});
 
 describe('manifestSchema', () => {
   it('accepts a minimal widget-only manifest', () => {

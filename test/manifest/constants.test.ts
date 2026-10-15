@@ -26,6 +26,7 @@ describe('registry mirror', () => {
       'analytics:read',
       'store.metadata:read',
       'reviews:read',
+      'review.threads:read',
       'crashes:read',
       'revenue:read',
       'metrics:write',
@@ -196,6 +197,16 @@ describe('registry mirror', () => {
     expect(findScope('storage:write')?.label).toBe('Use hosted storage');
     expect(findScope('nope')).toBeUndefined();
     expect(findTable('analytics.reviews')?.label).toBe('Reviews');
+  });
+
+  it('recognizes Review threads separately from store reviews', () => {
+    expect(findScope('review.threads:read')).toMatchObject({
+      key: 'review.threads:read',
+      requiresSecurityReview: false,
+      requiresJustification: false,
+    });
+    expect(findScope('reviews:read')?.label).toBe('Read store reviews');
+    expect(QUERY_SCOPES.reviews).toBe('reviews:read');
   });
 
   it('names the keys every card kind carries', () => {

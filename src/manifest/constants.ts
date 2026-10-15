@@ -38,6 +38,14 @@ export const SCOPES = [
     requiresJustification: false,
   },
   {
+    key: 'review.threads:read',
+    label: 'Read Review threads',
+    description:
+      'Review threads, comments, screenshot descriptors, build context and safe device context',
+    requiresSecurityReview: false,
+    requiresJustification: false,
+  },
+  {
     key: 'crashes:read',
     label: 'Read crash data',
     description: 'Crash-free rate and issue counts',
@@ -112,7 +120,7 @@ export const SCOPES = [
   {
     key: 'work:sync',
     label: 'Sync work items',
-    description: 'Two-way comments and status on created work items',
+    description: 'Sync comments and status on created work items',
     requiresSecurityReview: false,
     requiresJustification: true,
   },

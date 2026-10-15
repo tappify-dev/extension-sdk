@@ -43,5 +43,6 @@ export {
   manifestSchema,
   sdkMajors,
   validateManifest,
+  workManifestWarnings,
 } from './manifest/schema';
 export type * from './manifest/types';
