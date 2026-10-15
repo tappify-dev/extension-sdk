@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   build,
   createServer,
+  normalizePath,
   type Plugin,
   type ViteDevServer,
 } from '../../../node_modules/vite/dist/node/index.js';
@@ -111,7 +112,7 @@ describe('local preview Vite server', () => {
       const origin = await listen(fixtureRoot, undefined, cacheDir);
       const client = await fetch(`${origin}/@id/${PREVIEW_CLIENT_ID}`);
       const source = await client.text();
-      const expected = `/@fs${cacheDir}/deps/react.js?tappify=`;
+      const expected = `/@fs/${normalizePath(cacheDir).replace(/^\/+/, '')}/deps/react.js?tappify=`;
 
       expect(client.status, source).toBe(200);
       expect(source).toContain(expected);

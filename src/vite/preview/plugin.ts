@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { relative, resolve } from 'node:path';
+import { isAbsolute, relative, resolve } from 'node:path';
 import { normalizePath, type Plugin } from 'vite';
 import type { ManifestValidation } from '../../manifest/types';
 
@@ -116,9 +116,10 @@ export function optimizedReactUrl(
 ): string {
   const depsCacheDir = normalizePath(resolve(cacheDir, 'deps'));
   const relativeCacheDir = normalizePath(relative(root, depsCacheDir));
-  const prefix = relativeCacheDir.startsWith('../')
-    ? `/@fs/${depsCacheDir.replace(/^\/+/, '')}`
-    : `/${relativeCacheDir}`;
+  const prefix =
+    isAbsolute(relativeCacheDir) || relativeCacheDir.startsWith('../')
+      ? `/@fs/${depsCacheDir.replace(/^\/+/, '')}`
+      : `/${relativeCacheDir}`;
   return `${prefix}/react.js?tappify=${encodeURIComponent(cacheGeneration)}`;
 }
 

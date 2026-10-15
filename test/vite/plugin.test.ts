@@ -1,5 +1,10 @@
 import { resolve } from 'node:path';
-import type { ConfigEnv, Plugin, UserConfig } from 'vite';
+import {
+  normalizePath,
+  type ConfigEnv,
+  type Plugin,
+  type UserConfig,
+} from 'vite';
 import { describe, expect, it, vi } from 'vitest';
 import { TapError } from '../../src/client/errors';
 import type { ExtensionManifest } from '../../src/manifest/types';
@@ -37,7 +42,9 @@ describe('optimizedReactUrl', () => {
         '/shared/vite-cache',
         'generation-one',
       ),
-    ).toBe('/@fs/shared/vite-cache/deps/react.js?tappify=generation-one');
+    ).toBe(
+      `/@fs/${normalizePath(resolve('/shared/vite-cache')).replace(/^\/+/, '')}/deps/react.js?tappify=generation-one`,
+    );
   });
 
   it('changes when a new preview server starts with a new cache generation', () => {

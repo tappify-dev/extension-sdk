@@ -19,9 +19,9 @@ describe('API reference generation', () => {
     writeFileSync(join(docsRoot, 'docs.json'), '{}\n');
 
     execFileSync(
-      'pnpm',
-      ['exec', 'tsx', 'scripts/build-api-reference.ts', docsRoot],
-      { cwd: process.cwd(), stdio: 'pipe' },
+      process.execPath,
+      ['--import', 'tsx', 'scripts/build-api-reference.ts', docsRoot],
+      { cwd: process.cwd(), stdio: 'pipe', env: { ...process.env, PATH: '' } },
     );
 
     const generated = JSON.parse(

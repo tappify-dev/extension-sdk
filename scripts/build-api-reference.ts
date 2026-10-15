@@ -35,6 +35,10 @@ const ENTRIES: Entry[] = [
 ];
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const typedocCli = resolve(
+  dirname(fileURLToPath(import.meta.resolve('typedoc/package.json'))),
+  'bin/typedoc',
+);
 const docsRoot = resolve(
   root,
   process.argv[2] ?? process.env.TAPPIFY_DOCS_ROOT ?? '../documentation',
@@ -117,8 +121,8 @@ for (const entry of ENTRIES) {
   mkdirSync(target, { recursive: true });
 
   execFileSync(
-    'pnpm',
-    ['exec', 'typedoc', '--entryPoints', ...entry.entryPoints, '--out', target],
+    process.execPath,
+    [typedocCli, '--entryPoints', ...entry.entryPoints, '--out', target],
     { cwd: root, stdio: 'inherit' },
   );
 
