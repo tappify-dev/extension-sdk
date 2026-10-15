@@ -22,3 +22,9 @@ export type { CreateTapMockOptions, TapMock, TapMockCalls } from './mock';
 export { renderWithTap } from './render';
 export type { RenderWithTapOptions, RenderWithTapResult } from './render';
 export { validateMetricsResponse, validateToolResponse } from './validators';
+export {
+  signedWorkEventRequest,
+  workCommentCreatedFixture,
+  workItemDeletedFixture,
+  workStatusChangedFixture,
+} from './work-events';

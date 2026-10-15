@@ -91,6 +91,7 @@ describe('public entries', () => {
         'TapServerError',
         'createTappifyHandler',
         'sendEvent',
+        'sendWorkEvent',
         'signWebhook',
         'toExpress',
         'toNode',
@@ -143,10 +144,14 @@ describe('public entries', () => {
         'registerTapMatchers',
         'renderWithTap',
         'signTestToken',
+        'signedWorkEventRequest',
         'tapMatchers',
         'testJwks',
         'validateMetricsResponse',
         'validateToolResponse',
+        'workCommentCreatedFixture',
+        'workItemDeletedFixture',
+        'workStatusChangedFixture',
       ].sort(),
     );
   });

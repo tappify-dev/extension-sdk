@@ -16,6 +16,7 @@
     "TapPlatformFilter",
     "TapSettings",
     "TapToolMap",
-    "TapWebhookMap"
+    "TapWebhookMap",
+    "WorkContribution"
   ]
 }

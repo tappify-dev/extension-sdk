@@ -13,6 +13,7 @@
     "MetricDeclaration",
     "MetricsInput",
     "MetricsResponse",
+    "SendWorkEventOptions",
     "Tap",
     "TapApp",
     "TapChatCard",
@@ -38,6 +39,10 @@
     "TappifyHandlerOptions",
     "TappifyHealth",
     "TappifyInstall",
-    "WorkOperation"
+    "WorkEvent",
+    "WorkHydratedCommentCreatedEvent",
+    "WorkHydratedItemDeletedEvent",
+    "WorkHydratedStatusChangedEvent",
+    "WorkOperationMap"
   ]
 }

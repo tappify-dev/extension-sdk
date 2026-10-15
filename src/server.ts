@@ -28,3 +28,9 @@ export type { TappifyFetchHandler } from './server/handler';
 export { DEFAULT_JWKS_URL, verifyTappifyToken } from './server/token';
 export type * from './server/types';
 export type * from './server/work';
+export { sendWorkEvent } from './server/work-events';
+export type {
+  SendWorkEventOptions,
+  WorkEvent,
+  WorkHydrationReferenceEvent,
+} from './server/work-events';
