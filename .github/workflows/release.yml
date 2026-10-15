@@ -1,35 +1,34 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ['CI']
-    types: [completed]
+  push:
     branches: [main, develop]
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  id-token: write
-
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   release:
     name: Semantic Release
+    needs: ci
     runs-on: ubuntu-latest
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_repository.full_name == github.repository
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.sha }}
 
       - name: Prepare release branches
         env:
-          RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
+          RELEASE_SHA: ${{ github.sha }}
         run: |
           # semantic-release resolves tags against local release branch refs.
           git fetch --tags origin \
@@ -62,14 +61,8 @@ jobs:
       # Publishing authenticates via GitHub OIDC (trusted publisher configured
       # on npmjs). id-token: write is granted above; no npm token is passed.
       - name: Release
-        # workflow_run defaults to main; pass the triggering run's identity.
-        run: |
-          GITHUB_REF="refs/heads/$RELEASE_BRANCH" \
-            GITHUB_SHA="$RELEASE_SHA" \
-            npx semantic-release
+        run: npx semantic-release
         env:
-          RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # semantic-release creates and pushes the version tag before it publishes.
