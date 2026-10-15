@@ -14,11 +14,18 @@ import { PREVIEW_CLIENT_ID } from '../../../src/vite/preview/plugin';
 const fixtureRoot = resolve(__dirname, '../../fixtures/extension');
 const sdkEntry = resolve(__dirname, '../../../src/index.ts');
 const sdkStyles = resolve(__dirname, '../../../src/client/ui/styles.css');
+const sdkBootstrap = resolve(
+  __dirname,
+  '../../../src/vite/preview/bootstrap.ts',
+);
 const sourceSdkExports: Plugin = {
   name: 'test:source-sdk-exports',
   enforce: 'pre',
   resolveId(id) {
     if (id === '@tappify/extension-sdk') return sdkEntry;
+    if (id === '@tappify/extension-sdk/vite/preview/bootstrap') {
+      return sdkBootstrap;
+    }
     if (id === '@tappify/extension-sdk/ui/styles.css') return sdkStyles;
     if (id === '@tappify/extension-sdk/ui/styles.css?inline') {
       return `${sdkStyles}?inline`;
@@ -55,7 +62,10 @@ async function listen(
     root,
     cacheDir,
     logLevel: 'silent',
-    plugins: tappifyExtension({ root, port: 0, manifest: manifest as never }),
+    plugins: [
+      sourceSdkExports,
+      ...tappifyExtension({ root, port: 0, manifest: manifest as never }),
+    ],
   });
   servers.push(server);
   await server.listen();
@@ -103,7 +113,7 @@ describe('local preview Vite server', () => {
       const source = await client.text();
       const expected = `/@fs${cacheDir}/deps/react.js?tappify=`;
 
-      expect(client.status).toBe(200);
+      expect(client.status, source).toBe(200);
       expect(source).toContain(expected);
     } finally {
       rmSync(cacheDir, { recursive: true, force: true });

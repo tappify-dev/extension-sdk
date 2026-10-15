@@ -66,6 +66,10 @@
     "recognised",
     "serialised",
     "serialising",
+    "Segoe",
+    "stackable",
+    "prebundling",
+    "unconfigured",
     "ungranted",
     "uppercased"
   ],
@@ -81,6 +85,7 @@
     "[0-9a-f]{40}",
     "[0-9a-f]{7,}",
     "0x[0-9a-fA-F]+",
+    "%[0-9a-fA-F]{2}",
     "client_[0-9A-Z]+"
   ]
 }
