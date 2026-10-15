@@ -50,7 +50,7 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Upgrade npm
+      - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
 
       - name: Install dependencies
@@ -59,8 +59,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Supply the repository npm token to semantic-release and setup-node's
-      # registry config when trusted publishing is unavailable.
+      # Publishing authenticates via GitHub OIDC (trusted publisher configured
+      # on npmjs). id-token: write is granted above; no npm token is passed.
       - name: Release
         # workflow_run defaults to main; pass the triggering run's identity.
         run: |
@@ -71,8 +71,6 @@ jobs:
           RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
           RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # semantic-release creates and pushes the version tag before it publishes.
       # If the run failed BEFORE the package reached npm, delete that tag so the
