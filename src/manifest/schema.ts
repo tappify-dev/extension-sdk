@@ -334,6 +334,12 @@ const connectorContribution = z
               .describe(
                 "The scopes asked of the outside service. These are that service's scopes, not Tappify's.",
               ),
+            tokenRequestEncoding: z
+              .enum(['form', 'json'])
+              .describe(
+                'The request body encoding for authorization-code and refresh token exchanges. When omitted, uses form encoding (application/x-www-form-urlencoded); json uses application/json.',
+              )
+              .optional(),
           })
           .strict()
           .describe('The endpoints, for `method: "oauth"`.')

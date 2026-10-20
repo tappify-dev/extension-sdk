@@ -10,7 +10,9 @@ import {
   validateManifest,
 } from '../../src/manifest/schema';
 import type {
+  ConnectorAuth,
   ExtensionManifest,
+  OAuthTokenRequestEncoding,
   WorkContribution,
 } from '../../src/manifest/types';
 
@@ -118,6 +120,60 @@ function legacyWork(): ExtensionManifest {
   };
   return manifest;
 }
+
+describe('connector OAuth token request encoding', () => {
+  function withOAuth(encoding: Record<string, unknown> = {}) {
+    const manifest = base();
+    manifest.server = { baseUrl: 'https://extension.example' };
+    manifest.contributes.connector = {
+      auth: {
+        method: 'oauth',
+        oauth: {
+          authorizationUrl: 'https://provider.example/authorize',
+          tokenUrl: 'https://provider.example/token',
+          scopes: ['metrics:read'],
+          ...encoding,
+        },
+      },
+    };
+    return manifest;
+  }
+
+  it('keeps omitted encoding valid without adding a parsed default', () => {
+    const parsed = manifestSchema.parse(withOAuth());
+
+    expect(parsed.contributes.connector?.auth?.oauth).not.toHaveProperty(
+      'tokenRequestEncoding',
+    );
+  });
+
+  it.each(['form', 'json'] as const)(
+    'accepts and preserves %s encoding',
+    tokenRequestEncoding => {
+      const parsed = manifestSchema.parse(withOAuth({ tokenRequestEncoding }));
+
+      expect(
+        parsed.contributes.connector?.auth?.oauth?.tokenRequestEncoding,
+      ).toBe(tokenRequestEncoding);
+    },
+  );
+
+  it.each(['xml', 'FORM', '', null, true, 1, [], {}])(
+    'rejects unsupported encoding %j',
+    tokenRequestEncoding => {
+      expect(issues(withOAuth({ tokenRequestEncoding })).join()).toContain(
+        'contributes.connector.auth.oauth.tokenRequestEncoding',
+      );
+    },
+  );
+
+  it('uses the shared optional encoding type in connector OAuth', () => {
+    expectTypeOf<OAuthTokenRequestEncoding>().toEqualTypeOf<'form' | 'json'>();
+    expectTypeOf<
+      NonNullable<ConnectorAuth['oauth']>['tokenRequestEncoding']
+    >().toEqualTypeOf<OAuthTokenRequestEncoding | undefined>();
+  });
+});
 
 describe('work capabilities', () => {
   it('accepts current comments and status capabilities with OAuth', () => {

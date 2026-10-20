@@ -623,6 +623,14 @@
                         "type": "string"
                       },
                       "description": "The scopes asked of the outside service. These are that service's scopes, not Tappify's."
+                    },
+                    "tokenRequestEncoding": {
+                      "type": "string",
+                      "enum": [
+                        "form",
+                        "json"
+                      ],
+                      "description": "The request body encoding for authorization-code and refresh token exchanges. When omitted, uses form encoding (application/x-www-form-urlencoded); json uses application/json."
                     }
                   },
                   "required": [

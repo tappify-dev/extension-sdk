@@ -38,6 +38,26 @@ describe('schema/extension-v2.json', () => {
 
     expect(events).toEqual(EVENTS);
   });
+
+  it('publishes optional connector token encoding with form omission behavior', () => {
+    const oauth = readPath(manifestJsonSchema(), [
+      'properties',
+      'contributes',
+      'properties',
+      'connector',
+      'properties',
+      'auth',
+      'properties',
+      'oauth',
+    ]);
+    const encoding = readPath(oauth, ['properties', 'tokenRequestEncoding']);
+
+    expect(readPath(encoding, ['type'])).toBe('string');
+    expect(readPath(encoding, ['enum'])).toEqual(['form', 'json']);
+    expect(readPath(encoding, ['description'])).toMatch(/omitted.*form/i);
+    expect(readPath(oauth, ['required'])).not.toContain('tokenRequestEncoding');
+    expect(encoding).not.toHaveProperty('default');
+  });
 });
 
 function readPath(value: unknown, path: string[]): unknown {

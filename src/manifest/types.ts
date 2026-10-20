@@ -100,10 +100,18 @@ export interface CredentialField {
   help?: string;
 }
 
+export type OAuthTokenRequestEncoding = 'form' | 'json';
+
 export interface ConnectorAuth {
   method: 'none' | 'api_key' | 'oauth';
   fields?: CredentialField[];
-  oauth?: { authorizationUrl: string; tokenUrl: string; scopes: string[] };
+  oauth?: {
+    authorizationUrl: string;
+    tokenUrl: string;
+    scopes: string[];
+    /** The token request body encoding. When omitted, uses form encoding. */
+    tokenRequestEncoding?: OAuthTokenRequestEncoding;
+  };
 }
 
 export interface DimensionDeclaration {
