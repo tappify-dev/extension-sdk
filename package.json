@@ -1,6 +1,6 @@
 {
   "name": "@tappify/extension-sdk",
-  "version": "2.1.0-beta.1",
+  "version": "2.1.0-beta.2",
   "description": "Build extensions that run inside Tappify",
   "author": "Tappify Team",
   "license": "MIT",
