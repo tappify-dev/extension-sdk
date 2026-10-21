@@ -1,3 +1,13 @@
+## [2.1.0-beta.3](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2026-10-21)
+
+### Features
+
+- add structured people to work sync ([cf9ab74](https://github.com/tappify-dev/extension-sdk/commit/cf9ab7446ddbaf00fe754aa75bd888d2e5fb95c5))
+
+### Bug Fixes
+
+- reject sparse work comment segments ([3e99d27](https://github.com/tappify-dev/extension-sdk/commit/3e99d270c3048711d4f4dbefcb370825aa9287a2))
+
 ## [2.1.0-beta.2](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2026-10-20)
 
 ### Features
