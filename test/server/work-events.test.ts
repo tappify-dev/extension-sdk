@@ -124,6 +124,32 @@ describe('sendWorkEvent', () => {
     },
   );
 
+  it.each([
+    { name: 'only a hole', segments: new Array<WorkRichTextSegment>(1) },
+    {
+      name: 'a hole after valid text',
+      segments: Object.assign(new Array<WorkRichTextSegment>(2), {
+        0: { type: 'text' as const, text: 'Hello' },
+      }),
+    },
+  ])('rejects sparse segments with $name before transport', async fixture => {
+    const transport = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 202 }));
+
+    await expect(
+      sendWorkEvent(
+        {
+          ...base,
+          type: 'comment.created',
+          comment: { ...richComment, segments: fixture.segments },
+        },
+        { ...options, fetch: transport },
+      ),
+    ).rejects.toThrow(/work event/i);
+    expect(transport).not.toHaveBeenCalled();
+  });
+
   it.each<[string, unknown]>([
     [
       'empty author ID',

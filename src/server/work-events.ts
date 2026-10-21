@@ -66,7 +66,7 @@ function validComment(comment: unknown): boolean {
     validPerson(author) &&
     (segments === undefined
       ? readUnknown(author, 'email') === undefined
-      : Array.isArray(segments) && segments.every(validSegment))
+      : Array.isArray(segments) && Array.from(segments).every(validSegment))
   );
 }
 
