@@ -11,6 +11,23 @@ export type WorkCreateFieldValues = Record<
   string | number | boolean | string[] | null
 >;
 
+/** A person in the sending system; email is optional when unavailable. */
+export interface WorkPerson {
+  id: string;
+  displayName: string;
+  email?: string;
+}
+
+/** A structured person mention supplied with a Review comment. */
+export interface WorkMention {
+  person: WorkPerson;
+}
+
+/** Ordered provider comment content, including portable person mentions. */
+export type WorkRichTextSegment =
+  | { type: 'text'; text: string }
+  | { type: 'user_mention'; person: WorkPerson; fallback: string };
+
 /** Logical mutation identity, stable across transport retries. */
 export interface WorkMutationInput {
   idempotencyKey: string;
@@ -137,6 +154,9 @@ export interface ReviewThreadSource {
   firstComment: {
     id: string;
     body: string;
+    author: WorkPerson;
+    mentions: WorkMention[];
+    /** @deprecated Use author.displayName instead. */
     authorDisplayName: string;
     createdAt: string;
   };
@@ -187,6 +207,9 @@ export interface WorkCommentInput
   extends WorkMutationInput, WorkLinkedItemInput {
   commentId: string;
   body: string;
+  author: WorkPerson;
+  mentions: WorkMention[];
+  /** @deprecated Use author.displayName instead. */
   authorDisplayName: string;
   createdAt: string;
 }
@@ -227,10 +250,21 @@ export interface WorkHydratedCommentCreatedEvent extends WorkHydratedEventBase {
   type: 'comment.created';
   comment: {
     externalCommentId: string;
+    /** Compatibility text; segment concatenation is authoritative when present. */
     body: string;
-    author: { id: string; displayName: string };
     createdAt: string;
-  };
+  } & (
+    | {
+        author: WorkPerson;
+        /** Concatenate text and mention fallback values in order. */
+        segments: WorkRichTextSegment[];
+      }
+    | {
+        /** Legacy authors cannot carry rich person data without segments. */
+        author: WorkPerson & { email?: never };
+        segments?: never;
+      }
+  );
 }
 
 /** A complete provider status-change signal. */

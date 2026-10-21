@@ -5,8 +5,11 @@ import type {
   TappifyHandlerOptions,
   WorkCreateInput,
   WorkItemLinkResult,
+  WorkMention,
   WorkOperation,
   WorkOperationMap,
+  WorkPerson,
+  WorkRichTextSegment,
 } from '../../src/server';
 import { createTestClient } from '../../src/testing/client';
 
@@ -38,6 +41,12 @@ const source: ReviewThreadSource = {
   firstComment: {
     id: 'comment_1',
     body: 'Button is clipped',
+    author: { id: 'user_1', displayName: 'Sam', email: 'sam@example.com' },
+    mentions: [
+      {
+        person: { id: 'user_2', displayName: 'Ada', email: 'ada@example.com' },
+      },
+    ],
     authorDisplayName: 'Sam',
     createdAt: mutation.occurredAt,
   },
@@ -118,6 +127,16 @@ const cases = {
       ...linked,
       commentId: 'comment_2',
       body: 'Still clipped',
+      author: { id: 'user_1', displayName: 'Sam', email: 'sam@example.com' },
+      mentions: [
+        {
+          person: {
+            id: 'user_2',
+            displayName: 'Ada',
+            email: 'ada@example.com',
+          },
+        },
+      ],
       authorDisplayName: 'Sam',
       createdAt: mutation.occurredAt,
     },
@@ -155,6 +174,29 @@ const cases = {
 } satisfies WorkOperationMap;
 
 describe('work wire types', () => {
+  it('supports structured people without email in outbound comments and rich text', () => {
+    const person: WorkPerson = { id: 'user_2', displayName: 'Ada' };
+    const mention: WorkMention = { person };
+    const firstComment: ReviewThreadSource['firstComment'] = {
+      ...source.firstComment,
+      author: person,
+      mentions: [mention],
+    };
+    const input: WorkOperationMap['comment']['input'] = {
+      ...cases.comment.input,
+      author: person,
+      mentions: [mention],
+    };
+    const segments: WorkRichTextSegment[] = [
+      { type: 'text', text: 'Ask ' },
+      { type: 'user_mention', person, fallback: '@Ada' },
+    ];
+
+    expectTypeOf(firstComment.author).toEqualTypeOf<WorkPerson>();
+    expectTypeOf(input.mentions).toEqualTypeOf<WorkMention[]>();
+    expectTypeOf(segments).toEqualTypeOf<WorkRichTextSegment[]>();
+  });
+
   it('round trips all nine typed operations through the real test client', async () => {
     const work: NonNullable<TappifyHandlerOptions['work']> = {
       configure: () => cases.configure.output,
@@ -237,6 +279,8 @@ function invalidWorkContracts(
     externalItemId: 'item_1',
     commentId: 'comment_1',
     body: 'Hi',
+    author: { id: 'user_1', displayName: 'Sam' },
+    mentions: [],
     authorDisplayName: 'Sam',
     createdAt: mutation.occurredAt,
   };
@@ -253,12 +297,22 @@ function invalidWorkContracts(
     generation: 2,
     registeredWebhookIds: [],
   };
+  const { author: omittedAuthor, ...withoutAuthor } = source.firstComment;
+  // @ts-expect-error first comments require a structured author.
+  const missingAuthor: ReviewThreadSource['firstComment'] = withoutAuthor;
+  const { mentions: omittedMentions, ...withoutMentions } = cases.comment.input;
+  // @ts-expect-error outbound comments require explicit mentions, including an empty array.
+  const missingMentions: WorkOperationMap['comment']['input'] = withoutMentions;
   void [
     invalidFields,
     invalidOutput,
     invalidComment,
     invalidStatus,
     invalidDisconnect,
+    omittedAuthor,
+    missingAuthor,
+    omittedMentions,
+    missingMentions,
   ];
 }
 void invalidWorkContracts;

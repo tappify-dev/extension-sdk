@@ -34,6 +34,42 @@ function nonempty(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function validPerson(person: unknown): boolean {
+  const email = readUnknown(person, 'email');
+  return (
+    nonempty(readUnknown(person, 'id')) &&
+    nonempty(readUnknown(person, 'displayName')) &&
+    (email === undefined ||
+      (nonempty(email) &&
+        email === email.trim() &&
+        email.split('@').length === 2))
+  );
+}
+
+function validSegment(segment: unknown): boolean {
+  const type = readUnknown(segment, 'type');
+  if (type === 'text') return typeof readUnknown(segment, 'text') === 'string';
+  return (
+    type === 'user_mention' &&
+    validPerson(readUnknown(segment, 'person')) &&
+    nonempty(readUnknown(segment, 'fallback'))
+  );
+}
+
+function validComment(comment: unknown): boolean {
+  const author = readUnknown(comment, 'author');
+  const segments = readUnknown(comment, 'segments');
+  return (
+    nonempty(readUnknown(comment, 'externalCommentId')) &&
+    typeof readUnknown(comment, 'body') === 'string' &&
+    nonempty(readUnknown(comment, 'createdAt')) &&
+    validPerson(author) &&
+    (segments === undefined
+      ? readUnknown(author, 'email') === undefined
+      : Array.isArray(segments) && segments.every(validSegment))
+  );
+}
+
 function validEvent(event: WorkEvent): boolean {
   const type = readText(event, 'type');
   if (
@@ -66,16 +102,7 @@ function validEvent(event: WorkEvent): boolean {
     );
   }
 
-  const normalized = readRecord(event, 'comment');
-  const author = readRecord(normalized, 'author');
-  return (
-    status === undefined &&
-    nonempty(normalized.externalCommentId) &&
-    typeof normalized.body === 'string' &&
-    nonempty(normalized.createdAt) &&
-    nonempty(author.id) &&
-    nonempty(author.displayName)
-  );
+  return status === undefined && validComment(comment);
 }
 
 /**

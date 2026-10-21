@@ -4,7 +4,9 @@ import {
   sendWorkEvent,
   type SendWorkEventOptions,
   type WorkEvent,
+  type WorkHydratedCommentCreatedEvent,
   type WorkHydratedEvent,
+  type WorkRichTextSegment,
 } from '../../src/server';
 
 const callbackUrl = 'https://host.test/custom/work/callback?generation=7';
@@ -22,6 +24,20 @@ const comment = {
   createdAt: '2026-10-15T11:59:00.000Z',
 };
 const status = { id: 'done', label: 'Done', stage: 'done' as const };
+const segments: WorkRichTextSegment[] = [
+  { type: 'text', text: 'Please ask ' },
+  {
+    type: 'user_mention',
+    person: { id: 'provider_2', displayName: 'Ada', email: 'ada@example.com' },
+    fallback: '@Ada',
+  },
+  { type: 'text', text: ' today.' },
+];
+const richComment = {
+  ...comment,
+  author: { id: 'provider_1', displayName: 'Sam', email: 'sam@example.com' },
+  segments,
+};
 
 describe('sendWorkEvent', () => {
   it('exports a dedicated sender', () => {
@@ -79,6 +95,120 @@ describe('sendWorkEvent', () => {
   });
 
   it.each([
+    richComment,
+    { ...richComment, author: { id: 'provider_1', displayName: 'Sam' } },
+    { ...richComment, segments: [] },
+    {
+      ...richComment,
+      segments: [
+        { type: 'text', text: '' },
+        {
+          type: 'user_mention',
+          person: { id: 'provider_2', displayName: 'Ada' },
+          fallback: '@Ada',
+        },
+      ],
+    },
+  ] satisfies WorkHydratedCommentCreatedEvent['comment'][])(
+    'preserves rich comment segments and optional person emails: %j',
+    async normalized => {
+      const transport = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response(null, { status: 202 }));
+      await sendWorkEvent(
+        { ...base, type: 'comment.created', comment: normalized },
+        { ...options, fetch: transport },
+      );
+      const delivered = JSON.parse(transport.mock.calls[0][1]?.body as string);
+      expect(delivered.comment).toEqual(normalized);
+    },
+  );
+
+  it.each<[string, unknown]>([
+    [
+      'empty author ID',
+      { ...richComment, author: { id: '', displayName: 'Sam' } },
+    ],
+    [
+      'empty author name',
+      { ...richComment, author: { id: 'user_1', displayName: ' ' } },
+    ],
+    ...[
+      '',
+      ' ',
+      'sam.example.com',
+      'sam@@example.com',
+      ' sam@example.com ',
+      42,
+      null,
+    ].map((email): [string, unknown] => [
+      'invalid author email',
+      { ...richComment, author: { ...richComment.author, email } },
+    ]),
+    ['missing segments', { ...richComment, segments: undefined }],
+    ['null segments', { ...richComment, segments: null }],
+    ['non-array segments', { ...richComment, segments: {} }],
+    ['non-string body', { ...richComment, body: 42 }],
+    ['missing body', { ...richComment, body: undefined }],
+    ...[
+      null,
+      { type: 'unknown', text: 'hello' },
+      { type: 'text', text: 42 },
+      { type: 'text' },
+      {
+        type: 'user_mention',
+        person: { id: '', displayName: 'Ada' },
+        fallback: '@Ada',
+      },
+      {
+        type: 'user_mention',
+        person: { id: 'provider_2', displayName: '' },
+        fallback: '@Ada',
+      },
+      {
+        type: 'user_mention',
+        person: { id: 'provider_2', displayName: 'Ada', email: 'bad' },
+        fallback: '@Ada',
+      },
+      {
+        type: 'user_mention',
+        person: { id: 'provider_2', displayName: 'Ada' },
+        fallback: '',
+      },
+      {
+        type: 'user_mention',
+        person: { id: 'provider_2', displayName: 'Ada' },
+        fallback: ' ',
+      },
+      {
+        type: 'user_mention',
+        person: { id: 'provider_2', displayName: 'Ada' },
+      },
+    ].map((segment): [string, unknown] => [
+      'invalid segment',
+      { ...richComment, segments: [segment] },
+    ]),
+  ])(
+    'rejects malformed rich comments before transport: %s (%j)',
+    async (_name, normalized) => {
+      const transport = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response(null, { status: 202 }));
+      await expect(
+        sendWorkEvent(
+          {
+            ...base,
+            type: 'comment.created',
+            comment: normalized,
+          } as WorkEvent,
+          { ...options, fetch: transport },
+        ),
+      ).rejects.toThrow(/work event/i);
+      expect(transport).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
     { ...base, type: 'comment.created' },
     { ...base, type: 'status.changed' },
     { ...base, type: 'comment.created', hydrateRef: '' },
@@ -96,6 +226,12 @@ describe('sendWorkEvent', () => {
       status: { ...status, stage: { toString: (): string => 'done' } },
     },
     { ...base, type: 'comment.created', comment, hydrateRef: 'ref' },
+    {
+      ...base,
+      type: 'comment.created',
+      comment: richComment,
+      hydrateRef: 'ref',
+    },
     { ...base, type: 'status.changed', status, hydrateRef: 'ref' },
     { ...base, type: 'item.deleted', comment },
     { ...base, type: 'comment.created', status, hydrateRef: 'ref' },
