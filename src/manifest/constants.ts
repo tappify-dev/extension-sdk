@@ -53,6 +53,14 @@ export const SCOPES = [
     requiresJustification: false,
   },
   {
+    key: 'builds:read',
+    label: 'Read builds',
+    description:
+      'Build results: branch, commit, version, build number, duration and failure reason',
+    requiresSecurityReview: false,
+    requiresJustification: false,
+  },
+  {
     key: 'revenue:read',
     label: 'Read revenue',
     description: 'MRR, revenue series and refund counts',
@@ -179,7 +187,7 @@ export const PAGES = [
     label: 'Home',
     route: '/projects/:id/overview',
     slots: ['kpi-row', 'insights', 'sidebar'],
-    charts: ['installs-activity'],
+    charts: ['installs-activity', 'release-cadence'],
     tabs: true,
     banners: true,
   },
@@ -194,10 +202,10 @@ export const PAGES = [
   },
   {
     key: 'deployments',
-    label: 'Deployments',
-    route: '/projects/:id/deployments',
+    label: 'Builds',
+    route: '/projects/:id/builds',
     slots: ['sidebar', 'below-list'],
-    charts: ['release-cadence'],
+    charts: [],
     tabs: true,
     banners: false,
   },
@@ -222,7 +230,8 @@ export const TABLES = [
   { key: 'analytics.keywords', label: 'Keywords' },
   { key: 'analytics.reviews', label: 'Reviews' },
   { key: 'deployments.releases', label: 'Releases' },
-  { key: 'deployments.builds', label: 'Builds' },
+  { key: 'deployments.builds', label: 'TestFlight builds' },
+  { key: 'deployments.runs', label: 'Builds' },
 ] as const;
 
 export type TableDefinition = (typeof TABLES)[number];
@@ -281,6 +290,9 @@ export const EVENTS = [
   'keyword.set_changed',
   'screenshots.updated',
   'price.changed',
+  'build.succeeded',
+  'build.failed',
+  'build.uploaded',
   'featuring.started',
   'score.changed',
   'incident.opened',

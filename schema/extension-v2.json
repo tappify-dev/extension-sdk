@@ -64,24 +64,17 @@
     },
     "visibility": {
       "type": "string",
-      "enum": [
-        "public",
-        "unlisted",
-        "private"
-      ],
+      "enum": ["public", "unlisted", "private"],
       "description": "Who can find and install this extension. \"public\" lists it in the Tap Store and needs all five listing fields; \"unlisted\" installs by link; \"private\" installs only in your own workspace."
     },
     "installScope": {
       "type": "string",
-      "enum": [
-        "project",
-        "organization"
-      ],
+      "enum": ["project", "organization"],
       "description": "Whether one install belongs to a single project or to a whole organization. An organization install contributes no pages, tabs, widgets or series, because those render on a project."
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 20,
+      "maxItems": 21,
       "type": "array",
       "items": {
         "type": "object",
@@ -96,6 +89,7 @@
               "reviews:read",
               "review.threads:read",
               "crashes:read",
+              "builds:read",
               "revenue:read",
               "metrics:write",
               "alerts:write",
@@ -119,9 +113,7 @@
             "description": "Why this extension asks for the scope, in your own words. Shown on the consent screen, and required for the scopes that ask for one."
           }
         },
-        "required": [
-          "key"
-        ],
+        "required": ["key"],
         "additionalProperties": false
       },
       "description": "The permissions an owner grants at install. Declare only what your contributions use."
@@ -161,11 +153,7 @@
                 "description": "Whether this surface is drawn on phone layouts. Defaults to true; set false to hide it there."
               }
             },
-            "required": [
-              "id",
-              "title",
-              "entry"
-            ],
+            "required": ["id", "title", "entry"],
             "additionalProperties": false
           },
           "description": "Pages of this extension's own, each on its own route under the project. `nav: true` also puts one in the project navigation."
@@ -195,12 +183,7 @@
               },
               "page": {
                 "type": "string",
-                "enum": [
-                  "overview",
-                  "analytics",
-                  "deployments",
-                  "ai_chat"
-                ],
+                "enum": ["overview", "analytics", "deployments", "ai_chat"],
                 "description": "The host page this tab sits on."
               },
               "mobile": {
@@ -208,12 +191,7 @@
                 "description": "Whether this surface is drawn on phone layouts. Defaults to true; set false to hide it there."
               }
             },
-            "required": [
-              "id",
-              "title",
-              "entry",
-              "page"
-            ],
+            "required": ["id", "title", "entry", "page"],
             "additionalProperties": false
           },
           "description": "Tabs beside the host's own on a named host page."
@@ -243,12 +221,7 @@
               },
               "page": {
                 "type": "string",
-                "enum": [
-                  "overview",
-                  "analytics",
-                  "deployments",
-                  "ai_chat"
-                ],
+                "enum": ["overview", "analytics", "deployments", "ai_chat"],
                 "description": "The host page this widget renders on."
               },
               "slot": {
@@ -264,11 +237,7 @@
               },
               "size": {
                 "type": "string",
-                "enum": [
-                  "1x1",
-                  "2x1",
-                  "2x2"
-                ],
+                "enum": ["1x1", "2x1", "2x2"],
                 "description": "The widget's footprint in the slot grid, as columns by rows. Every slot takes all three."
               },
               "expandable": {
@@ -276,14 +245,7 @@
                 "description": "Whether owners can open the same component in the expand panel."
               }
             },
-            "required": [
-              "id",
-              "title",
-              "entry",
-              "page",
-              "slot",
-              "size"
-            ],
+            "required": ["id", "title", "entry", "page", "slot", "size"],
             "additionalProperties": false
           },
           "description": "Cards drawn into a named slot on a host page."
@@ -307,11 +269,7 @@
               },
               "chart": {
                 "type": "string",
-                "enum": [
-                  "installs-activity",
-                  "conversion",
-                  "release-cadence"
-                ],
+                "enum": ["installs-activity", "conversion", "release-cadence"],
                 "description": "The host chart this line is drawn on."
               },
               "metric": {
@@ -321,12 +279,7 @@
                 "description": "The connector metric this line plots. It has to be one the connector declares."
               }
             },
-            "required": [
-              "id",
-              "label",
-              "chart",
-              "metric"
-            ],
+            "required": ["id", "label", "chart", "metric"],
             "additionalProperties": false
           },
           "description": "Lines drawn onto a host chart from a metric the connector writes. The host draws the line on the chart this names and puts the vendor in the chart legend; a stale metric is drawn dashed with the time of its last sync."
@@ -344,12 +297,7 @@
               },
               "page": {
                 "type": "string",
-                "enum": [
-                  "overview",
-                  "analytics",
-                  "deployments",
-                  "ai_chat"
-                ],
+                "enum": ["overview", "analytics", "deployments", "ai_chat"],
                 "description": "The host page this banner appears on."
               },
               "event": {
@@ -358,11 +306,7 @@
                 "description": "The event that raises it. Declare the same name under `contributes.webhooks` with `as: \"banner\"`."
               }
             },
-            "required": [
-              "id",
-              "page",
-              "event"
-            ],
+            "required": ["id", "page", "event"],
             "additionalProperties": false
           },
           "description": "Banners raised on a host page by a webhook declared with as: \"banner\". The host draws one at the top of that page, carrying the `why` sentence from the delivery, until the owner dismisses it."
@@ -390,7 +334,8 @@
                   "analytics.keywords",
                   "analytics.reviews",
                   "deployments.releases",
-                  "deployments.builds"
+                  "deployments.builds",
+                  "deployments.runs"
                 ],
                 "description": "The host table whose row menu gains this entry."
               },
@@ -401,12 +346,7 @@
                 "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
               }
             },
-            "required": [
-              "id",
-              "title",
-              "table",
-              "entry"
-            ],
+            "required": ["id", "title", "table", "entry"],
             "additionalProperties": false
           },
           "description": "Actions offered on a row of a host table."
@@ -457,13 +397,7 @@
                 "description": "The one or two characters drawn at the marker."
               }
             },
-            "required": [
-              "id",
-              "label",
-              "chart",
-              "event",
-              "glyph"
-            ],
+            "required": ["id", "label", "chart", "event", "glyph"],
             "additionalProperties": false
           },
           "description": "Markers drawn on a host chart by a webhook declared with as: \"event\". Needs the `ui:render` and `alerts:write` scopes. The host draws the glyph on the chart time axis at the moment the delivery arrived, with the vendor named on hover."
@@ -486,10 +420,7 @@
               "description": "The JSON Schema for the values owners fill in. It becomes `TapSettingsProps[\"values\"]` and the reserved `settings` singleton."
             }
           },
-          "required": [
-            "entry",
-            "schema"
-          ],
+          "required": ["entry", "schema"],
           "additionalProperties": false,
           "description": "The settings panel owners open for this install."
         },
@@ -504,11 +435,7 @@
             "properties": {
               "scope": {
                 "type": "string",
-                "enum": [
-                  "user",
-                  "install",
-                  "organization"
-                ],
+                "enum": ["user", "install", "organization"],
                 "description": "Who the documents belong to: one `user`, the whole `install`, or the `organization`."
               },
               "singleton": {
@@ -524,10 +451,7 @@
                 "description": "The JSON Schema for one document in this collection."
               }
             },
-            "required": [
-              "scope",
-              "schema"
-            ],
+            "required": ["scope", "schema"],
             "additionalProperties": false
           },
           "description": "The hosted storage collections this extension reads and writes. At most 10, and the name \"settings\" is reserved. Needs the `storage:write` scope."
@@ -540,11 +464,7 @@
               "properties": {
                 "method": {
                   "type": "string",
-                  "enum": [
-                    "none",
-                    "api_key",
-                    "oauth"
-                  ],
+                  "enum": ["none", "api_key", "oauth"],
                   "description": "The credential flow owners go through at install."
                 },
                 "fields": {
@@ -592,12 +512,7 @@
                         "description": "The hint drawn under the input."
                       }
                     },
-                    "required": [
-                      "name",
-                      "label",
-                      "type",
-                      "required"
-                    ],
+                    "required": ["name", "label", "type", "required"],
                     "additionalProperties": false
                   },
                   "description": "The credentials owners enter. They reach your server as `credentials` on every call."
@@ -626,37 +541,22 @@
                     },
                     "tokenRequestEncoding": {
                       "type": "string",
-                      "enum": [
-                        "form",
-                        "json"
-                      ],
+                      "enum": ["form", "json"],
                       "description": "The request body encoding for authorization-code and refresh token exchanges. When omitted, uses form encoding (application/x-www-form-urlencoded); json uses application/json."
                     }
                   },
-                  "required": [
-                    "authorizationUrl",
-                    "tokenUrl",
-                    "scopes"
-                  ],
+                  "required": ["authorizationUrl", "tokenUrl", "scopes"],
                   "additionalProperties": false,
                   "description": "The endpoints, for `method: \"oauth\"`."
                 }
               },
-              "required": [
-                "method"
-              ],
+              "required": ["method"],
               "additionalProperties": false,
               "description": "How owners authenticate this connector."
             },
             "sync": {
               "type": "string",
-              "enum": [
-                "5m",
-                "15m",
-                "1h",
-                "6h",
-                "24h"
-              ],
+              "enum": ["5m", "15m", "1h", "6h", "24h"],
               "description": "How often Tappify asks your server to sync."
             },
             "metrics": {
@@ -678,21 +578,12 @@
                   },
                   "unit": {
                     "type": "string",
-                    "enum": [
-                      "count",
-                      "ratio",
-                      "currency",
-                      "seconds",
-                      "bytes"
-                    ],
+                    "enum": ["count", "ratio", "currency", "seconds", "bytes"],
                     "description": "How the value is formatted."
                   },
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "gauge",
-                      "counter"
-                    ],
+                    "enum": ["gauge", "counter"],
                     "description": "Whether the value is a level at a point in time (`gauge`) or accumulates (`counter`)."
                   },
                   "dimensions": {
@@ -713,10 +604,7 @@
                           "description": "The label owners read on the dimension."
                         }
                       },
-                      "required": [
-                        "key",
-                        "label"
-                      ],
+                      "required": ["key", "label"],
                       "additionalProperties": false
                     },
                     "description": "The breakdowns this metric can be split by."
@@ -728,12 +616,7 @@
                     "description": "How many days of history to fetch on the first sync."
                   }
                 },
-                "required": [
-                  "key",
-                  "label",
-                  "unit",
-                  "kind"
-                ],
+                "required": ["key", "label", "unit", "kind"],
                 "additionalProperties": false
               },
               "description": "The metrics this connector writes into the metrics store. Needs the `metrics:write` scope."
@@ -755,11 +638,7 @@
               },
               "as": {
                 "type": "string",
-                "enum": [
-                  "alert",
-                  "banner",
-                  "event"
-                ],
+                "enum": ["alert", "banner", "event"],
                 "description": "What Tappify turns it into: an inbox `alert`, a page `banner`, or an `event` a chart marker and `tap.data.subscribe` can read."
               },
               "payload": {
@@ -771,11 +650,7 @@
                 "description": "The JSON Schema for the body your server posts. An alert or a banner has to carry `why`."
               }
             },
-            "required": [
-              "event",
-              "as",
-              "payload"
-            ],
+            "required": ["event", "as", "payload"],
             "additionalProperties": false
           },
           "description": "The events this extension's server posts to Tappify, and what each one becomes. An `alert` or a `banner` needs the `alerts:write` scope."
@@ -810,41 +685,21 @@
                   },
                   "returns": {
                     "type": "string",
-                    "enum": [
-                      "comparison",
-                      "table",
-                      "series",
-                      "list",
-                      "value"
-                    ],
+                    "enum": ["comparison", "table", "series", "list", "value"],
                     "description": "The card the host draws from the result."
                   },
                   "cost": {
                     "type": "string",
-                    "enum": [
-                      "low",
-                      "medium",
-                      "high"
-                    ],
+                    "enum": ["low", "medium", "high"],
                     "description": "Roughly what one call costs to serve, so the assistant can prefer a cheaper tool."
                   },
                   "cache": {
                     "type": "string",
-                    "enum": [
-                      "1m",
-                      "5m",
-                      "1h"
-                    ],
+                    "enum": ["1m", "5m", "1h"],
                     "description": "How long an identical call may be served from cache instead of reaching your server."
                   }
                 },
-                "required": [
-                  "id",
-                  "description",
-                  "input",
-                  "returns",
-                  "cost"
-                ],
+                "required": ["id", "description", "input", "returns", "cost"],
                 "additionalProperties": false
               },
               "description": "The tools the assistant may call on your server. Needs the `ai:tools` scope."
@@ -873,11 +728,7 @@
                     "description": "The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl` — the route `createTappifyHandler` serves — so write that path here; it records the route, it does not choose it."
                   }
                 },
-                "required": [
-                  "id",
-                  "label",
-                  "list"
-                ],
+                "required": ["id", "label", "list"],
                 "additionalProperties": false
               },
               "description": "The things owners can name with @ in chat, and where to list them. Needs the `ai:tools` scope."
@@ -926,6 +777,7 @@
                       "reviews:read",
                       "review.threads:read",
                       "crashes:read",
+                      "builds:read",
                       "revenue:read",
                       "metrics:write",
                       "alerts:write",
@@ -972,11 +824,7 @@
                   },
                   "category": {
                     "type": "string",
-                    "enum": [
-                      "metric_definitions",
-                      "gotchas",
-                      "setup"
-                    ],
+                    "enum": ["metric_definitions", "gotchas", "setup"],
                     "description": "What kind of knowledge the file carries."
                   },
                   "file": {
@@ -986,11 +834,7 @@
                     "description": "The markdown file in the bundle, as a path relative to the manifest."
                   }
                 },
-                "required": [
-                  "id",
-                  "category",
-                  "file"
-                ],
+                "required": ["id", "category", "file"],
                 "additionalProperties": false
               },
               "description": "Markdown the assistant indexes and cites when it answers about this extension."
@@ -1033,12 +877,7 @@
                     "description": "The tool ids this skill is allowed to use."
                   }
                 },
-                "required": [
-                  "id",
-                  "name",
-                  "description",
-                  "file"
-                ],
+                "required": ["id", "name", "description", "file"],
                 "additionalProperties": false
               },
               "description": "Markdown procedures that shape how the assistant works. Needs the `ai:skills` scope."
@@ -1097,12 +936,7 @@
                     "description": "The JSON Schema for a short form the owner fills in before the prompt is sent."
                   }
                 },
-                "required": [
-                  "id",
-                  "title",
-                  "template",
-                  "surfaces"
-                ],
+                "required": ["id", "title", "template", "surfaces"],
                 "additionalProperties": false
               },
               "description": "Prompt templates the host offers owners as chips. Needs the `ai:skills` scope."
@@ -1129,28 +963,17 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": [
-                        "turn_start",
-                        "mention"
-                      ]
+                      "enum": ["turn_start", "mention"]
                     },
                     "description": "When the host calls your server for it."
                   },
                   "cache": {
                     "type": "string",
-                    "enum": [
-                      "1m",
-                      "5m",
-                      "1h"
-                    ],
+                    "enum": ["1m", "5m", "1h"],
                     "description": "How long the context may be reused before refetching."
                   }
                 },
-                "required": [
-                  "id",
-                  "description",
-                  "when"
-                ],
+                "required": ["id", "description", "when"],
                 "additionalProperties": false
               },
               "description": "Providers the host calls to put your data in front of the assistant. Needs the `ai:skills` scope."
@@ -1166,11 +989,7 @@
               "properties": {
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "tracker",
-                    "docs",
-                    "chat"
-                  ],
+                  "enum": ["tracker", "docs", "chat"],
                   "description": "What kind of destination this is."
                 },
                 "container": {
@@ -1188,10 +1007,7 @@
                       "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
                     }
                   },
-                  "required": [
-                    "label",
-                    "list"
-                  ],
+                  "required": ["label", "list"],
                   "additionalProperties": false,
                   "description": "Deprecated. Resolve containers dynamically with describe_container."
                 },
@@ -1200,11 +1016,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": [
-                      "issue",
-                      "page",
-                      "message"
-                    ]
+                    "enum": ["issue", "page", "message"]
                   },
                   "description": "What this destination can create."
                 },
@@ -1234,9 +1046,7 @@
                       "description": "The fields an owner has to fill in before you can create."
                     }
                   },
-                  "required": [
-                    "required"
-                  ],
+                  "required": ["required"],
                   "additionalProperties": false,
                   "description": "Deprecated. Resolve fields dynamically with describe_container."
                 },
@@ -1244,10 +1054,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": [
-                      "image",
-                      "link"
-                    ]
+                    "enum": ["image", "link"]
                   },
                   "description": "What can be attached to a created item."
                 },
@@ -1255,10 +1062,7 @@
                   "anyOf": [
                     {
                       "type": "string",
-                      "enum": [
-                        "two-way",
-                        "none"
-                      ],
+                      "enum": ["two-way", "none"],
                       "description": "Deprecated. Declare a comments capability object."
                     },
                     {
@@ -1332,26 +1136,17 @@
                           "description": "Your own status names that mean finished."
                         }
                       },
-                      "required": [
-                        "open",
-                        "in_progress",
-                        "done"
-                      ],
+                      "required": ["open", "in_progress", "done"],
                       "additionalProperties": false,
                       "description": "Deprecated. Resolve statuses dynamically with describe_container."
                     }
                   },
-                  "required": [
-                    "direction"
-                  ],
+                  "required": ["direction"],
                   "additionalProperties": false
                 },
                 "identity": {
                   "type": "string",
-                  "enum": [
-                    "user",
-                    "install"
-                  ],
+                  "enum": ["user", "install"],
                   "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
                 },
                 "auth": {
@@ -1376,11 +1171,7 @@
                           "description": "The scopes requested from the provider."
                         }
                       },
-                      "required": [
-                        "method",
-                        "provider",
-                        "scopes"
-                      ],
+                      "required": ["method", "provider", "scopes"],
                       "additionalProperties": false
                     },
                     {
@@ -1435,20 +1226,12 @@
                                 "description": "The hint drawn under the input."
                               }
                             },
-                            "required": [
-                              "name",
-                              "label",
-                              "type",
-                              "required"
-                            ],
+                            "required": ["name", "label", "type", "required"],
                             "additionalProperties": false
                           }
                         }
                       },
-                      "required": [
-                        "method",
-                        "fields"
-                      ],
+                      "required": ["method", "fields"],
                       "additionalProperties": false
                     }
                   ],
@@ -1470,11 +1253,7 @@
               "properties": {
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "tracker",
-                    "docs",
-                    "chat"
-                  ],
+                  "enum": ["tracker", "docs", "chat"],
                   "description": "What kind of destination this is."
                 },
                 "container": {
@@ -1492,10 +1271,7 @@
                       "description": "The path under `server.baseUrl` that lists the containers an owner can choose from."
                     }
                   },
-                  "required": [
-                    "label",
-                    "list"
-                  ],
+                  "required": ["label", "list"],
                   "additionalProperties": false,
                   "description": "Where items land, and how owners pick one."
                 },
@@ -1504,11 +1280,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": [
-                      "issue",
-                      "page",
-                      "message"
-                    ]
+                    "enum": ["issue", "page", "message"]
                   },
                   "description": "What this destination can create."
                 },
@@ -1538,9 +1310,7 @@
                       "description": "The fields an owner has to fill in before you can create."
                     }
                   },
-                  "required": [
-                    "required"
-                  ],
+                  "required": ["required"],
                   "additionalProperties": false,
                   "description": "What a created item carries."
                 },
@@ -1548,19 +1318,13 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": [
-                      "image",
-                      "link"
-                    ]
+                    "enum": ["image", "link"]
                   },
                   "description": "What can be attached to a created item."
                 },
                 "comments": {
                   "type": "string",
-                  "enum": [
-                    "two-way",
-                    "none"
-                  ],
+                  "enum": ["two-way", "none"],
                   "description": "Whether comments sync back and forth or not at all."
                 },
                 "status": {
@@ -1596,28 +1360,18 @@
                           "description": "Your own status names that mean finished."
                         }
                       },
-                      "required": [
-                        "open",
-                        "in_progress",
-                        "done"
-                      ],
+                      "required": ["open", "in_progress", "done"],
                       "additionalProperties": false,
                       "description": "Your status names, grouped into the three stages Tappify draws."
                     }
                   },
-                  "required": [
-                    "webhook",
-                    "map"
-                  ],
+                  "required": ["webhook", "map"],
                   "additionalProperties": false,
                   "description": "How status travels back from your system."
                 },
                 "identity": {
                   "type": "string",
-                  "enum": [
-                    "user",
-                    "install"
-                  ],
+                  "enum": ["user", "install"],
                   "description": "Whether items are created as the owner who asked (`user`) or as the install itself."
                 }
               },
@@ -1682,26 +1436,16 @@
               },
               "cache": {
                 "type": "string",
-                "enum": [
-                  "1m",
-                  "5m",
-                  "1h"
-                ],
+                "enum": ["1m", "5m", "1h"],
                 "description": "How long an identical call may be served from cache instead of reaching your server."
               },
               "kind": {
                 "type": "string",
-                "enum": [
-                  "read",
-                  "write"
-                ],
+                "enum": ["read", "write"],
                 "description": "Whether this procedure only reads or also changes something."
               }
             },
-            "required": [
-              "input",
-              "output"
-            ],
+            "required": ["input", "output"],
             "additionalProperties": false
           },
           "description": "The procedures the host may call on your server, by name, each with its input and output schema. At most 30."
@@ -1716,6 +1460,9 @@
               "keyword.set_changed",
               "screenshots.updated",
               "price.changed",
+              "build.succeeded",
+              "build.failed",
+              "build.uploaded",
               "featuring.started",
               "score.changed",
               "incident.opened",
@@ -1737,9 +1484,7 @@
           "description": "The Tappify events your server subscribes to. Each is delivered to `POST /tappify/events` as it happens, with the same body every host-to-vendor call carries."
         }
       },
-      "required": [
-        "baseUrl"
-      ],
+      "required": ["baseUrl"],
       "additionalProperties": false,
       "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination or a procedure."
     },

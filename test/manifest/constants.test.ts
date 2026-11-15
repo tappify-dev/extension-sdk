@@ -28,6 +28,7 @@ describe('registry mirror', () => {
       'reviews:read',
       'review.threads:read',
       'crashes:read',
+      'builds:read',
       'revenue:read',
       'metrics:write',
       'alerts:write',
@@ -89,7 +90,10 @@ describe('registry mirror', () => {
       'sidebar',
     ]);
     expect(slotsForPage('ai_chat')).toEqual([]);
-    expect(findPage('overview')?.charts).toEqual(['installs-activity']);
+    expect(findPage('overview')?.charts).toEqual([
+      'installs-activity',
+      'release-cadence',
+    ]);
   });
 
   it('mirrors slots, charts, tables, kinds, categories and events', () => {
@@ -110,6 +114,7 @@ describe('registry mirror', () => {
       'analytics.reviews',
       'deployments.releases',
       'deployments.builds',
+      'deployments.runs',
     ]);
     expect(KINDS).toEqual([
       'page',
@@ -158,6 +163,9 @@ describe('registry mirror', () => {
       'keyword.set_changed',
       'screenshots.updated',
       'price.changed',
+      'build.succeeded',
+      'build.failed',
+      'build.uploaded',
       'featuring.started',
       'score.changed',
       'incident.opened',
