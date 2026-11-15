@@ -1,3 +1,9 @@
+## [2.1.0-beta.4](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.3...v2.1.0-beta.4) (2026-11-15)
+
+### Features
+
+- **manifest:** add builds:read, build events and deployments.runs ([c4110ea](https://github.com/tappify-dev/extension-sdk/commit/c4110eabaff1a13d38343db51a13622de77c09d3))
+
 ## [2.1.0-beta.3](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2026-10-21)
 
 ### Features
