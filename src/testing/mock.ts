@@ -188,8 +188,8 @@ function asObject(value: unknown): object {
  * `TAP_SCOPE_MISSING` for the kind's own scope and every storage call, reads
  * included, needs `storage:write`. A procedure needs either `server`, which answers
  * in process, or `handler`, which is called over a real `Request` with a token the
- * mock signs — so that handler has to be built with `jwks: await testJwks()` and the
- * same `extensionId` — and without either, `tap.server.<name>` rejects with
+ * mock signs. That handler has to be built with `jwks: await testJwks()` and the
+ * same `extensionId`; without either, `tap.server.<name>` rejects with
  * `TAP_UNKNOWN_PROCEDURE`. With `storage` given, a collection the map does not name
  * throws `TAP_UNKNOWN_COLLECTION`. Unlike the host, this mock records
  * `tap.actions.run` and resolves it as pending rather than refusing it, so a test

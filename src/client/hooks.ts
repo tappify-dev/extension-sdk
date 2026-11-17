@@ -226,7 +226,7 @@ export function useTapContext(): Record<string, unknown> {
  * The value is `undefined` until something sets it, and setting it re-renders
  * every mount reading the same key, including a sibling widget and the expand
  * panel. The store lives in the browser session: it is not persisted, not shared
- * between teammates or tabs, and never reaches Tappify or your server — use
+ * between teammates or tabs, and never reaches Tappify or your server. Use
  * `useTapStorage` for a value that has to come back tomorrow. Throws
  * `TAP_OUTSIDE_HOST` outside a mount.
  *

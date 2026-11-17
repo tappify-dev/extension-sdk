@@ -294,7 +294,7 @@ export const fixtures: TapFixtures = {
  * @remarks
  * Every branch is cloned with `structuredClone`, so a component that sorts or
  * splices a result cannot reach the fixture the next test reads. It checks no
- * scope — `createTapMock` refuses an ungranted kind before it gets here — and it
+ * scope. `createTapMock` refuses an ungranted kind before it gets here, and it
  * ignores the range and platform in the query, so the numbers are the same
  * whatever the filter bar says. The seven assertions inside are the one place
  * TypeScript cannot follow the distributive conditional in `TapResult<Q>` back

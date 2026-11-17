@@ -76,8 +76,8 @@ export async function testJwks(): Promise<JSONWebKeySet> {
  * Signs an install token a handler built against `testJwks` accepts.
  *
  * @remarks
- * Every claim has a default — install `ins_test`, extension `starter`, project
- * `prj_north`, organization `org_test`, no scopes — and the audience is
+ * Every claim has a default: install `ins_test`, extension `starter`, project
+ * `prj_north`, organization `org_test`, and no scopes. The audience is
  * `ext:<extensionId>`, taken from `options.extensionId`, then from the claims, then
  * `starter`. It expires in five minutes unless `expiresIn` says otherwise, which is
  * how a test covers an expired token. `createTestClient` and `createTapMock` sign
@@ -186,7 +186,7 @@ const HEALTH_PATH = '/tappify/health';
  * `install`, `context`, `credentials` and `documents` it will read in production. A route that
  * answers an error rejects with a `TapServerError` carrying the code, message and
  * status from the body, which is what a test asserts on; use `raw` when the status
- * itself is the assertion. Every method calls the unprefixed path — `/tappify/…` —
+ * itself is the assertion. Every method calls the unprefixed `/tappify/…` path,
  * whatever `basePath` the options carry, so a `basePath` the handler strips off
  * something else is not exercised here, and one that is itself a prefix of
  * `/tappify`, such as `/tap`, makes every call 404 `TAP_ROUTE_UNKNOWN`. Reach a
@@ -216,7 +216,7 @@ export function createTestClient(
   if (typeof target === 'function') {
     throw new TapError(
       'TAP_TEST_TARGET_INVALID',
-      'createTestClient() was handed a built handler instead of the options object. A handler from createTappifyHandler() verifies install tokens against the live Tappify key set, so every call the test client makes would come back 401. Pass the options themselves — createTestClient(handlerOptions) — or, when you need the handler, build it with createTappifyHandler({ ...handlerOptions, jwks: await testJwks() }) and drive it through createTapMock({ handler, extensionId: handlerOptions.extensionId }) so the test token carries the audience the handler expects.',
+      'createTestClient() was handed a built handler instead of the options object. A handler from createTappifyHandler() verifies install tokens against the live Tappify key set, so every call the test client makes would come back 401. Pass the options themselves with createTestClient(handlerOptions). When you need the handler, build it with createTappifyHandler({ ...handlerOptions, jwks: await testJwks() }) and drive it through createTapMock({ handler, extensionId: handlerOptions.extensionId }) so the test token carries the audience the handler expects.',
     );
   }
 

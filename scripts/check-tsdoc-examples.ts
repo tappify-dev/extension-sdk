@@ -256,9 +256,7 @@ const takeImport = (line: string, source: string): string | null => {
 const renderImport = (entry: ModuleImport): string[] => {
   const out: string[] = [];
   if (entry.namespaceName !== undefined) {
-    out.push(
-      `import * as ${entry.namespaceName} from '${entry.specifier}';`,
-    );
+    out.push(`import * as ${entry.namespaceName} from '${entry.specifier}';`);
   }
 
   const names = [...entry.named.values()]
@@ -314,7 +312,7 @@ const file = [
   '// Do not edit by hand and do not commit: `pnpm docs:examples` rewrites it.',
   '// The SDK tree carries no tappify.d.ts, so a declared storage document, a',
   '// procedure output and an action input are `unknown` here, the way they are for',
-  '// a vendor who has not run `tappify extension types` yet.',
+  '// a project whose generated declarations are not synchronized yet.',
   '',
   ...imports,
   '',

@@ -203,7 +203,7 @@ function useHostQueryClient(): QueryClient {
   } catch {
     throw new TapError(
       'TAP_NO_QUERY_CLIENT',
-      'The Tappify host provides the query client. This hook runs only inside a Tappify mount — render the component from an entry declared in tappify.extension.json, or wrap it in renderWithTap() from @tappify/extension-sdk/testing.',
+      'The Tappify host provides the query client. This hook runs only inside a Tappify mount. Render the component from an entry declared in tappify.extension.json, or wrap it in renderWithTap() from @tappify/extension-sdk/testing.',
     );
   }
 }
@@ -213,7 +213,7 @@ function useHostQueryClient(): QueryClient {
  * and filter bar.
  *
  * @remarks
- * Each kind needs its own scope — `project` needs `projects:read`, `series` needs
+ * Each kind needs its own scope. `project` needs `projects:read`, `series` needs
  * `analytics:read`, `keywords` and `listing` need `store.metadata:read`, and
  * `reviews`, `crashes` and `revenue` need their own. A kind the install has not
  * granted comes back as a `TapError` with code `TAP_SCOPE_MISSING` in `error`. An
@@ -312,8 +312,7 @@ export function useTapQuery<Q extends TapQuery>(
  * filter bar.
  *
  * @remarks
- * The name and the input are narrowed by the `TapProcedureMap` augmentation
- * `tappify extension types` writes, so a procedure the manifest does not declare
+ * The name and input are narrowed by the extension's `TapProcedureMap`, so a procedure the manifest does not declare
  * does not compile; at runtime a name the host has no route for throws
  * `TAP_UNKNOWN_PROCEDURE`. The call carries the whole filter bar for you. An
  * answer stays fresh for 30 seconds and a failure is not retried; an error your
@@ -358,7 +357,7 @@ export function useTapServer<N extends TapProcedureName>(
   if (typeof procedure !== 'function') {
     throw new TapError(
       'TAP_UNKNOWN_PROCEDURE',
-      `Procedure "${name}" is not declared. Add it under server.procedures in tappify.extension.json, then run \`tappify extension types\`.`,
+      `Procedure "${name}" is not declared. Add it under server.procedures in tappify.extension.json and restart the dev server.`,
     );
   }
 
@@ -411,8 +410,7 @@ function asSingleton<T>(handle: unknown, collection: string): TapSingleton<T> {
  * Reads and writes the one document a singleton storage collection holds.
  *
  * @remarks
- * The argument is a collection name from the `TapStorageMap` augmentation
- * `tappify extension types` writes, and the collection has to be declared with
+ * The argument is a collection name from the extension's `TapStorageMap`, and the collection has to be declared with
  * `"singleton": true`; an id-keyed collection throws `TAP_UNKNOWN_COLLECTION`,
  * with the `tap.storage.<name>.list()` path in the message. `data` is `undefined`
  * while the first read is in flight and `null` until the document is first

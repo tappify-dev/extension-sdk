@@ -167,8 +167,8 @@ export interface VerifyTokenOptions {
  * The routes and settings `createTappifyHandler` builds a fetch handler from.
  *
  * @remarks
- * The `tools`, `actions` and `procedures` tables are keyed by the names the
- * augmentation `tappify extension types` writes, so a handler for an undeclared
+ * The `tools`, `actions` and `procedures` tables are keyed by the extension's
+ * declared names, so a handler for an undeclared
  * name does not compile. `events` is keyed by Tappify's own event catalogue and
  * `work` by the fixed set of work operations; `mentions` and `context` take any id.
  * A route Tappify calls with no handler registered answers 404 with

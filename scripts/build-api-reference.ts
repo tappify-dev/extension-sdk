@@ -56,48 +56,30 @@ if (!existsSync(join(docsRoot, 'docs.json'))) {
 const quote = (value: string): string =>
   value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
-/** Typedoc escapes markdown punctuation; a frontmatter description is plain text. */
-const unescapeMarkdown = (value: string): string =>
-  value.replace(/\\([\\`*_{}[\]()#+\-.!<>|~])/g, '$1');
+const plainText = (value: string): string =>
+  value
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/[*_]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-/**
- * The symbol's own summary, which typedoc writes into the preamble above the first
- * section heading. Fenced blocks are skipped whole, because with `useCodeBlocks` the
- * preamble opens with the signature and a signature fragment is not a description; the
- * scan stops at the first heading, because everything below it describes a member rather
- * than the symbol.
- */
-const firstSentence = (lines: string[]): string => {
-  let fenced = false;
-  const paragraph: string[] = [];
-
-  for (const line of lines) {
-    const text = line.trim();
-    if (/^(```|~~~)/.test(text)) {
-      fenced = !fenced;
-      continue;
-    }
-    if (fenced) continue;
-    if (/^#{1,6}\s/.test(text)) break;
-
-    const stripped = unescapeMarkdown(text)
-      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-      .replace(/[*`_]/g, '')
-      .trim();
-
-    if (stripped === '') {
-      if (paragraph.length > 0) break;
-      continue;
-    }
-    paragraph.push(stripped);
+const extractSummary = (
+  lines: string[],
+): { description: string | null; body: string[] } => {
+  const start = lines.findIndex(line => line.trim() !== '');
+  if (start === -1 || /^(#|```|~~~)/.test(lines[start].trim())) {
+    return { description: null, body: lines };
   }
 
-  if (paragraph.length === 0) return '';
-
-  const prose = paragraph.join(' ');
-  const stop = /[.!?](\s|$)/.exec(prose);
-  const sentence = stop === null ? prose : prose.slice(0, stop.index + 1);
-  return sentence.length > 160 ? `${sentence.slice(0, 157)}…` : sentence;
+  let end = start;
+  while (end < lines.length && lines[end].trim() !== '') end += 1;
+  const description = plainText(lines.slice(start, end).join(' '));
+  while (end < lines.length && lines[end].trim() === '') end += 1;
+  return {
+    description: description === '' ? null : description,
+    body: lines.slice(end),
+  };
 };
 
 const rewriteLinks = (text: string, directory: string): string =>
@@ -142,18 +124,19 @@ for (const entry of ENTRIES) {
         ? symbolName(fileName)
         : lines[headingIndex].replace(/^#\s+/, '').trim();
     const rest = headingIndex === -1 ? lines : lines.slice(headingIndex + 1);
-
-    const summary = firstSentence(rest);
+    const summary = extractSummary(rest);
     const description =
-      summary === '' ? `${title} in the Tappify extension SDK.` : summary;
+      summary.description ?? `${title} in the Tappify extension SDK.`;
 
+    const body = rewriteLinks(summary.body.join('\n'), entry.directory)
+      .trim()
+      .replace(/[ \t]+$/gm, '');
     const page = [
       '---',
       `title: "${quote(title)}"`,
       `description: "${quote(description)}"`,
       '---',
-      '',
-      rewriteLinks(rest.join('\n'), entry.directory).trim(),
+      ...(body === '' ? [] : ['', body]),
       '',
     ].join('\n');
 

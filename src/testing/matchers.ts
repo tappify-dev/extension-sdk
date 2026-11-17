@@ -216,7 +216,7 @@ export const tapMatchers = {
  * The vitest and jest presets call this, so a suite that loads
  * `@tappify/extension-sdk/testing/vitest` or `.../testing/jest` as a setup file
  * needs nothing else. Call it yourself only in a suite that does not use a preset,
- * and once — registering twice replaces the same four names. It adds no types of
+ * and once. Registering twice replaces the same four names. It adds no types of
  * its own, so a suite without a preset declares the four on the runner's `Matchers`
  * interface itself.
  *

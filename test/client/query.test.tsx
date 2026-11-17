@@ -346,7 +346,7 @@ describe('useTapServer', () => {
     if (!TapError.is(thrown)) throw new Error('unreachable');
     expect(thrown.code).toBe('TAP_UNKNOWN_PROCEDURE');
     expect(thrown.message).toContain('server.procedures');
-    expect(thrown.message).toContain('tappify extension types');
+    expect(thrown.message).toContain('restart the dev server');
   });
 });
 

@@ -96,8 +96,7 @@ async function rejectionCode(response: Response): Promise<string | null> {
  * inbound secret.
  *
  * @remarks
- * The name and the payload are narrowed by the `TapWebhookMap` augmentation
- * `tappify extension types` writes. It builds the envelope, signs the serialised
+ * The name and payload are narrowed by the extension's `TapWebhookMap`. It builds the envelope, signs the serialised
  * body and posts it to the install's hook path under `baseUrl`, or to `endpoint`
  * when you give one. A response Tappify did not accept rejects with a
  * `TapServerError` whose `code` is always `TAP_WEBHOOK_REJECTED`, carrying the HTTP

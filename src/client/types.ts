@@ -8,55 +8,25 @@ import type {
 
 export type { DataQueryKind, HostEventName, HostPage, ScopeKey, SlotId };
 
-/**
- * The storage collections the manifest declares, keyed by collection name, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's storage collections, keyed by collection name. */
 export interface TapStorageMap {}
-/**
- * The procedures the manifest declares, each with its `input` and `output` type,
- * which `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's procedures, each with its `input` and `output` type. */
 export interface TapProcedureMap {}
-/**
- * The actions the manifest declares, each with its `input` type, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's actions, each with its `input` type. */
 export interface TapActionMap {}
-/**
- * The tools the manifest declares, each with its `input` type, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's assistant tools, each with its `input` type. */
 export interface TapToolMap {}
-/**
- * The prompts the manifest declares, each with its `input` type, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's assistant prompts, each with its `input` type. */
 export interface TapPromptMap {}
-/**
- * The webhook events the manifest declares, keyed by event name and typed by
- * payload, which `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The extension's webhook events, keyed by event name and payload type. */
 export interface TapWebhookMap {}
-/**
- * The narrowed payload types for the Tappify events the manifest subscribes to,
- * which `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The payload types for the Tappify events the extension subscribes to. */
 export interface TapHostEventMap {}
-/**
- * The telemetry event names the manifest declares, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The telemetry event names declared by the extension. */
 export interface TapTelemetryEvents {}
-/**
- * The settings document the settings contribution's schema describes, which
- * `tappify extension types` writes into `src/tappify.d.ts`.
- */
+/** The value shape declared by the extension's settings schema. */
 export interface TapSettings {}
-/**
- * The credential names the manifest declares, which `tappify extension types`
- * writes into `src/tappify.d.ts`.
- */
+/** The credential values declared by the extension's connector. */
 export interface TapCredentials {}
 
 /** One of the two stores an owner's app ships to. */
@@ -563,7 +533,7 @@ export interface TapActionRun {
  * @remarks
  * The host takes both from the browser. The testing mock does not: it formats in
  * `en-US` and UTC so an expected string does not move with the machine running the
- * test, and its `date` and `relative` answer differently from the host's — `date`
+ * test, and its `date` and `relative` answer differently from the host's. `date`
  * ignores `style` and returns `YYYY-MM-DD`, and `relative` returns a whole ISO
  * timestamp rather than a phrase. Assert on your own formatting, not on either of
  * those two strings.
@@ -682,7 +652,7 @@ export interface Tap extends TapInternals {
     openSettings(): void;
     /**
      * Opens the owner's chat and fills the composer with the prompt. The owner
-     * reads it and sends it — nothing here sends by itself. The context goes
+     * reads it and sends it. Nothing here sends by itself. The context goes
      * under it as JSON on a visible `From <extension name>:` line the owner can
      * edit or delete, cut to 2 KB, the same ceiling every vendor block the
      * assistant reads is held to.
@@ -746,8 +716,8 @@ export interface Tap extends TapInternals {
   actions: {
     /**
      * Creates the run and resolves with it as soon as it exists. `status` is
-     * `pending` while the owner has still to approve — the host draws the
-     * approval card — and `succeeded` or `failed` when the owner has turned
+     * `pending` while the owner has still to approve. The host draws the
+     * approval card, then reports `succeeded` or `failed` when the owner has turned
      * asking off for this install, which no action-declaring extension can do
      * today. Rejects with a `TapServerError` when the host refuses the run.
      */

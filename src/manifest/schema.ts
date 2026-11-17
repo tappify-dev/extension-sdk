@@ -27,7 +27,7 @@ const DOMAIN_EVENT = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const jsonSchema = z
   .record(z.string(), z.unknown())
   .describe(
-    'A JSON Schema object. `tappify extension types` turns it into a TypeScript type.',
+    'A JSON Schema object used to validate and type the declared values.',
   );
 
 /** The serialised size Tappify accepts for a tool or action input schema. */
@@ -477,7 +477,7 @@ const aiContribution = z
               .min(1)
               .max(200)
               .describe(
-                'The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl` — the route `createTappifyHandler` serves — so write that path here; it records the route, it does not choose it.',
+                'The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl`, which is the route `createTappifyHandler` serves. Write that path here; it records the route, it does not choose it.',
               ),
           })
           .strict(),

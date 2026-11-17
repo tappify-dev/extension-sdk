@@ -113,7 +113,7 @@ export class TapError extends Error {
  * `createTappifyHandler` catches it and answers `{ error: { code, message } }`
  * with `status`, or 400 when no status was given; the host relays both to the
  * calling mount, where they arrive as the `error` of `useTapServer`. Pick a code
- * of your own and keep it stable — the SDK's own codes are `SERVER_ERROR_CODES` —
+ * of your own and keep it stable. The SDK's own codes are `SERVER_ERROR_CODES`,
  * and write the message for the owner, who reads it on screen.
  *
  * @example

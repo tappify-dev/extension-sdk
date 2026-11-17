@@ -145,8 +145,8 @@ async function write(
  * @remarks
  * It builds the url from `originalUrl` and the `host` header, forwards every
  * header, and takes the body from `request.body` when a parser has already read
- * it or from the stream when none has. A request with neither — a parser that
- * consumed the stream without leaving a body — fails with a `TapServerError`
+ * it or from the stream when none has. A request with neither, such as a parser that
+ * consumed the stream without leaving a body, fails with a `TapServerError`
  * carrying `TAP_BODY_INVALID` rather than calling your handler against an empty
  * body, so mount `express.json()` before this middleware or mount this one first.
  * A `TapServerError` is written as the handler's own JSON error; anything else
