@@ -1,3 +1,9 @@
+## [2.1.0-beta.6](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.5...v2.1.0-beta.6) (2026-11-18)
+
+### Features
+
+- **manifest:** add ads panels, standard metrics, crash data and a server testing entry ([a89aa78](https://github.com/tappify-dev/extension-sdk/commit/a89aa78cb07622950820ba34535c4410c9bbfcd1))
+
 ## [2.1.0-beta.5](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.4...v2.1.0-beta.5) (2026-11-18)
 
 ### Features
