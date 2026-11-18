@@ -1,3 +1,13 @@
+## [2.1.0-beta.5](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.4...v2.1.0-beta.5) (2026-11-18)
+
+### Features
+
+- **manifest:** add ad network and keyword data contributions ([e2a3b2c](https://github.com/tappify-dev/extension-sdk/commit/e2a3b2c3c9cfbc5498031239addbf007a394e193))
+
+### Refactoring
+
+- hide internal type generation workflow ([8631ed9](https://github.com/tappify-dev/extension-sdk/commit/8631ed90be5b5f4b9a0a184808c5abf67c25454c))
+
 ## [2.1.0-beta.4](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.3...v2.1.0-beta.4) (2026-11-15)
 
 ### Features
