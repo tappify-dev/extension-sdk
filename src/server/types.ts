@@ -13,7 +13,14 @@ import type {
   ToolId,
   ToolInput,
 } from '../client/types';
-import type { WorkOperationMap } from './work';
+import type { AdsOperationMap } from './ads';
+import type {
+  KeywordMetricsInput,
+  KeywordMetricsResult,
+  KeywordSuggestionsInput,
+  KeywordSuggestionsResult,
+} from './keywords';
+import type { WorkServerOperationMap } from './work';
 
 /** Which install made the call, as the token's claims name it. */
 export interface TappifyInstall {
@@ -143,7 +150,10 @@ export interface ContextBlock {
 }
 
 /** The work-tracker operations a handler's `work` table can answer. */
-export type WorkOperation = keyof WorkOperationMap;
+export type WorkOperation = keyof WorkServerOperationMap;
+
+/** The ads operations a handler's `ads` table can answer. */
+export type AdsOperation = keyof AdsOperationMap;
 
 /** SDK v2 compatibility routes, excluded from the current work protocol. */
 export interface LegacyWorkHandlers {
@@ -218,9 +228,27 @@ export interface TappifyHandlerOptions {
    * needs set_status. Failures from a present set_status handler never fall back.
    */
   work?: {
-    [O in keyof WorkOperationMap]?: TappifyRouteHandler<
-      WorkOperationMap[O]['input'],
-      WorkOperationMap[O]['output']
+    [O in keyof WorkServerOperationMap]?: TappifyRouteHandler<
+      WorkServerOperationMap[O]['input'],
+      WorkServerOperationMap[O]['output']
     >;
   } & LegacyWorkHandlers;
+  /** One handler per ads operation, answering `POST /tappify/ads/<operation>`. */
+  ads?: {
+    [O in keyof AdsOperationMap]?: TappifyRouteHandler<
+      AdsOperationMap[O]['input'],
+      AdsOperationMap[O]['output']
+    >;
+  };
+  /**
+   * One handler per keyword data operation, answering
+   * `POST /tappify/keywords/<operation>`.
+   */
+  keywords?: {
+    metrics?: TappifyRouteHandler<KeywordMetricsInput, KeywordMetricsResult>;
+    suggestions?: TappifyRouteHandler<
+      KeywordSuggestionsInput,
+      KeywordSuggestionsResult
+    >;
+  };
 }

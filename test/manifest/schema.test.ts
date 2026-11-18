@@ -10,8 +10,10 @@ import {
   validateManifest,
 } from '../../src/manifest/schema';
 import type {
+  AdsContribution,
   ConnectorAuth,
   ExtensionManifest,
+  KeywordDataContribution,
   OAuthTokenRequestEncoding,
   WorkContribution,
 } from '../../src/manifest/types';
@@ -786,6 +788,328 @@ describe('manifestSchema types', () => {
     expectTypeOf<ExtensionManifest>().toEqualTypeOf<
       z.infer<typeof manifestSchema>
     >();
+  });
+});
+
+function adsManifest(): ExtensionManifest & {
+  contributes: { ads: AdsContribution };
+} {
+  const manifest = base();
+  const ads: AdsContribution = {
+    auth: { method: 'oauth', provider: 'example-ads', scopes: ['ads.read'] },
+    sync: '1h',
+    backfillDays: 30,
+    acquisition: {
+      levels: [
+        { level: 'campaign', label: 'Campaign', changes: ['status', 'budget'] },
+        { level: 'ad_group', label: 'Ad set', changes: ['status', 'bid'] },
+      ],
+      metrics: [
+        { key: 'impressions', definition: 'Times an ad was shown.' },
+        { key: 'spend', definition: 'Amount billed, in the account currency.' },
+      ],
+      extraMetrics: [
+        {
+          key: 'video_views',
+          label: 'Video views',
+          unit: 'count',
+          definition: 'Plays of three seconds or more.',
+        },
+      ],
+    },
+  };
+  return {
+    ...manifest,
+    scopes: [
+      ...manifest.scopes,
+      {
+        key: 'ads:sync',
+        justification: 'Bring campaign data into the Ads section.',
+      },
+      {
+        key: 'ads:manage',
+        justification: 'Apply the changes an owner approves.',
+      },
+    ],
+    contributes: { ...manifest.contributes, ads },
+    server: { baseUrl: 'https://ads.example.com' },
+  };
+}
+
+function withoutScope(
+  manifest: ExtensionManifest,
+  key: ExtensionManifest['scopes'][number]['key'],
+): ExtensionManifest {
+  return {
+    ...manifest,
+    scopes: manifest.scopes.filter(scope => scope.key !== key),
+  };
+}
+
+describe('ads network', () => {
+  it('accepts an acquisition network', () => {
+    expect(issues(adsManifest())).toEqual([]);
+  });
+
+  it('keeps manifests without an ad network valid', () => {
+    expect(issues(base())).toEqual([]);
+  });
+
+  it('needs a campaign level', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.levels = [
+      { level: 'ad_group', label: 'Ad set' },
+    ];
+
+    expect(issues(manifest).join()).toContain(
+      'An ad network declares a campaign level. Add { "level": "campaign" } to acquisition.levels.',
+    );
+  });
+
+  it('refuses a level declared twice', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.levels.push({
+      level: 'ad_group',
+      label: 'Ad group',
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'acquisition.levels lists ad_group twice. Declare each level once.',
+    );
+  });
+
+  it('refuses more than 20 extra numbers', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.extraMetrics = Array.from(
+      { length: 21 },
+      (_, index) => ({
+        key: `extra_${index}`,
+        label: `Extra ${index}`,
+        unit: 'count' as const,
+        definition: 'One more number from the network.',
+      }),
+    );
+
+    expect(issues(manifest)).not.toEqual([]);
+  });
+
+  it('refuses an extra number that reuses a shared key', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.extraMetrics = [
+      {
+        key: 'clicks',
+        label: 'Clicks',
+        unit: 'count',
+        definition: 'Taps on an ad that open the store.',
+      },
+    ];
+
+    expect(issues(manifest).join()).toContain(
+      '"clicks" is a shared number. Declare it under acquisition.metrics instead.',
+    );
+  });
+
+  it.each(['attribution', 'monetization'])(
+    'refuses the %s role until it is built',
+    role => {
+      const manifest = adsManifest();
+      const withRole = {
+        ...manifest,
+        contributes: {
+          ...manifest.contributes,
+          ads: { ...manifest.contributes.ads, [role]: {} },
+        },
+      };
+
+      expect(issues(withRole).join()).toContain(
+        `The ${role} role is not available yet. Declare acquisition only.`,
+      );
+    },
+  );
+
+  it('caps backfill at 90 days', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.backfillDays = 91;
+
+    expect(issues(manifest)).not.toEqual([]);
+  });
+
+  it('asks for ads:sync', () => {
+    expect(issues(withoutScope(adsManifest(), 'ads:sync')).join()).toContain(
+      'Add the ads:sync scope: this extension brings ads data into Tappify.',
+    );
+  });
+
+  it('asks for ads:manage when a level can be changed', () => {
+    expect(issues(withoutScope(adsManifest(), 'ads:manage')).join()).toContain(
+      'Add the ads:manage scope: a declared level can be changed from Tappify.',
+    );
+  });
+
+  it('does not ask for ads:manage on a read-only network', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.levels = [
+      { level: 'campaign', label: 'Campaign' },
+      { level: 'ad_group', label: 'Ad set' },
+    ];
+
+    expect(issues(withoutScope(manifest, 'ads:manage'))).toEqual([]);
+  });
+
+  it('refuses a change a level cannot carry', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.levels[0] = {
+      level: 'campaign',
+      label: 'Campaign',
+      changes: ['bid'],
+    };
+
+    expect(issues(manifest).join()).toContain(
+      'A campaign cannot change bid. It can change: status, name, budget, delete.',
+    );
+  });
+
+  it('refuses a keyword budget', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.levels.push({
+      level: 'keyword',
+      label: 'Keyword',
+      changes: ['budget'],
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'A keyword cannot change budget. It can change: status, bid, delete.',
+    );
+  });
+
+  it('needs a server', () => {
+    const { server: _server, ...manifest } = adsManifest();
+
+    expect(issues(manifest).join()).toContain(
+      'work destinations, ad networks and procedures all call your server.',
+    );
+  });
+
+  it('asks for ui:render when it draws a panel', () => {
+    const manifest = adsManifest();
+    manifest.contributes = { ads: manifest.contributes.ads };
+    manifest.contributes.ads.acquisition.detailPanels = [
+      { id: 'targeting', level: 'campaign', entry: 'src/ads/targeting.tsx' },
+    ];
+
+    expect(issues(withoutScope(manifest, 'ui:render')).join()).toContain(
+      'Add the ui:render scope: this extension renders UI in the host.',
+    );
+  });
+});
+
+function keywordDataManifest(
+  keywordData: unknown = { supports: ['metrics'], platforms: ['ios'] },
+) {
+  const manifest = base();
+  return {
+    ...manifest,
+    scopes: [
+      ...manifest.scopes,
+      {
+        key: 'keywords:write',
+        justification: 'Supply keyword volume and difficulty to Keywords.',
+      },
+    ],
+    contributes: { ...manifest.contributes, keywordData },
+    server: { baseUrl: 'https://keywords.example.com' },
+  };
+}
+
+describe('keyword data', () => {
+  it('accepts a keywordData contribution', () => {
+    expect(issues(keywordDataManifest())).toEqual([]);
+  });
+
+  it('types the keywordData contribution', () => {
+    const keywordData: KeywordDataContribution = {
+      supports: ['metrics', 'suggestions'],
+      platforms: ['ios', 'android'],
+    };
+    const manifest: ExtensionManifest = {
+      ...base(),
+      contributes: { keywordData },
+    };
+
+    expect(manifest.contributes.keywordData).toEqual(keywordData);
+    expect(issues(keywordDataManifest(keywordData))).toEqual([]);
+  });
+
+  it('rejects keywordData without the keywords:write scope', () => {
+    const manifest = keywordDataManifest();
+    const withoutKeywordsWrite = {
+      ...manifest,
+      scopes: manifest.scopes.filter(scope => scope.key !== 'keywords:write'),
+    };
+
+    expect(issues(withoutKeywordsWrite).join()).toContain(
+      'Add the keywords:write scope: this extension supplies keyword data to Tappify.',
+    );
+  });
+
+  it('rejects keywordData without server.baseUrl', () => {
+    const { server: _server, ...manifest } = keywordDataManifest();
+
+    expect(issues(manifest).join()).toContain(
+      'server.baseUrl: Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data,',
+    );
+  });
+
+  it('rejects an empty supports list', () => {
+    const manifest = keywordDataManifest({ supports: [], platforms: ['ios'] });
+
+    expect(issues(manifest).join()).toContain(
+      'contributes.keywordData.supports',
+    );
+  });
+
+  it('rejects an empty platforms list', () => {
+    const manifest = keywordDataManifest({
+      supports: ['metrics'],
+      platforms: [],
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'contributes.keywordData.platforms',
+    );
+  });
+
+  it('rejects an unknown operation', () => {
+    const manifest = keywordDataManifest({
+      supports: ['competitorKeywords'],
+      platforms: ['ios'],
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'contributes.keywordData.supports.0',
+    );
+  });
+
+  it('rejects a duplicate operation', () => {
+    const manifest = keywordDataManifest({
+      supports: ['metrics', 'metrics'],
+      platforms: ['ios'],
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'supports lists metrics twice. Declare each operation once.',
+    );
+  });
+
+  it('rejects a duplicate platform', () => {
+    const manifest = keywordDataManifest({
+      supports: ['metrics'],
+      platforms: ['ios', 'ios'],
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'platforms lists ios twice. Declare each platform once.',
+    );
   });
 });
 

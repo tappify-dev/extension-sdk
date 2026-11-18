@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ADS_CHANGES,
+  ADS_LEVELS,
+  ADS_LEVEL_CHANGES,
+  ADS_SHARED_METRICS,
   CARD_KEYS,
   CATEGORIES,
   CHARTS,
   EVENTS,
+  KEYWORD_DATA_OPERATIONS,
+  KEYWORD_DATA_PLATFORMS,
   KINDS,
   PAGES,
   QUERY_SCOPES,
@@ -42,10 +48,43 @@ describe('registry mirror', () => {
       'storage:write',
       'messaging:send',
       'ai:skills',
+      'ads:sync',
+      'ads:manage',
+      'keywords:write',
     ]);
   });
 
-  it('marks exactly the four scopes that need security review', () => {
+  it('names the keyword data operations and platforms', () => {
+    expect(KEYWORD_DATA_OPERATIONS).toEqual(['metrics', 'suggestions']);
+    expect(KEYWORD_DATA_PLATFORMS).toEqual(['ios', 'android']);
+    expect(findScope('keywords:write')).toEqual({
+      key: 'keywords:write',
+      label: 'Supply keyword data',
+      description:
+        'Supply keyword volume, difficulty and suggestions that Tappify shows in Keywords, credited to this extension',
+      requiresSecurityReview: false,
+      requiresJustification: true,
+    });
+  });
+
+  it('names what each ads level can change', () => {
+    expect(ADS_LEVELS).toEqual(['campaign', 'ad_group', 'ad', 'keyword']);
+    expect(ADS_CHANGES).toEqual(['status', 'name', 'budget', 'bid', 'delete']);
+    expect(ADS_SHARED_METRICS).toEqual([
+      'impressions',
+      'clicks',
+      'installs',
+      'spend',
+    ]);
+    expect(ADS_LEVEL_CHANGES).toEqual({
+      campaign: ['status', 'name', 'budget', 'delete'],
+      ad_group: ['status', 'name', 'budget', 'bid', 'delete'],
+      ad: ['status', 'name', 'delete'],
+      keyword: ['status', 'bid', 'delete'],
+    });
+  });
+
+  it('marks exactly the five scopes that need security review', () => {
     expect(
       SCOPES.filter(scope => scope.requiresSecurityReview).map(
         scope => scope.key,
@@ -55,6 +94,7 @@ describe('registry mirror', () => {
       'store.metadata:write',
       'autopilot:trigger',
       'messaging:send',
+      'ads:manage',
     ]);
   });
 
@@ -74,6 +114,9 @@ describe('registry mirror', () => {
       'work:sync',
       'messaging:send',
       'ai:skills',
+      'ads:sync',
+      'ads:manage',
+      'keywords:write',
     ]);
   });
 
@@ -136,6 +179,8 @@ describe('registry mirror', () => {
       'prompt',
       'context',
       'work',
+      'ads',
+      'keywordData',
     ]);
     expect(CATEGORIES).toEqual([
       'market_data',
@@ -156,6 +201,7 @@ describe('registry mirror', () => {
       'warehouse',
       'compliance',
       'additional_stores',
+      'ad_acquisition',
     ]);
     expect(EVENTS).toEqual([
       'release.shipped',

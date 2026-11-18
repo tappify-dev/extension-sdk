@@ -71,7 +71,17 @@ export interface WorkConfigureResult {
   generation: number;
   configurationRevision: number;
   registeredWebhookIds: string[];
+  /** An ISO 8601 time to next maintain expiring registrations, if needed. */
+  nextMaintenanceAt?: string;
 }
+
+/** Renew or reprovision this configuration's active webhook registrations. */
+export interface WorkMaintenanceInput extends WorkConfigureInput {
+  registeredWebhookIds: string[];
+}
+
+/** The active registrations after maintenance, including any replacements. */
+export type WorkMaintenanceResult = WorkConfigureResult;
 
 /** Optional filters and pagination for destination discovery. */
 export interface WorkListContainersInput {
@@ -86,6 +96,8 @@ export interface WorkListContainersResult {
   containers: WorkContainer[];
   /** Omitted or null when no further page exists. */
   cursor?: string | null;
+  /** HTTPS link to enable access when discovery has no eligible destinations. */
+  setupUrl?: string;
 }
 
 /** The destination whose current workflow metadata the host needs. */
@@ -305,7 +317,7 @@ export interface WorkDisconnectResult {
   removedWebhookIds: string[];
 }
 
-/** Current host-to-extension work protocol. Legacy routes are excluded. */
+/** Baseline host-to-extension work operations. */
 export interface WorkOperationMap {
   configure: { input: WorkConfigureInput; output: WorkConfigureResult };
   list_containers: {
@@ -325,4 +337,9 @@ export interface WorkOperationMap {
     output: WorkHydrateEventResult;
   };
   disconnect: { input: WorkDisconnectInput; output: WorkDisconnectResult };
+}
+
+/** Current server routes including opt-in subscription maintenance. */
+export interface WorkServerOperationMap extends WorkOperationMap {
+  maintain: { input: WorkMaintenanceInput; output: WorkMaintenanceResult };
 }

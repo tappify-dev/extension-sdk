@@ -52,7 +52,8 @@
         "ad_monetization",
         "warehouse",
         "compliance",
-        "additional_stores"
+        "additional_stores",
+        "ad_acquisition"
       ],
       "description": "The Tap Store section owners browse and filter by."
     },
@@ -74,7 +75,7 @@
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 21,
+      "maxItems": 24,
       "type": "array",
       "items": {
         "type": "object",
@@ -102,7 +103,10 @@
               "work:sync",
               "storage:write",
               "messaging:send",
-              "ai:skills"
+              "ai:skills",
+              "ads:sync",
+              "ads:manage",
+              "keywords:write"
             ],
             "description": "The scope key, from the scopes reference."
           },
@@ -725,7 +729,7 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200,
-                    "description": "The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl` — the route `createTappifyHandler` serves — so write that path here; it records the route, it does not choose it."
+                    "description": "The path that answers the picker with `{ items: [{ id, label }] }`. The host always calls `/tappify/mentions/<id>` under `server.baseUrl`, which is the route `createTappifyHandler` serves. Write that path here; it records the route, it does not choose it."
                   }
                 },
                 "required": ["id", "label", "list"],
@@ -790,7 +794,10 @@
                       "work:sync",
                       "storage:write",
                       "messaging:send",
-                      "ai:skills"
+                      "ai:skills",
+                      "ads:sync",
+                      "ads:manage",
+                      "keywords:write"
                     ],
                     "description": "The scope this action needs. Declare it under `scopes` as well."
                   },
@@ -1389,6 +1396,300 @@
             }
           ],
           "description": "The work destination this extension creates issues, pages or messages in. Needs `review.threads:read` and `work:create`; active comment or status sync also needs `work:sync`."
+        },
+        "ads": {
+          "type": "object",
+          "properties": {
+            "auth": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "const": "oauth"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "The OAuth provider identifier."
+                    },
+                    "scopes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The scopes requested from the provider."
+                    }
+                  },
+                  "required": ["method", "provider", "scopes"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "const": "api_key"
+                    },
+                    "fields": {
+                      "maxItems": 20,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "description": "The key your server reads this value back as."
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60,
+                            "description": "The label owners read above the input."
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text",
+                              "password",
+                              "textarea",
+                              "file",
+                              "select"
+                            ],
+                            "description": "How the input is drawn to the owner."
+                          },
+                          "required": {
+                            "type": "boolean",
+                            "description": "Whether owners have to fill it in before the install works."
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "The choices offered, for a `select` field."
+                          },
+                          "help": {
+                            "type": "string",
+                            "maxLength": 200,
+                            "description": "The hint drawn under the input."
+                          }
+                        },
+                        "required": ["name", "label", "type", "required"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["method", "fields"],
+                  "additionalProperties": false
+                }
+              ],
+              "description": "How owners sign in to the ad network."
+            },
+            "sync": {
+              "type": "string",
+              "enum": ["15m", "1h", "6h", "24h"],
+              "description": "How often Tappify asks your server for ads data."
+            },
+            "backfillDays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90,
+              "description": "How many days of history to fetch on the first sync. 30 when omitted."
+            },
+            "acquisition": {
+              "type": "object",
+              "properties": {
+                "levels": {
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "type": "string",
+                        "enum": ["campaign", "ad_group", "ad", "keyword"],
+                        "description": "The level this entry is for."
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40,
+                        "description": "What your network calls this level, such as \"Ad set\". Owners read it in the Ads section."
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": ["status", "name", "budget", "bid", "delete"]
+                        },
+                        "description": "What Tappify may change on this level. Leave it out for a level owners can only read. Needs the `ads:manage` scope."
+                      }
+                    },
+                    "required": ["level", "label"],
+                    "additionalProperties": false
+                  },
+                  "description": "The levels of your network this extension reports. A campaign level is required."
+                },
+                "metrics": {
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "enum": ["impressions", "clicks", "installs", "spend"],
+                        "description": "The shared number."
+                      },
+                      "definition": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 300,
+                        "description": "What this number counts on your network, in one sentence. Owners and the assistant read it beside the number."
+                      }
+                    },
+                    "required": ["key", "definition"],
+                    "additionalProperties": false
+                  },
+                  "description": "The shared numbers this extension reports."
+                },
+                "extraMetrics": {
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "description": "The key rows carry this number under."
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60,
+                        "description": "The label owners read on the number."
+                      },
+                      "unit": {
+                        "type": "string",
+                        "enum": [
+                          "count",
+                          "ratio",
+                          "currency",
+                          "seconds",
+                          "bytes"
+                        ],
+                        "description": "How the value is formatted."
+                      },
+                      "definition": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 300,
+                        "description": "What this number counts, in one sentence."
+                      }
+                    },
+                    "required": ["key", "label", "unit", "definition"],
+                    "additionalProperties": false
+                  },
+                  "description": "Numbers your network reports beyond the shared ones."
+                },
+                "detailPanels": {
+                  "maxItems": 2,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                        "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                      },
+                      "level": {
+                        "type": "string",
+                        "enum": ["campaign", "ad_group"],
+                        "description": "The level whose view this panel is drawn in."
+                      },
+                      "entry": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+                      }
+                    },
+                    "required": ["id", "level", "entry"],
+                    "additionalProperties": false
+                  },
+                  "description": "Panels the host draws inside a campaign or ad group view for settings only your network has. Needs the `ui:render` scope."
+                },
+                "createPanel": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{1,39}$",
+                      "description": "The id for this contribution, and the handle the host and your generated types refer to it by."
+                    },
+                    "entry": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200,
+                      "description": "The source file that renders this contribution, as a path relative to the manifest. It has to be present as an expose in the built bundle."
+                    }
+                  },
+                  "required": ["id", "entry"],
+                  "additionalProperties": false,
+                  "description": "The panel the host opens when an owner creates a campaign on your network. Needs the `ui:render` scope."
+                }
+              },
+              "required": ["levels", "metrics"],
+              "additionalProperties": false,
+              "description": "The campaigns, ad groups, ads and keywords this network runs, and their numbers."
+            },
+            "attribution": {
+              "not": {},
+              "description": "Not available yet."
+            },
+            "monetization": {
+              "not": {},
+              "description": "Not available yet."
+            }
+          },
+          "required": ["auth", "sync", "acquisition"],
+          "additionalProperties": false,
+          "description": "The ad network this extension brings into the Ads section: sign-in, sync and what it reports. Needs the `ads:sync` scope; declared changes also need `ads:manage`."
+        },
+        "keywordData": {
+          "type": "object",
+          "properties": {
+            "supports": {
+              "minItems": 1,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["metrics", "suggestions"]
+              },
+              "description": "What your server answers: `metrics` for the volume and difficulty of given keywords, `suggestions` for keywords related to given seeds."
+            },
+            "platforms": {
+              "minItems": 1,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["ios", "android"]
+              },
+              "description": "The stores your keyword data covers."
+            }
+          },
+          "required": ["supports", "platforms"],
+          "additionalProperties": false,
+          "description": "The keyword data this extension supplies to Keywords, shown with this extension named as the source. Needs the `keywords:write` scope."
         }
       },
       "additionalProperties": false,
@@ -1486,7 +1787,7 @@
       },
       "required": ["baseUrl"],
       "additionalProperties": false,
-      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination or a procedure."
+      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data or a procedure."
     },
     "telemetry": {
       "maxItems": 20,

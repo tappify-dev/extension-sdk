@@ -8,7 +8,9 @@
     "notDocumented": true
   },
   "intentionallyNotExported": [
+    "AdsAcquisition",
     "ContextBlock",
+    "KeywordMetricsInput",
     "MentionItems",
     "MetricDeclaration",
     "MetricsInput",
@@ -43,6 +45,6 @@
     "WorkHydratedCommentCreatedEvent",
     "WorkHydratedItemDeletedEvent",
     "WorkHydratedStatusChangedEvent",
-    "WorkOperationMap"
+    "WorkServerOperationMap"
   ]
 }

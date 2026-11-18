@@ -1,8 +1,14 @@
 export {
+  ADS_CHANGES,
+  ADS_LEVELS,
+  ADS_LEVEL_CHANGES,
+  ADS_SHARED_METRICS,
   CARD_KEYS,
   CATEGORIES,
   CHARTS,
   EVENTS,
+  KEYWORD_DATA_OPERATIONS,
+  KEYWORD_DATA_PLATFORMS,
   KINDS,
   PAGES,
   PAGE_KEYS,
@@ -19,6 +25,9 @@ export {
   slotsForPage,
 } from './manifest/constants';
 export type {
+  AdsChangeKind,
+  AdsLevel,
+  AdsSharedMetric,
   ContributionKind,
   DataQueryKind,
   ExtensionCategory,
@@ -26,6 +35,8 @@ export type {
   HostEventName,
   HostPage,
   HostTable,
+  KeywordDataOperation,
+  KeywordDataPlatform,
   PageDefinition,
   ScopeDefinition,
   ScopeKey,

@@ -1,3 +1,4 @@
+export { validateAdsSyncResponse } from './ads';
 export { createTestClient, signTestToken, testJwks } from './client';
 export type { TestClient, TestClientDefaults } from './client';
 export { installHostTheme } from './environment';
@@ -15,6 +16,10 @@ export {
   fixtures,
 } from './fixtures';
 export type { TapFixtures } from './fixtures';
+export {
+  validateKeywordMetricsResult,
+  validateKeywordSuggestionsResult,
+} from './keywords';
 export { registerTapMatchers, tapMatchers } from './matchers';
 export type { MatcherResult, MatcherTarget } from './matchers';
 export { createTapMock } from './mock';

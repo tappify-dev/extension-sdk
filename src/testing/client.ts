@@ -18,7 +18,7 @@ import type {
   TappifyHealth,
   TappifyInstall,
 } from '../server/types';
-import type { WorkOperationMap } from '../server/work';
+import type { WorkServerOperationMap } from '../server/work';
 import {
   callEnvelope,
   DEFAULT_FILTERS,
@@ -157,10 +157,10 @@ export interface TestClient {
   /** Posts one Tappify event, which the handler answers with 204. */
   event(name: string, payload: Record<string, unknown>): Promise<void>;
   /** Calls one work operation. */
-  work<O extends keyof WorkOperationMap>(
+  work<O extends keyof WorkServerOperationMap>(
     operation: O,
-    input: WorkOperationMap[O]['input'],
-  ): Promise<WorkOperationMap[O]['output']>;
+    input: WorkServerOperationMap[O]['input'],
+  ): Promise<WorkServerOperationMap[O]['output']>;
   /** @deprecated Call set_status or describe_container using the current work protocol. */
   work(operation: 'status' | 'resolve', input: unknown): Promise<unknown>;
   /**

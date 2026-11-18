@@ -1,10 +1,15 @@
 import type {
+  AdsChangeKind,
+  AdsLevel,
+  AdsSharedMetric,
   ContributionKind,
   ExtensionCategory,
   HostChart,
   HostEventName,
   HostPage,
   HostTable,
+  KeywordDataOperation,
+  KeywordDataPlatform,
   ScopeKey,
   SlotId,
 } from './constants';
@@ -215,6 +220,54 @@ export type WorkAuth =
   | { method: 'oauth'; provider: string; scopes: string[] }
   | { method: 'api_key'; fields: CredentialField[] };
 
+export interface AdsLevelDeclaration {
+  level: AdsLevel;
+  label: string;
+  changes?: AdsChangeKind[];
+}
+
+export interface AdsSharedMetricDeclaration {
+  key: AdsSharedMetric;
+  definition: string;
+}
+
+export interface AdsExtraMetricDeclaration {
+  key: string;
+  label: string;
+  unit: MetricDeclaration['unit'];
+  definition: string;
+}
+
+export interface AdsPanelDeclaration {
+  id: string;
+  level: 'campaign' | 'ad_group';
+  entry: string;
+}
+
+export interface AdsAcquisition {
+  levels: AdsLevelDeclaration[];
+  metrics: AdsSharedMetricDeclaration[];
+  extraMetrics?: AdsExtraMetricDeclaration[];
+  detailPanels?: AdsPanelDeclaration[];
+  createPanel?: { id: string; entry: string };
+}
+
+export interface AdsContribution {
+  auth: WorkAuth;
+  sync: '15m' | '1h' | '6h' | '24h';
+  backfillDays?: number;
+  acquisition: AdsAcquisition;
+  /** Not available yet. */
+  attribution?: undefined;
+  /** Not available yet. */
+  monetization?: undefined;
+}
+
+export interface KeywordDataContribution {
+  supports: KeywordDataOperation[];
+  platforms: KeywordDataPlatform[];
+}
+
 export interface WorkContribution {
   kind: 'tracker' | 'docs' | 'chat';
   creates: ('issue' | 'page' | 'message')[];
@@ -293,6 +346,8 @@ export interface ExtensionManifest {
     ai?: AiContribution;
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- Published v2 manifests retain the legacy contract.
     work?: WorkContribution | LegacyWorkContribution;
+    ads?: AdsContribution;
+    keywordData?: KeywordDataContribution;
   };
   server?: {
     baseUrl: string;

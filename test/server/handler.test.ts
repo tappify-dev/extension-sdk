@@ -89,6 +89,7 @@ async function call(
 describe('createTappifyHandler', () => {
   it.each([
     'configure',
+    'maintain',
     'list_containers',
     'describe_container',
     'create',
@@ -133,7 +134,7 @@ describe('createTappifyHandler', () => {
   );
 
   it('rejects unknown and unregistered work operations', async () => {
-    for (const operation of ['archive', 'configure']) {
+    for (const operation of ['archive', 'configure', 'maintain']) {
       const undeclared: string = 'archive';
       const response = await call(
         { work: { [undeclared]: () => ({ shouldNotRun: true }) } },
@@ -145,6 +146,137 @@ describe('createTappifyHandler', () => {
         error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
       });
     }
+  });
+
+  it.each(['list_accounts', 'sync', 'apply_change'])(
+    'routes ads/%s with the generic authenticated envelope',
+    async operation => {
+      const response = await call(
+        {
+          ads: {
+            [operation]: (request: Parameters<TappifyRouteHandler>[0]) => ({
+              operation,
+              input: request.input,
+              install: request.install,
+              context: request.context,
+              credentials: request.credentials,
+              documents: request.documents,
+              eventId: request.eventId,
+            }),
+          },
+        },
+        `/tappify/ads/${operation}`,
+        { method: 'POST', body: body({ marker: operation }) },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        operation,
+        input: { marker: operation },
+        install: { id: 'ins_1', organizationId: 'org_1' },
+        context: { projectId: 'prj_1', filters: { country: 'all' } },
+        credentials: { apiKey: 'k' },
+        documents: { settings: { refreshMinutes: 15 } },
+        eventId: 'evt_1',
+      });
+    },
+  );
+
+  it('rejects unknown and unregistered ads operations', async () => {
+    const smuggled = vi.fn(() => ({ shouldNotRun: true }));
+    for (const operation of ['refund', 'sync']) {
+      const undeclared: string = 'refund';
+      const response = await call(
+        { ads: { [undeclared]: smuggled } },
+        `/tappify/ads/${operation}`,
+        { method: 'POST', body: body() },
+      );
+      expect(response.status).toBe(404);
+      expect(await response.json()).toMatchObject({
+        error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+      });
+    }
+    expect(smuggled).not.toHaveBeenCalled();
+  });
+
+  it('routes POST /tappify/keywords/metrics to keywords.metrics with the body input', async () => {
+    const input = {
+      platform: 'ios',
+      country: 'us',
+      lang: 'en',
+      keywords: ['photo editor', 'collage maker'],
+    };
+    const response = await call(
+      {
+        keywords: {
+          metrics: request => ({
+            metrics: request.input.keywords.map(keyword => ({
+              keyword,
+              volume: request.input.platform === 'ios' ? 62 : null,
+              difficulty: null,
+            })),
+          }),
+        },
+      },
+      '/tappify/keywords/metrics',
+      { method: 'POST', body: body(input) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      metrics: [
+        { keyword: 'photo editor', volume: 62, difficulty: null },
+        { keyword: 'collage maker', volume: 62, difficulty: null },
+      ],
+    });
+  });
+
+  it('routes POST /tappify/keywords/suggestions', async () => {
+    const input = {
+      platform: 'android',
+      country: 'de',
+      lang: 'de',
+      seeds: ['photo editor'],
+      storeAppId: 'com.example.photos',
+    };
+    const response = await call(
+      {
+        keywords: {
+          suggestions: request => ({
+            suggestions: request.input.seeds.map(seed => ({
+              keyword: `${seed} ${request.input.storeAppId ?? ''}`,
+              volume: 40,
+            })),
+          }),
+        },
+      },
+      '/tappify/keywords/suggestions',
+      { method: 'POST', body: body(input) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      suggestions: [{ keyword: 'photo editor com.example.photos', volume: 40 }],
+    });
+  });
+
+  it('answers an unknown keywords operation like any unmounted route', async () => {
+    const smuggled = vi.fn(() => ({ shouldNotRun: true }));
+    const undeclared: string = 'rankings';
+    const unknown = await call(
+      { keywords: { [undeclared]: smuggled } },
+      '/tappify/keywords/rankings',
+      { method: 'POST', body: body() },
+    );
+    const unmounted = await call({}, '/tappify/keywords/metrics', {
+      method: 'POST',
+      body: body(),
+    });
+    expect(unknown.status).toBe(unmounted.status);
+    expect(await unknown.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(await unmounted.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(smuggled).not.toHaveBeenCalled();
   });
 
   it('adapts a resolved target to legacy resolve only when set_status is absent', async () => {

@@ -1,8 +1,14 @@
 import { z } from 'zod';
 import {
+  ADS_CHANGES,
+  ADS_LEVELS,
+  ADS_LEVEL_CHANGES,
+  ADS_SHARED_METRICS,
   CATEGORIES,
   CHARTS,
   EVENTS,
+  KEYWORD_DATA_OPERATIONS,
+  KEYWORD_DATA_PLATFORMS,
   PAGE_KEYS,
   SCOPE_KEYS,
   SERVED_SDK_MAJORS,
@@ -812,6 +818,211 @@ const workContribution = z.union([
   ),
 ]);
 
+const adsRoleNotAvailable = (role: string) =>
+  z
+    .never({
+      error: `The ${role} role is not available yet. Declare acquisition only.`,
+    })
+    .describe('Not available yet.')
+    .optional();
+
+const adsAcquisition = z
+  .object({
+    levels: z
+      .array(
+        z
+          .object({
+            level: z.enum(ADS_LEVELS).describe('The level this entry is for.'),
+            label: z
+              .string()
+              .min(1)
+              .max(40)
+              .describe(
+                'What your network calls this level, such as "Ad set". Owners read it in the Ads section.',
+              ),
+            changes: z
+              .array(z.enum(ADS_CHANGES))
+              .describe(
+                'What Tappify may change on this level. Leave it out for a level owners can only read. Needs the `ads:manage` scope.',
+              )
+              .optional(),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(ADS_LEVELS.length)
+      .describe(
+        'The levels of your network this extension reports. A campaign level is required.',
+      ),
+    metrics: z
+      .array(
+        z
+          .object({
+            key: z.enum(ADS_SHARED_METRICS).describe('The shared number.'),
+            definition: z
+              .string()
+              .min(10)
+              .max(300)
+              .describe(
+                'What this number counts on your network, in one sentence. Owners and the assistant read it beside the number.',
+              ),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(ADS_SHARED_METRICS.length)
+      .describe('The shared numbers this extension reports.'),
+    extraMetrics: z
+      .array(
+        z
+          .object({
+            key: z
+              .string()
+              .regex(SNAKE_CASE)
+              .describe('The key rows carry this number under.'),
+            label: z
+              .string()
+              .min(1)
+              .max(60)
+              .describe('The label owners read on the number.'),
+            unit: z
+              .enum(['count', 'ratio', 'currency', 'seconds', 'bytes'])
+              .describe('How the value is formatted.'),
+            definition: z
+              .string()
+              .min(10)
+              .max(300)
+              .describe('What this number counts, in one sentence.'),
+          })
+          .strict(),
+      )
+      .max(20)
+      .describe('Numbers your network reports beyond the shared ones.')
+      .optional(),
+    detailPanels: z
+      .array(
+        z
+          .object({
+            id: contributionId,
+            level: z
+              .enum(['campaign', 'ad_group'])
+              .describe('The level whose view this panel is drawn in.'),
+            entry: entryPath,
+          })
+          .strict(),
+      )
+      .max(2)
+      .describe(
+        'Panels the host draws inside a campaign or ad group view for settings only your network has. Needs the `ui:render` scope.',
+      )
+      .optional(),
+    createPanel: z
+      .object({ id: contributionId, entry: entryPath })
+      .strict()
+      .describe(
+        'The panel the host opens when an owner creates a campaign on your network. Needs the `ui:render` scope.',
+      )
+      .optional(),
+  })
+  .strict();
+
+const adsContribution = z
+  .object({
+    auth: workAuth.describe('How owners sign in to the ad network.'),
+    sync: z
+      .enum(['15m', '1h', '6h', '24h'])
+      .describe('How often Tappify asks your server for ads data.'),
+    backfillDays: z
+      .number()
+      .int()
+      .min(1)
+      .max(90)
+      .describe(
+        'How many days of history to fetch on the first sync. 30 when omitted.',
+      )
+      .optional(),
+    acquisition: adsAcquisition.describe(
+      'The campaigns, ad groups, ads and keywords this network runs, and their numbers.',
+    ),
+    attribution: adsRoleNotAvailable('attribution'),
+    monetization: adsRoleNotAvailable('monetization'),
+  })
+  .strict()
+  .superRefine((ads, ctx) => {
+    const seen = new Set<string>();
+    for (const [index, entry] of ads.acquisition.levels.entries()) {
+      if (seen.has(entry.level)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['acquisition', 'levels', index, 'level'],
+          message: `acquisition.levels lists ${entry.level} twice. Declare each level once.`,
+        });
+      }
+      seen.add(entry.level);
+    }
+    if (!seen.has('campaign')) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['acquisition', 'levels'],
+        message:
+          'An ad network declares a campaign level. Add { "level": "campaign" } to acquisition.levels.',
+      });
+    }
+    const shared = new Set<string>(ADS_SHARED_METRICS);
+    for (const [index, metric] of (
+      ads.acquisition.extraMetrics ?? []
+    ).entries()) {
+      if (shared.has(metric.key)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['acquisition', 'extraMetrics', index, 'key'],
+          message: `"${metric.key}" is a shared number. Declare it under acquisition.metrics instead.`,
+        });
+      }
+    }
+  });
+
+const keywordDataContribution = z
+  .object({
+    supports: z
+      .array(z.enum(KEYWORD_DATA_OPERATIONS))
+      .min(1)
+      .max(KEYWORD_DATA_OPERATIONS.length)
+      .describe(
+        'What your server answers: `metrics` for the volume and difficulty of given keywords, `suggestions` for keywords related to given seeds.',
+      ),
+    platforms: z
+      .array(z.enum(KEYWORD_DATA_PLATFORMS))
+      .min(1)
+      .max(KEYWORD_DATA_PLATFORMS.length)
+      .describe('The stores your keyword data covers.'),
+  })
+  .strict()
+  .superRefine((keywordData, ctx) => {
+    const operations = new Set<string>();
+    for (const [index, operation] of keywordData.supports.entries()) {
+      if (operations.has(operation)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['supports', index],
+          message: `supports lists ${operation} twice. Declare each operation once.`,
+        });
+      }
+      operations.add(operation);
+    }
+    const platforms = new Set<string>();
+    for (const [index, platform] of keywordData.platforms.entries()) {
+      if (platforms.has(platform)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['platforms', index],
+          message: `platforms lists ${platform} twice. Declare each platform once.`,
+        });
+      }
+      platforms.add(platform);
+    }
+  });
+
 // Every field is optional so a vendor can fill the listing one value at a time;
 // the public-visibility refinement below requires all five before publishing.
 const listing = z
@@ -1014,6 +1225,16 @@ const manifestObject = z
             'The work destination this extension creates issues, pages or messages in. Needs `review.threads:read` and `work:create`; active comment or status sync also needs `work:sync`.',
           )
           .optional(),
+        ads: adsContribution
+          .describe(
+            'The ad network this extension brings into the Ads section: sign-in, sync and what it reports. Needs the `ads:sync` scope; declared changes also need `ads:manage`.',
+          )
+          .optional(),
+        keywordData: keywordDataContribution
+          .describe(
+            'The keyword data this extension supplies to Keywords, shown with this extension named as the source. Needs the `keywords:write` scope.',
+          )
+          .optional(),
       })
       .strict()
       .describe(
@@ -1057,7 +1278,7 @@ const manifestObject = z
       })
       .strict()
       .describe(
-        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination or a procedure.',
+        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data or a procedure.',
       )
       .optional(),
     telemetry: z
@@ -1129,7 +1350,9 @@ function hasRenderedSurface(
     (contributes.widgets?.length ?? 0) > 0 ||
     (contributes.rowActions?.length ?? 0) > 0 ||
     (contributes.markers?.length ?? 0) > 0 ||
-    contributes.settings !== undefined
+    contributes.settings !== undefined ||
+    (contributes.ads?.acquisition.detailPanels?.length ?? 0) > 0 ||
+    contributes.ads?.acquisition.createPanel !== undefined
   );
 }
 
@@ -1356,7 +1579,53 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
     }
   }
 
+  if (contributes.ads) {
+    requireScope(
+      'ads:sync',
+      ['scopes'],
+      'this extension brings ads data into Tappify.',
+    );
+    const levels = contributes.ads.acquisition.levels;
+    if (levels.some(entry => (entry.changes?.length ?? 0) > 0)) {
+      requireScope(
+        'ads:manage',
+        ['scopes'],
+        'a declared level can be changed from Tappify.',
+      );
+    }
+    for (const [index, entry] of levels.entries()) {
+      const allowed = ADS_LEVEL_CHANGES[entry.level];
+      for (const change of entry.changes ?? []) {
+        if (allowed.includes(change)) continue;
+        const name = entry.level.replace('_', ' ');
+        const article = name.startsWith('a') ? 'An' : 'A';
+        ctx.addIssue({
+          code: 'custom',
+          path: [
+            'contributes',
+            'ads',
+            'acquisition',
+            'levels',
+            index,
+            'changes',
+          ],
+          message: `${article} ${name} cannot change ${change}. It can change: ${allowed.join(', ')}.`,
+        });
+      }
+    }
+  }
+
+  if (contributes.keywordData) {
+    requireScope(
+      'keywords:write',
+      ['scopes'],
+      'this extension supplies keyword data to Tappify.',
+    );
+  }
+
   const needsServer =
+    contributes.ads !== undefined ||
+    contributes.keywordData !== undefined ||
     contributes.connector !== undefined ||
     (contributes.webhooks?.length ?? 0) > 0 ||
     ai !== undefined ||
@@ -1368,7 +1637,7 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
       code: 'custom',
       path: ['server', 'baseUrl'],
       message:
-        'Set server.baseUrl: connectors, webhooks, assistant contributions, work destinations and procedures all call your server.',
+        'Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, work destinations, ad networks and procedures all call your server.',
     });
   }
 

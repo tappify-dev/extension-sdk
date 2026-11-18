@@ -246,6 +246,7 @@ describe('work wire types', () => {
   it('excludes legacy routes from the current operation union', () => {
     expectTypeOf<WorkOperation>().toEqualTypeOf<
       | 'configure'
+      | 'maintain'
       | 'list_containers'
       | 'describe_container'
       | 'create'
@@ -255,6 +256,32 @@ describe('work wire types', () => {
       | 'hydrate_event'
       | 'disconnect'
     >();
+  });
+
+  it('types subscription maintenance through the real test client', async () => {
+    const client = createTestClient({
+      extensionId: 'starter',
+      work: {
+        maintain: ({ input }) => ({
+          generation: input.generation,
+          configurationRevision: input.configurationRevision,
+          registeredWebhookIds: [...input.registeredWebhookIds, 'webhook_2'],
+          nextMaintenanceAt: '2026-12-01T12:00:00.000Z',
+        }),
+      },
+    });
+
+    expect(
+      await client.work('maintain', {
+        ...cases.configure.input,
+        registeredWebhookIds: ['webhook_1'],
+      }),
+    ).toEqual({
+      generation: 2,
+      configurationRevision: 3,
+      registeredWebhookIds: ['webhook_1', 'webhook_2'],
+      nextMaintenanceAt: '2026-12-01T12:00:00.000Z',
+    });
   });
 });
 

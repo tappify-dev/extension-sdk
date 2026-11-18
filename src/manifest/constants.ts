@@ -156,6 +156,30 @@ export const SCOPES = [
     requiresSecurityReview: false,
     requiresJustification: true,
   },
+  {
+    key: 'ads:sync',
+    label: 'Sync ads data',
+    description:
+      'Write campaigns, ad groups, ads, keywords and their daily numbers into the Ads section',
+    requiresSecurityReview: false,
+    requiresJustification: true,
+  },
+  {
+    key: 'ads:manage',
+    label: 'Change ads',
+    description:
+      'Pause, rename, re-budget, re-bid and delete ads items on the ad network, each change approved by a person',
+    requiresSecurityReview: true,
+    requiresJustification: true,
+  },
+  {
+    key: 'keywords:write',
+    label: 'Supply keyword data',
+    description:
+      'Supply keyword volume, difficulty and suggestions that Tappify shows in Keywords, credited to this extension',
+    requiresSecurityReview: false,
+    requiresJustification: true,
+  },
 ] as const;
 
 export type ScopeDefinition = (typeof SCOPES)[number];
@@ -173,6 +197,44 @@ export const SLOTS = [
 ] as const;
 /** The anchors on a host page a widget can be declared at. */
 export type SlotId = (typeof SLOTS)[number];
+
+export const ADS_LEVELS = ['campaign', 'ad_group', 'ad', 'keyword'] as const;
+/** The levels of an ad network's structure an extension can declare. */
+export type AdsLevel = (typeof ADS_LEVELS)[number];
+
+export const ADS_CHANGES = [
+  'status',
+  'name',
+  'budget',
+  'bid',
+  'delete',
+] as const;
+/** The changes Tappify can ask an ad network extension to apply. */
+export type AdsChangeKind = (typeof ADS_CHANGES)[number];
+
+export const ADS_SHARED_METRICS = [
+  'impressions',
+  'clicks',
+  'installs',
+  'spend',
+] as const;
+/** The numbers every ad network reports under the same key. */
+export type AdsSharedMetric = (typeof ADS_SHARED_METRICS)[number];
+
+export const ADS_LEVEL_CHANGES: Record<AdsLevel, readonly AdsChangeKind[]> = {
+  campaign: ['status', 'name', 'budget', 'delete'],
+  ad_group: ['status', 'name', 'budget', 'bid', 'delete'],
+  ad: ['status', 'name', 'delete'],
+  keyword: ['status', 'bid', 'delete'],
+};
+
+export const KEYWORD_DATA_OPERATIONS = ['metrics', 'suggestions'] as const;
+/** The keyword data an extension can supply to Keywords. */
+export type KeywordDataOperation = (typeof KEYWORD_DATA_OPERATIONS)[number];
+
+export const KEYWORD_DATA_PLATFORMS = ['ios', 'android'] as const;
+/** The stores an extension can supply keyword data for. */
+export type KeywordDataPlatform = (typeof KEYWORD_DATA_PLATFORMS)[number];
 
 export const CHARTS = [
   'installs-activity',
@@ -259,6 +321,8 @@ export const KINDS = [
   'prompt',
   'context',
   'work',
+  'ads',
+  'keywordData',
 ] as const;
 export type ContributionKind = (typeof KINDS)[number];
 
@@ -281,6 +345,7 @@ export const CATEGORIES = [
   'warehouse',
   'compliance',
   'additional_stores',
+  'ad_acquisition',
 ] as const;
 export type ExtensionCategory = (typeof CATEGORIES)[number];
 

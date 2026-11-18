@@ -1,9 +1,10 @@
 import { TapError, TapServerError } from '../client/errors';
 import type { TapCredentialValues, TapDateRange } from '../client/types';
-import { EVENTS } from '../manifest/constants';
+import { EVENTS, KEYWORD_DATA_OPERATIONS } from '../manifest/constants';
 import { SERVER_ERROR_CODES, type TapServerErrorCode } from './codes';
 import { verifyTappifyToken } from './token';
 import type {
+  AdsOperation,
   ContextBlock,
   LegacyWorkHandlers,
   MentionItems,
@@ -38,6 +39,7 @@ const MAX_BODY_BYTES = 1_048_576;
 
 const WORK_OPERATIONS: readonly (WorkOperation | keyof LegacyWorkHandlers)[] = [
   'configure',
+  'maintain',
   'list_containers',
   'describe_container',
   'create',
@@ -48,6 +50,12 @@ const WORK_OPERATIONS: readonly (WorkOperation | keyof LegacyWorkHandlers)[] = [
   'disconnect',
   'status',
   'resolve',
+];
+
+const ADS_OPERATIONS: readonly AdsOperation[] = [
+  'list_accounts',
+  'sync',
+  'apply_change',
 ];
 
 const TOKEN_FAILURES: readonly TapServerErrorCode[] = [
@@ -224,6 +232,22 @@ function resolveRoute(
       }
     }
     return route(handler, bodyInput);
+  }
+  if (head === 'ads' && method === 'POST' && name !== undefined) {
+    const operation = ADS_OPERATIONS.find(candidate => candidate === name);
+    return route(
+      operation === undefined ? undefined : options.ads?.[operation],
+      bodyInput,
+    );
+  }
+  if (head === 'keywords' && method === 'POST' && name !== undefined) {
+    const operation = KEYWORD_DATA_OPERATIONS.find(
+      candidate => candidate === name,
+    );
+    return route(
+      operation === undefined ? undefined : options.keywords?.[operation],
+      bodyInput,
+    );
   }
   if (head === 'events' && method === 'POST') {
     const envelope = readRecord(payload, 'event');
