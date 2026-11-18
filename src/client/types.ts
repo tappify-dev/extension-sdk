@@ -763,3 +763,29 @@ export interface TapSettingsProps {
    */
   onChange(values: TapSettingsValues): void;
 }
+
+/** The props the host renders an ad network's detail panel with. */
+export interface TapAdsDetailPanelProps {
+  /** The ad account the item belongs to, as `list_accounts` returned it. */
+  accountId: string;
+  /** The level of the item the panel is drawn for. */
+  level: 'campaign' | 'ad_group';
+  /** The item's id, exactly as your `sync` returned it. */
+  itemId: string;
+  /** The account's currency, as an ISO 4217 code. */
+  currency: string;
+  /** Call after your panel changed something on the network, so the host reads it again. */
+  onChanged(): void;
+}
+
+/** The props the host renders an ad network's create panel with. */
+export interface TapAdsCreatePanelProps {
+  /** The ad account the new item is created in, as `list_accounts` returned it. */
+  accountId: string;
+  /** The account's currency, as an ISO 4217 code. */
+  currency: string;
+  /** Call after an item was created, so the host syncs the account. */
+  onCreated(): void;
+  /** Call to close the panel without creating anything. */
+  onClose(): void;
+}

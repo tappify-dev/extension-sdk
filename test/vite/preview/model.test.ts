@@ -116,7 +116,7 @@ describe('previewProps', () => {
   const selections = previewSelections(manifest);
   const settings = { refreshMinutes: 15 };
   const onSettingsChange = vi.fn();
-  const state = { settings, onSettingsChange };
+  const state = { manifest, settings, onSettingsChange };
 
   it('supplies the host props each surface receives', () => {
     expect(previewProps(selections[0].contribution, state)).toEqual({
@@ -149,6 +149,63 @@ describe('previewProps', () => {
     props.onChange({ refreshMinutes: 30 });
 
     expect(onSettingsChange).toHaveBeenCalledWith({ refreshMinutes: 30 });
+  });
+});
+
+describe('ads panels', () => {
+  const network: ExtensionManifest = {
+    ...manifest,
+    category: 'ad_acquisition',
+    contributes: {
+      ads: {
+        auth: { method: 'oauth', provider: 'network', scopes: [] },
+        sync: '1h',
+        acquisition: {
+          levels: [{ level: 'campaign', label: 'Campaign' }],
+          metrics: [],
+          detailPanels: [
+            {
+              id: 'ad-group-detail',
+              level: 'ad_group',
+              entry: 'src/ads/ad-group-detail.tsx',
+            },
+          ],
+          createPanel: { id: 'create', entry: 'src/ads/create.tsx' },
+        },
+      },
+    },
+  };
+  const selections = previewSelections(network);
+  const state = {
+    manifest: network,
+    settings: {},
+    onSettingsChange: vi.fn(),
+  };
+
+  it('labels each panel by its id', () => {
+    expect(selections.map(selection => selection.label)).toEqual([
+      'ad-group-detail (ads panel)',
+      'create (ads panel)',
+    ]);
+  });
+
+  it("gives a detail panel the level it's declared for", () => {
+    expect(previewProps(selections[0].contribution, state)).toEqual({
+      accountId: 'preview-account',
+      level: 'ad_group',
+      itemId: 'preview-item',
+      currency: 'USD',
+      onChanged: expect.any(Function),
+    });
+  });
+
+  it('gives the create panel an account and its two callbacks', () => {
+    expect(previewProps(selections[1].contribution, state)).toEqual({
+      accountId: 'preview-account',
+      currency: 'USD',
+      onCreated: expect.any(Function),
+      onClose: expect.any(Function),
+    });
   });
 });
 

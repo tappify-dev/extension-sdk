@@ -1,6 +1,10 @@
 import { TapError, TapServerError } from '../client/errors';
 import type { TapCredentialValues, TapDateRange } from '../client/types';
-import { EVENTS, KEYWORD_DATA_OPERATIONS } from '../manifest/constants';
+import {
+  CRASHES_OPERATIONS,
+  EVENTS,
+  KEYWORD_DATA_OPERATIONS,
+} from '../manifest/constants';
 import { SERVER_ERROR_CODES, type TapServerErrorCode } from './codes';
 import { verifyTappifyToken } from './token';
 import type {
@@ -246,6 +250,13 @@ function resolveRoute(
     );
     return route(
       operation === undefined ? undefined : options.keywords?.[operation],
+      bodyInput,
+    );
+  }
+  if (head === 'crashes' && method === 'POST' && name !== undefined) {
+    const operation = CRASHES_OPERATIONS.find(candidate => candidate === name);
+    return route(
+      operation === undefined ? undefined : options.crashes?.[operation],
       bodyInput,
     );
   }

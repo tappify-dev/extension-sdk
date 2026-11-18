@@ -14,6 +14,7 @@ import type {
   ToolInput,
 } from '../client/types';
 import type { AdsOperationMap } from './ads';
+import type { CrashesOperationMap } from './crashes';
 import type {
   KeywordMetricsInput,
   KeywordMetricsResult,
@@ -127,6 +128,8 @@ export interface MetricsSeries {
   unit: 'count' | 'ratio' | 'currency' | 'seconds' | 'bytes';
   /** One value per declared dimension, when the series is broken down. */
   dimensions?: Record<string, string>;
+  /** The store this series is for. Leave it out for a number that covers both. */
+  platform?: 'ios' | 'android';
   /** `[timestamp, value]` pairs, oldest first. */
   points: [string, number][];
 }
@@ -249,6 +252,13 @@ export interface TappifyHandlerOptions {
     suggestions?: TappifyRouteHandler<
       KeywordSuggestionsInput,
       KeywordSuggestionsResult
+    >;
+  };
+  /** One handler per crashes operation, answering `POST /tappify/crashes/<operation>`. */
+  crashes?: {
+    [O in keyof CrashesOperationMap]?: TappifyRouteHandler<
+      CrashesOperationMap[O]['input'],
+      CrashesOperationMap[O]['output']
     >;
   };
 }

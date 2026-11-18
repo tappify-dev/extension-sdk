@@ -12,8 +12,10 @@ import {
 import type {
   AdsContribution,
   ConnectorAuth,
+  CrashesContribution,
   ExtensionManifest,
   KeywordDataContribution,
+  MetricDeclaration,
   OAuthTokenRequestEncoding,
   WorkContribution,
 } from '../../src/manifest/types';
@@ -878,6 +880,21 @@ describe('ads network', () => {
     );
   });
 
+  it('refuses a create panel that reuses a detail panel id', () => {
+    const manifest = adsManifest();
+    manifest.contributes.ads.acquisition.detailPanels = [
+      { id: 'panel', level: 'campaign', entry: 'src/panels/detail.tsx' },
+    ];
+    manifest.contributes.ads.acquisition.createPanel = {
+      id: 'panel',
+      entry: 'src/panels/create.tsx',
+    };
+
+    expect(issues(manifest).join()).toContain(
+      'Two panels are named "panel". Give each panel its own id.',
+    );
+  });
+
   it('refuses more than 20 extra numbers', () => {
     const manifest = adsManifest();
     manifest.contributes.ads.acquisition.extraMetrics = Array.from(
@@ -1109,6 +1126,190 @@ describe('keyword data', () => {
 
     expect(issues(manifest).join()).toContain(
       'platforms lists ios twice. Declare each platform once.',
+    );
+  });
+});
+
+function crashesManifest(crashes: unknown = { supports: ['groups'] }) {
+  const manifest = base();
+  return {
+    ...manifest,
+    scopes: [
+      ...manifest.scopes,
+      {
+        key: 'crashes:write',
+        justification: 'Write the crash groups Sentry reports into Crashes.',
+      },
+    ],
+    contributes: { ...manifest.contributes, crashes },
+    server: { baseUrl: 'https://crashes.example.com' },
+  };
+}
+
+describe('crashes', () => {
+  it('accepts a crashes contribution with groups and details', () => {
+    expect(
+      issues(crashesManifest({ supports: ['groups', 'details'] })),
+    ).toEqual([]);
+  });
+
+  it('types the crashes contribution', () => {
+    const crashes: CrashesContribution = { supports: ['groups', 'details'] };
+    const manifest: ExtensionManifest = {
+      ...base(),
+      contributes: { crashes },
+    };
+
+    expect(manifest.contributes.crashes).toEqual(crashes);
+    expect(issues(crashesManifest(crashes))).toEqual([]);
+  });
+
+  it('rejects crashes without the crashes:write scope', () => {
+    const manifest = crashesManifest();
+    const withoutCrashesWrite = {
+      ...manifest,
+      scopes: manifest.scopes.filter(scope => scope.key !== 'crashes:write'),
+    };
+
+    expect(issues(withoutCrashesWrite).join()).toContain(
+      'Add the crashes:write scope: the extension writes crash groups into the project.',
+    );
+  });
+
+  it('rejects crashes without server.baseUrl', () => {
+    const { server: _server, ...manifest } = crashesManifest();
+
+    expect(issues(manifest)).toContain(
+      'server.baseUrl: Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, work destinations, ad networks and procedures all call your server.',
+    );
+  });
+
+  it('rejects an empty supports list', () => {
+    expect(issues(crashesManifest({ supports: [] })).join()).toContain(
+      'contributes.crashes.supports',
+    );
+  });
+
+  it('rejects supports without groups', () => {
+    expect(issues(crashesManifest({ supports: ['details'] }))).toEqual([
+      'contributes.crashes.supports: A crash reporter supports groups. Add "groups" to supports.',
+    ]);
+  });
+
+  it('rejects a duplicate entry', () => {
+    const manifest = crashesManifest({ supports: ['groups', 'groups'] });
+
+    expect(issues(manifest)).toEqual([
+      'contributes.crashes.supports.1: supports lists groups twice. Declare each operation once.',
+    ]);
+  });
+});
+
+function connectorManifest(...metrics: MetricDeclaration[]): ExtensionManifest {
+  const manifest = base();
+  manifest.scopes.push({ key: 'metrics:write' });
+  manifest.server = { baseUrl: 'https://api.funnel-lab.dev' };
+  manifest.contributes.connector = { metrics };
+  return manifest;
+}
+
+describe('standard metrics', () => {
+  const plainMrr: MetricDeclaration = {
+    key: 'mrr',
+    label: 'MRR',
+    unit: 'currency',
+    kind: 'gauge',
+    standard: 'subscriptions.mrr',
+  };
+  const mrr: MetricDeclaration = {
+    ...plainMrr,
+    restateDays: 7,
+    backfillDays: 90,
+  };
+
+  it('accepts a metric that reports a standard metric and restates days', () => {
+    expect(issues(connectorManifest(mrr))).toEqual([]);
+  });
+
+  it('still accepts a metric with neither field', () => {
+    expect(
+      issues(
+        connectorManifest({
+          key: 'active_users',
+          label: 'Active users',
+          unit: 'count',
+          kind: 'gauge',
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it('rejects a standard key outside the catalogue', () => {
+    const manifest = connectorManifest(mrr);
+    const result = validateManifest({
+      ...manifest,
+      contributes: {
+        ...manifest.contributes,
+        connector: { metrics: [{ ...mrr, standard: 'subscriptions.arpu' }] },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues.map(issue => issue.path)).toEqual([
+      'contributes.connector.metrics.0.standard',
+    ]);
+  });
+
+  it('rejects a unit that differs from the standard metric', () => {
+    expect(issues(connectorManifest({ ...mrr, unit: 'count' }))).toEqual([
+      'contributes.connector.metrics.0.unit: Metric "mrr" reports subscriptions.mrr as "count", but that standard metric is "currency". Change the unit or remove "standard".',
+    ]);
+  });
+
+  it('rejects a kind that differs from the standard metric', () => {
+    expect(issues(connectorManifest({ ...mrr, kind: 'counter' }))).toEqual([
+      'contributes.connector.metrics.0.kind: Metric "mrr" reports subscriptions.mrr as a counter, but that standard metric is a gauge. Change the kind or remove "standard".',
+    ]);
+  });
+
+  it('rejects two metrics that report the same standard metric', () => {
+    expect(
+      issues(connectorManifest(mrr, { ...mrr, key: 'mrr_net', label: 'Net' })),
+    ).toEqual([
+      'contributes.connector.metrics.1.standard: Metrics "mrr" and "mrr_net" both report subscriptions.mrr. Only one metric in an extension can report a standard metric.',
+    ]);
+  });
+
+  it('rejects restateDays outside 0 to 90 or not a whole number', () => {
+    for (const restateDays of [-1, 91, 1.5]) {
+      const result = validateManifest(
+        connectorManifest({ ...mrr, restateDays }),
+      );
+
+      const paths = result.ok ? [] : result.issues.map(issue => issue.path);
+      expect(new Set(paths)).toEqual(
+        new Set(['contributes.connector.metrics.0.restateDays']),
+      );
+    }
+    expect(issues(connectorManifest({ ...mrr, restateDays: 0 }))).toEqual([]);
+  });
+
+  it('rejects restateDays beyond the declared backfill', () => {
+    expect(
+      issues(connectorManifest({ ...mrr, restateDays: 45, backfillDays: 40 })),
+    ).toEqual([
+      'contributes.connector.metrics.0.restateDays: Metric "mrr" restates 45 days but only backfills 40. Lower restateDays or raise backfillDays.',
+    ]);
+  });
+
+  it('measures restateDays against a 30-day backfill when backfillDays is left out', () => {
+    expect(issues(connectorManifest({ ...plainMrr, restateDays: 31 }))).toEqual(
+      [
+        'contributes.connector.metrics.0.restateDays: Metric "mrr" restates 31 days but only backfills 30. Lower restateDays or raise backfillDays.',
+      ],
+    );
+    expect(issues(connectorManifest({ ...plainMrr, restateDays: 30 }))).toEqual(
+      [],
     );
   });
 });

@@ -23,6 +23,7 @@ export default defineConfig([
       'testing/index': 'src/testing/index.ts',
       'testing/vitest': 'src/testing/vitest.ts',
       'testing/jest': 'src/testing/jest.ts',
+      'testing/server': 'src/testing/server.ts',
     },
     splitting: true,
     external: [

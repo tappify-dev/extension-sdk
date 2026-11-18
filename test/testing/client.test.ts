@@ -350,6 +350,155 @@ describe('response validators', () => {
     expect(validateMetricsResponse({}, declared)[0]).toContain('"series"');
   });
 
+  describe('metrics series platform', () => {
+    const declared = [
+      {
+        key: 'active_users',
+        label: 'Active users',
+        unit: 'count' as const,
+        kind: 'gauge' as const,
+        dimensions: [
+          { key: 'country', label: 'Country' },
+          { key: 'source', label: 'Source' },
+        ],
+      },
+    ];
+
+    it('accepts a series for one store', () => {
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                platform: 'ios',
+                points: [['t', 1]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([]);
+    });
+
+    it('rejects a platform that is not a store', () => {
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                platform: 'web',
+                points: [['t', 1]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([
+        'series[0] has platform "web". Use "ios" or "android", or leave it out for both.',
+      ]);
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                platform: { store: 'ios' },
+                points: [['t', 1]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([
+        'series[0] has platform {"store":"ios"}. Use "ios" or "android", or leave it out for both.',
+      ]);
+    });
+
+    it('rejects two series with the same metric, dimensions and platform', () => {
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                dimensions: { country: 'US', source: 'organic' },
+                points: [['t', 1]],
+              },
+              {
+                metric: 'active_users',
+                unit: 'count',
+                points: [['t', 2]],
+              },
+              {
+                metric: 'active_users',
+                unit: 'count',
+                dimensions: { source: 'organic', country: 'US' },
+                points: [['t', 3]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([
+        'series[2] repeats series[0]: same metric, dimensions and platform. Merge them into one series.',
+      ]);
+    });
+
+    it('accepts the same metric split into an ios and an android series', () => {
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                platform: 'ios',
+                points: [['t', 1]],
+              },
+              {
+                metric: 'active_users',
+                unit: 'count',
+                platform: 'android',
+                points: [['t', 2]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([]);
+    });
+
+    it('accepts the same metric with different dimensions', () => {
+      expect(
+        validateMetricsResponse(
+          {
+            series: [
+              {
+                metric: 'active_users',
+                unit: 'count',
+                dimensions: { country: 'US' },
+                points: [['t', 1]],
+              },
+              {
+                metric: 'active_users',
+                unit: 'count',
+                dimensions: { country: 'GB' },
+                points: [['t', 2]],
+              },
+            ],
+          },
+          declared,
+        ),
+      ).toEqual([]);
+    });
+  });
+
   it('checks a tool response against its declared card', () => {
     expect(validateToolResponse({ label: 'a', value: 1 }, 'value')).toEqual([]);
     expect(validateToolResponse({ label: 'a' }, 'value')[0]).toContain(

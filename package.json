@@ -61,6 +61,11 @@
       "import": "./dist/testing/jest.mjs",
       "require": "./dist/testing/jest.cjs"
     },
+    "./testing/server": {
+      "types": "./dist/testing/server.d.ts",
+      "import": "./dist/testing/server.mjs",
+      "require": "./dist/testing/server.cjs"
+    },
     "./codegen": {
       "types": "./dist/codegen.d.ts",
       "import": "./dist/codegen.mjs",

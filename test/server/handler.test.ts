@@ -198,6 +198,74 @@ describe('createTappifyHandler', () => {
     expect(smuggled).not.toHaveBeenCalled();
   });
 
+  it('routes POST /tappify/crashes/groups to crashes.groups with the body input', async () => {
+    const response = await call(
+      {
+        crashes: {
+          groups: request => ({
+            groups: [
+              {
+                externalId: 'SENTRY-1',
+                signature: `since ${request.input.since ?? 'never'}`,
+                platform: 'ios',
+                affectedUsers: 3,
+                affectedSessions: 5,
+                trend: 'up',
+                firstSeen: null,
+                lastSeen: null,
+                versionFirstSeen: null,
+              },
+            ],
+          }),
+        },
+      },
+      '/tappify/crashes/groups',
+      { method: 'POST', body: body({ since: '2026-11-01T00:00:00Z' }) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      groups: [
+        { externalId: 'SENTRY-1', signature: 'since 2026-11-01T00:00:00Z' },
+      ],
+    });
+  });
+
+  it('answers crashes/details without a handler with TAP_HANDLER_MISSING', async () => {
+    const response = await call(
+      { crashes: { groups: () => ({ groups: [] }) } },
+      '/tappify/crashes/details',
+      { method: 'POST', body: body({ externalId: 'SENTRY-1' }) },
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'TAP_HANDLER_MISSING' },
+    });
+  });
+
+  it('answers an unknown crashes operation like an unknown ads operation', async () => {
+    const smuggled = vi.fn(() => ({ shouldNotRun: true }));
+    const undeclared: string = 'other';
+    const crashes = await call(
+      { crashes: { [undeclared]: smuggled } },
+      '/tappify/crashes/other',
+      { method: 'POST', body: body() },
+    );
+    const ads = await call(
+      { ads: { [undeclared]: smuggled } },
+      '/tappify/ads/other',
+      { method: 'POST', body: body() },
+    );
+    expect(crashes.status).toBe(404);
+    expect(crashes.status).toBe(ads.status);
+    expect(await crashes.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(await ads.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(smuggled).not.toHaveBeenCalled();
+  });
+
   it('routes POST /tappify/keywords/metrics to keywords.metrics with the body input', async () => {
     const input = {
       platform: 'ios',

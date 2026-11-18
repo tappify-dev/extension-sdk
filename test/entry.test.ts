@@ -5,6 +5,7 @@ import * as client from '../src/index';
 import * as manifest from '../src/manifest';
 import * as server from '../src/server';
 import * as testing from '../src/testing';
+import * as testingServer from '../src/testing/server';
 import * as ui from '../src/ui';
 import * as vite from '../src/vite';
 
@@ -148,6 +149,8 @@ describe('public entries', () => {
         'tapMatchers',
         'testJwks',
         'validateAdsSyncResponse',
+        'validateCrashDetails',
+        'validateCrashGroupsResult',
         'validateKeywordMetricsResult',
         'validateKeywordSuggestionsResult',
         'validateMetricsResponse',
@@ -155,6 +158,23 @@ describe('public entries', () => {
         'workCommentCreatedFixture',
         'workItemDeletedFixture',
         'workStatusChangedFixture',
+      ].sort(),
+    );
+  });
+
+  it('exports the React-free testing surface from the server testing entry', () => {
+    expect(Object.keys(testingServer).sort()).toEqual(
+      [
+        'createTestClient',
+        'signTestToken',
+        'testJwks',
+        'validateAdsSyncResponse',
+        'validateCrashDetails',
+        'validateCrashGroupsResult',
+        'validateKeywordMetricsResult',
+        'validateKeywordSuggestionsResult',
+        'validateMetricsResponse',
+        'validateToolResponse',
       ].sort(),
     );
   });

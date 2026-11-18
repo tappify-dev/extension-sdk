@@ -180,6 +180,14 @@ export const SCOPES = [
     requiresSecurityReview: false,
     requiresJustification: true,
   },
+  {
+    key: 'crashes:write',
+    label: 'Write crash groups',
+    description:
+      'Write the crash groups this extension reads from your crash reporter into your project',
+    requiresSecurityReview: false,
+    requiresJustification: true,
+  },
 ] as const;
 
 export type ScopeDefinition = (typeof SCOPES)[number];
@@ -235,6 +243,10 @@ export type KeywordDataOperation = (typeof KEYWORD_DATA_OPERATIONS)[number];
 export const KEYWORD_DATA_PLATFORMS = ['ios', 'android'] as const;
 /** The stores an extension can supply keyword data for. */
 export type KeywordDataPlatform = (typeof KEYWORD_DATA_PLATFORMS)[number];
+
+export const CRASHES_OPERATIONS = ['groups', 'details'] as const;
+/** What a crash reporter extension can answer: crash groups, and one group's details. */
+export type CrashesOperation = (typeof CRASHES_OPERATIONS)[number];
 
 export const CHARTS = [
   'installs-activity',
@@ -323,6 +335,7 @@ export const KINDS = [
   'work',
   'ads',
   'keywordData',
+  'crashes',
 ] as const;
 export type ContributionKind = (typeof KINDS)[number];
 

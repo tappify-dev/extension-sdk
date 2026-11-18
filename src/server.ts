@@ -22,6 +22,7 @@ export type {
 export type * from './server/ads';
 export { SERVER_ERROR_CODES } from './server/codes';
 export type { TapServerErrorCode } from './server/codes';
+export type * from './server/crashes';
 export { sendEvent, signWebhook } from './server/events';
 export type { SendEventOptions, WebhookEnvelope } from './server/events';
 export { createTappifyHandler } from './server/handler';

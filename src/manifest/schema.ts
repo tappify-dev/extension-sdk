@@ -6,6 +6,7 @@ import {
   ADS_SHARED_METRICS,
   CATEGORIES,
   CHARTS,
+  CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
   KEYWORD_DATA_PLATFORMS,
@@ -17,6 +18,11 @@ import {
   findScope,
   slotsForPage,
 } from './constants';
+import {
+  STANDARD_METRICS,
+  STANDARD_METRIC_KEYS,
+  isStandardMetricKey,
+} from './standard-metrics';
 import type {
   ExtensionManifest,
   ManifestIssue,
@@ -404,6 +410,21 @@ const connectorContribution = z
               .min(1)
               .max(90)
               .describe('How many days of history to fetch on the first sync.')
+              .optional(),
+            standard: z
+              .enum(STANDARD_METRIC_KEYS)
+              .describe(
+                'The standard metric this one reports. Tappify features read standard metrics without knowing which extension supplied them.',
+              )
+              .optional(),
+            restateDays: z
+              .number()
+              .int()
+              .min(0)
+              .max(90)
+              .describe(
+                'How many days before the newest stored value Tappify asks for again on each sync, for numbers that settle late.',
+              )
               .optional(),
           })
           .strict(),
@@ -980,6 +1001,27 @@ const adsContribution = z
         });
       }
     }
+    const panels = new Set<string>();
+    for (const [index, panel] of (
+      ads.acquisition.detailPanels ?? []
+    ).entries()) {
+      if (panels.has(panel.id)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['acquisition', 'detailPanels', index, 'id'],
+          message: `Two panels are named "${panel.id}". Give each panel its own id.`,
+        });
+      }
+      panels.add(panel.id);
+    }
+    const create = ads.acquisition.createPanel;
+    if (create && panels.has(create.id)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['acquisition', 'createPanel', 'id'],
+        message: `Two panels are named "${create.id}". Give each panel its own id.`,
+      });
+    }
   });
 
 const keywordDataContribution = z
@@ -1020,6 +1062,38 @@ const keywordDataContribution = z
         });
       }
       platforms.add(platform);
+    }
+  });
+
+const crashesContribution = z
+  .object({
+    supports: z
+      .array(z.enum(CRASHES_OPERATIONS))
+      .min(1)
+      .max(CRASHES_OPERATIONS.length)
+      .describe(
+        'What your server answers: `groups` for the crash groups your crash reporter holds, `details` for the stack trace and breadcrumbs of one group. `groups` is required.',
+      ),
+  })
+  .strict()
+  .superRefine((crashes, ctx) => {
+    const operations = new Set<string>();
+    for (const [index, operation] of crashes.supports.entries()) {
+      if (operations.has(operation)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['supports', index],
+          message: `supports lists ${operation} twice. Declare each operation once.`,
+        });
+      }
+      operations.add(operation);
+    }
+    if (crashes.supports.length > 0 && !operations.has('groups')) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['supports'],
+        message: 'A crash reporter supports groups. Add "groups" to supports.',
+      });
     }
   });
 
@@ -1235,6 +1309,11 @@ const manifestObject = z
             'The keyword data this extension supplies to Keywords, shown with this extension named as the source. Needs the `keywords:write` scope.',
           )
           .optional(),
+        crashes: crashesContribution
+          .describe(
+            'The crash reporter this extension reads crash groups from, written into the project. Needs the `crashes:write` scope.',
+          )
+          .optional(),
       })
       .strict()
       .describe(
@@ -1278,7 +1357,7 @@ const manifestObject = z
       })
       .strict()
       .describe(
-        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data or a procedure.',
+        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter or a procedure.',
       )
       .optional(),
     telemetry: z
@@ -1430,6 +1509,48 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
       ['scopes'],
       'the connector writes metrics into the metrics store.',
     );
+  }
+
+  const standardOwners = new Map<string, string>();
+  for (const [index, metric] of (
+    contributes.connector?.metrics ?? []
+  ).entries()) {
+    const path = ['contributes', 'connector', 'metrics', index];
+    if (isStandardMetricKey(metric.standard)) {
+      const expected = STANDARD_METRICS[metric.standard];
+      if (metric.unit !== expected.unit) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'unit'],
+          message: `Metric "${metric.key}" reports ${metric.standard} as "${metric.unit}", but that standard metric is "${expected.unit}". Change the unit or remove "standard".`,
+        });
+      }
+      if (metric.kind !== expected.kind) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'kind'],
+          message: `Metric "${metric.key}" reports ${metric.standard} as a ${metric.kind}, but that standard metric is a ${expected.kind}. Change the kind or remove "standard".`,
+        });
+      }
+      const first = standardOwners.get(metric.standard);
+      if (first === undefined) {
+        standardOwners.set(metric.standard, metric.key);
+      } else {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'standard'],
+          message: `Metrics "${first}" and "${metric.key}" both report ${metric.standard}. Only one metric in an extension can report a standard metric.`,
+        });
+      }
+    }
+    const backfill = metric.backfillDays ?? 30;
+    if (metric.restateDays !== undefined && metric.restateDays > backfill) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'restateDays'],
+        message: `Metric "${metric.key}" restates ${metric.restateDays} days but only backfills ${backfill}. Lower restateDays or raise backfillDays.`,
+      });
+    }
   }
 
   const webhookEventsAs = (as: 'alert' | 'banner' | 'event'): Set<string> =>
@@ -1623,9 +1744,18 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
     );
   }
 
+  if (contributes.crashes) {
+    requireScope(
+      'crashes:write',
+      ['scopes'],
+      'the extension writes crash groups into the project.',
+    );
+  }
+
   const needsServer =
     contributes.ads !== undefined ||
     contributes.keywordData !== undefined ||
+    contributes.crashes !== undefined ||
     contributes.connector !== undefined ||
     (contributes.webhooks?.length ?? 0) > 0 ||
     ai !== undefined ||
@@ -1637,7 +1767,7 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
       code: 'custom',
       path: ['server', 'baseUrl'],
       message:
-        'Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, work destinations, ad networks and procedures all call your server.',
+        'Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, work destinations, ad networks and procedures all call your server.',
     });
   }
 

@@ -13,6 +13,7 @@
       "@tappify/extension-sdk/codegen": ["./src/codegen.ts"],
       "@tappify/extension-sdk/testing": ["./src/testing/index.ts"],
       "@tappify/extension-sdk/testing/vitest": ["./src/testing/vitest.ts"],
+      "@tappify/extension-sdk/testing/server": ["./src/testing/server.ts"],
       "@tappify/extension-sdk/testing/jest": ["./src/testing/jest.ts"]
     }
   },

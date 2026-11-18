@@ -3,6 +3,7 @@ import type {
   AdsLevel,
   AdsSharedMetric,
   ContributionKind,
+  CrashesOperation,
   ExtensionCategory,
   HostChart,
   HostEventName,
@@ -13,6 +14,7 @@ import type {
   ScopeKey,
   SlotId,
 } from './constants';
+import type { StandardMetricKey } from './standard-metrics';
 
 export type JsonSchema = Record<string, unknown>;
 
@@ -131,6 +133,10 @@ export interface MetricDeclaration {
   kind: 'gauge' | 'counter';
   dimensions?: DimensionDeclaration[];
   backfillDays?: number;
+  /** The standard metric this one reports. Tappify features read standard metrics without knowing which extension supplied them. */
+  standard?: StandardMetricKey;
+  /** How many days before the newest stored value Tappify asks for again on each sync, for numbers that settle late. */
+  restateDays?: number;
 }
 
 export interface ConnectorContribution {
@@ -268,6 +274,12 @@ export interface KeywordDataContribution {
   platforms: KeywordDataPlatform[];
 }
 
+/** The crash groups, and optionally their details, this extension reads from a crash reporter. */
+export interface CrashesContribution {
+  /** What your server answers: `groups` always, `details` when it can return one group's stack trace. */
+  supports: CrashesOperation[];
+}
+
 export interface WorkContribution {
   kind: 'tracker' | 'docs' | 'chat';
   creates: ('issue' | 'page' | 'message')[];
@@ -348,6 +360,8 @@ export interface ExtensionManifest {
     work?: WorkContribution | LegacyWorkContribution;
     ads?: AdsContribution;
     keywordData?: KeywordDataContribution;
+    /** The crash reporter this extension reads crash groups from. Needs the `crashes:write` scope. */
+    crashes?: CrashesContribution;
   };
   server?: {
     baseUrl: string;
@@ -366,7 +380,8 @@ export type ExposableKind =
   | 'tab'
   | 'widget'
   | 'rowAction'
-  | 'settings';
+  | 'settings'
+  | 'adsPanel';
 
 export interface UiContributionRef {
   kind: ExposableKind;

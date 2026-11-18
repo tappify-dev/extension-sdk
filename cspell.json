@@ -74,7 +74,9 @@
     "unconfigured",
     "unrequested",
     "ungranted",
-    "uppercased"
+    "uppercased",
+    "normalised",
+    "arpu"
   ],
   "ignorePaths": [
     "node_modules",

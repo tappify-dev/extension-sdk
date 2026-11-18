@@ -353,6 +353,7 @@ export function LocalPreview({
   } else if (current.status === 'ready') {
     const Component = current.Component;
     const props = previewProps(contribution, {
+      manifest,
       settings,
       onSettingsChange: setSettings,
     });

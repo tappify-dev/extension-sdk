@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
   KEYWORD_DATA_PLATFORMS,
@@ -86,6 +87,23 @@ describe('schema/extension-v2.json', () => {
     ).toEqual(KEYWORD_DATA_PLATFORMS);
     expect(readPath(document, ['properties', 'scopes', 'maxItems'])).toBe(
       SCOPE_KEYS.length,
+    );
+  });
+
+  it('publishes the crashes block an editor validates', () => {
+    const crashes = readPath(manifestJsonSchema(), [
+      'properties',
+      'contributes',
+      'properties',
+      'crashes',
+    ]);
+
+    expect(readPath(crashes, ['required'])).toEqual(['supports']);
+    expect(
+      readPath(crashes, ['properties', 'supports', 'items', 'enum']),
+    ).toEqual(CRASHES_OPERATIONS);
+    expect(readPath(crashes, ['properties', 'supports', 'maxItems'])).toBe(
+      CRASHES_OPERATIONS.length,
     );
   });
 

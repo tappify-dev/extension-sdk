@@ -6,6 +6,7 @@ export {
   CARD_KEYS,
   CATEGORIES,
   CHARTS,
+  CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
   KEYWORD_DATA_PLATFORMS,
@@ -29,6 +30,7 @@ export type {
   AdsLevel,
   AdsSharedMetric,
   ContributionKind,
+  CrashesOperation,
   DataQueryKind,
   ExtensionCategory,
   HostChart,
@@ -56,4 +58,10 @@ export {
   validateManifest,
   workManifestWarnings,
 } from './manifest/schema';
+export {
+  STANDARD_METRICS,
+  STANDARD_METRIC_KEYS,
+  isStandardMetricKey,
+} from './manifest/standard-metrics';
+export type { StandardMetricKey } from './manifest/standard-metrics';
 export type * from './manifest/types';

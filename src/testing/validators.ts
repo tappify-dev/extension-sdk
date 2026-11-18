@@ -29,8 +29,9 @@ function isPoint(value: unknown): boolean {
  * Returns an empty array when the response is sound, so a test asserts on an empty
  * list. It reports a body that is not `{ series: [...] }`, an entry with no
  * `metric` key, a metric the declarations do not name, a unit that disagrees with
- * the declared one, a missing `points` array, and any point that is not a
- * `[string, number]` pair. It does not check that every declared metric is
+ * the declared one, a `platform` other than `ios` or `android`, two series with
+ * the same metric, dimensions and platform, a missing `points` array, and any
+ * point that is not a `[string, number]` pair. It does not check that every declared metric is
  * answered, so assert on the length yourself when that matters. The strings are the
  * ones `tappify extension doctor` reports.
  *
@@ -63,6 +64,7 @@ export function validateMetricsResponse(
 
   const issues: string[] = [];
   const declared = new Map(metrics.map(metric => [metric.key, metric]));
+  const seen = new Map<string, number>();
 
   for (const [index, entry] of series.entries()) {
     const item = record(entry);
@@ -84,6 +86,32 @@ export function validateMetricsResponse(
     if (item.unit !== metric.unit) {
       issues.push(
         `series[${String(index)}] reports unit "${String(item.unit)}" but "${key}" is declared as "${metric.unit}".`,
+      );
+    }
+
+    if (
+      item.platform !== undefined &&
+      item.platform !== 'ios' &&
+      item.platform !== 'android'
+    ) {
+      issues.push(
+        `series[${String(index)}] has platform ${JSON.stringify(item.platform)}. Use "ios" or "android", or leave it out for both.`,
+      );
+    }
+
+    const identity = JSON.stringify([
+      key,
+      Object.entries(record(item.dimensions) ?? {})
+        .map(([dimension, value]) => `${dimension}=${String(value)}`)
+        .sort(),
+      item.platform ?? null,
+    ]);
+    const first = seen.get(identity);
+    if (first === undefined) {
+      seen.set(identity, index);
+    } else {
+      issues.push(
+        `series[${String(index)}] repeats series[${String(first)}]: same metric, dimensions and platform. Merge them into one series.`,
       );
     }
 

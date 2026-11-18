@@ -1,6 +1,7 @@
 export { validateAdsSyncResponse } from './ads';
 export { createTestClient, signTestToken, testJwks } from './client';
 export type { TestClient, TestClientDefaults } from './client';
+export { validateCrashDetails, validateCrashGroupsResult } from './crashes';
 export { installHostTheme } from './environment';
 export {
   answerFixtureQuery,

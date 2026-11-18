@@ -75,7 +75,7 @@
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 24,
+      "maxItems": 25,
       "type": "array",
       "items": {
         "type": "object",
@@ -106,7 +106,8 @@
               "ai:skills",
               "ads:sync",
               "ads:manage",
-              "keywords:write"
+              "keywords:write",
+              "crashes:write"
             ],
             "description": "The scope key, from the scopes reference."
           },
@@ -618,6 +619,43 @@
                     "minimum": 1,
                     "maximum": 90,
                     "description": "How many days of history to fetch on the first sync."
+                  },
+                  "standard": {
+                    "type": "string",
+                    "enum": [
+                      "subscriptions.mrr",
+                      "subscriptions.revenue",
+                      "subscriptions.active_subscriptions",
+                      "subscriptions.active_trials",
+                      "subscriptions.trial_starts",
+                      "subscriptions.trial_conversions",
+                      "subscriptions.new_subscriptions",
+                      "subscriptions.churned_subscriptions",
+                      "subscriptions.refunds",
+                      "product_analytics.active_users",
+                      "product_analytics.new_users",
+                      "product_analytics.sessions",
+                      "product_analytics.avg_session_seconds",
+                      "product_analytics.retention_d1",
+                      "product_analytics.retention_d7",
+                      "product_analytics.retention_d30",
+                      "product_analytics.event_count",
+                      "crashes.crash_free_users",
+                      "crashes.crash_free_sessions",
+                      "crashes.crash_events",
+                      "crashes.affected_users",
+                      "ads.spend",
+                      "ads.installs",
+                      "ads.impressions",
+                      "ads.clicks"
+                    ],
+                    "description": "The standard metric this one reports. Tappify features read standard metrics without knowing which extension supplied them."
+                  },
+                  "restateDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 90,
+                    "description": "How many days before the newest stored value Tappify asks for again on each sync, for numbers that settle late."
                   }
                 },
                 "required": ["key", "label", "unit", "kind"],
@@ -797,7 +835,8 @@
                       "ai:skills",
                       "ads:sync",
                       "ads:manage",
-                      "keywords:write"
+                      "keywords:write",
+                      "crashes:write"
                     ],
                     "description": "The scope this action needs. Declare it under `scopes` as well."
                   },
@@ -1690,6 +1729,24 @@
           "required": ["supports", "platforms"],
           "additionalProperties": false,
           "description": "The keyword data this extension supplies to Keywords, shown with this extension named as the source. Needs the `keywords:write` scope."
+        },
+        "crashes": {
+          "type": "object",
+          "properties": {
+            "supports": {
+              "minItems": 1,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["groups", "details"]
+              },
+              "description": "What your server answers: `groups` for the crash groups your crash reporter holds, `details` for the stack trace and breadcrumbs of one group. `groups` is required."
+            }
+          },
+          "required": ["supports"],
+          "additionalProperties": false,
+          "description": "The crash reporter this extension reads crash groups from, written into the project. Needs the `crashes:write` scope."
         }
       },
       "additionalProperties": false,
@@ -1787,7 +1844,7 @@
       },
       "required": ["baseUrl"],
       "additionalProperties": false,
-      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data or a procedure."
+      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter or a procedure."
     },
     "telemetry": {
       "maxItems": 20,

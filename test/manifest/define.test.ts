@@ -42,6 +42,9 @@ describe('exposeName', () => {
     expect(exposeName('page', 'explore')).toBe('./pages/explore');
     expect(exposeName('rowAction', 'inspect')).toBe('./rowActions/inspect');
     expect(exposeName('settings')).toBe('./settings');
+    expect(exposeName('adsPanel', 'campaign-detail')).toBe(
+      './adsPanels/campaign-detail',
+    );
   });
 });
 
@@ -74,6 +77,78 @@ describe('uiContributions', () => {
         expose: './settings',
       },
     ]);
+  });
+
+  it("lists an ad network's panels after its other contributions", () => {
+    const network: ExtensionManifest = {
+      ...manifest,
+      category: 'ad_acquisition',
+      contributes: {
+        ...manifest.contributes,
+        ads: {
+          auth: { method: 'oauth', provider: 'network', scopes: [] },
+          sync: '1h',
+          acquisition: {
+            levels: [{ level: 'campaign', label: 'Campaign' }],
+            metrics: [],
+            detailPanels: [
+              {
+                id: 'campaign-detail',
+                level: 'campaign',
+                entry: 'src/ads/campaign-detail.tsx',
+              },
+              {
+                id: 'ad-group-detail',
+                level: 'ad_group',
+                entry: 'src/ads/ad-group-detail.tsx',
+              },
+            ],
+            createPanel: { id: 'create', entry: 'src/ads/create.tsx' },
+          },
+        },
+      },
+    };
+
+    expect(uiContributions(network)).toEqual([
+      ...uiContributions(manifest),
+      {
+        kind: 'adsPanel',
+        id: 'campaign-detail',
+        entry: 'src/ads/campaign-detail.tsx',
+        expose: './adsPanels/campaign-detail',
+      },
+      {
+        kind: 'adsPanel',
+        id: 'ad-group-detail',
+        entry: 'src/ads/ad-group-detail.tsx',
+        expose: './adsPanels/ad-group-detail',
+      },
+      {
+        kind: 'adsPanel',
+        id: 'create',
+        entry: 'src/ads/create.tsx',
+        expose: './adsPanels/create',
+      },
+    ]);
+  });
+
+  it('lists no panels for an ad network that declares none', () => {
+    const network: ExtensionManifest = {
+      ...manifest,
+      contributes: {
+        ...manifest.contributes,
+        ads: {
+          auth: { method: 'oauth', provider: 'network', scopes: [] },
+          sync: '1h',
+          acquisition: {
+            levels: [{ level: 'campaign', label: 'Campaign' }],
+            metrics: [],
+          },
+        },
+      },
+    };
+
+    expect(uiContributions(network)).toEqual(uiContributions(manifest));
   });
 });
 

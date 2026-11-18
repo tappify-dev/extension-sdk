@@ -1,4 +1,6 @@
 import type {
+  TapAdsCreatePanelProps,
+  TapAdsDetailPanelProps,
   TapPageProps,
   TapRowActionProps,
   TapSettingsProps,
@@ -20,6 +22,7 @@ export interface PreviewSelection {
 }
 
 export interface PreviewState {
+  manifest: ExtensionManifest;
   settings: TapSettingsValues;
   onSettingsChange(values: TapSettingsValues): void;
 }
@@ -29,7 +32,9 @@ export type PreviewProps =
   | TapTabProps
   | TapPageProps
   | TapRowActionProps
-  | TapSettingsProps;
+  | TapSettingsProps
+  | TapAdsDetailPanelProps
+  | TapAdsCreatePanelProps;
 
 const kindLabel: Record<ExposableKind, string> = {
   page: 'page',
@@ -37,6 +42,7 @@ const kindLabel: Record<ExposableKind, string> = {
   widget: 'widget',
   rowAction: 'row action',
   settings: 'settings',
+  adsPanel: 'ads panel',
 };
 
 function titleByExpose(manifest: ExtensionManifest): Map<string, string> {
@@ -94,6 +100,25 @@ export function previewProps(
         values: state.settings,
         onChange: values => state.onSettingsChange(values),
       };
+    case 'adsPanel': {
+      const detail = state.manifest.contributes.ads?.acquisition.detailPanels;
+      const panel = detail?.find(({ id }) => id === contribution.id);
+      if (panel === undefined) {
+        return {
+          accountId: 'preview-account',
+          currency: 'USD',
+          onCreated() {},
+          onClose() {},
+        };
+      }
+      return {
+        accountId: 'preview-account',
+        level: panel.level,
+        itemId: 'preview-item',
+        currency: 'USD',
+        onChanged() {},
+      };
+    }
   }
 }
 

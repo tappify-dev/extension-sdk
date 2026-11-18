@@ -9,6 +9,7 @@ const EXPOSE_FOLDER: Record<Exclude<ExposableKind, 'settings'>, string> = {
   tab: 'tabs',
   widget: 'widgets',
   rowAction: 'rowActions',
+  adsPanel: 'adsPanels',
 };
 
 export function defineManifest(manifest: ExtensionManifest): ExtensionManifest {
@@ -73,6 +74,23 @@ export function uiContributions(
       id: 'settings',
       entry: contributes.settings.entry,
       expose: exposeName('settings'),
+    });
+  }
+  const acquisition = contributes.ads?.acquisition;
+  for (const panel of acquisition?.detailPanels ?? []) {
+    refs.push({
+      kind: 'adsPanel',
+      id: panel.id,
+      entry: panel.entry,
+      expose: exposeName('adsPanel', panel.id),
+    });
+  }
+  if (acquisition?.createPanel) {
+    refs.push({
+      kind: 'adsPanel',
+      id: acquisition.createPanel.id,
+      entry: acquisition.createPanel.entry,
+      expose: exposeName('adsPanel', acquisition.createPanel.id),
     });
   }
 

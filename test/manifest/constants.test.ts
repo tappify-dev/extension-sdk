@@ -7,6 +7,7 @@ import {
   CARD_KEYS,
   CATEGORIES,
   CHARTS,
+  CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
   KEYWORD_DATA_PLATFORMS,
@@ -51,7 +52,20 @@ describe('registry mirror', () => {
       'ads:sync',
       'ads:manage',
       'keywords:write',
+      'crashes:write',
     ]);
+  });
+
+  it('names the crashes operations and the crashes:write scope', () => {
+    expect(CRASHES_OPERATIONS).toEqual(['groups', 'details']);
+    expect(findScope('crashes:write')).toEqual({
+      key: 'crashes:write',
+      label: 'Write crash groups',
+      description:
+        'Write the crash groups this extension reads from your crash reporter into your project',
+      requiresSecurityReview: false,
+      requiresJustification: true,
+    });
   });
 
   it('names the keyword data operations and platforms', () => {
@@ -117,6 +131,7 @@ describe('registry mirror', () => {
       'ads:sync',
       'ads:manage',
       'keywords:write',
+      'crashes:write',
     ]);
   });
 
@@ -181,6 +196,7 @@ describe('registry mirror', () => {
       'work',
       'ads',
       'keywordData',
+      'crashes',
     ]);
     expect(CATEGORIES).toEqual([
       'market_data',
