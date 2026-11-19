@@ -1,3 +1,9 @@
+## [2.1.0-beta.7](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-11-19)
+
+### Features
+
+- **manifest:** add chat contribution, notifications:deliver scope and chat server routes ([7dbc81f](https://github.com/tappify-dev/extension-sdk/commit/7dbc81fd421dca884b9820c0168b181b207209ac))
+
 ## [2.1.0-beta.6](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.5...v2.1.0-beta.6) (2026-11-18)
 
 ### Features
