@@ -11,6 +11,7 @@ import {
 } from '../../src/manifest/schema';
 import type {
   AdsContribution,
+  ChatContribution,
   ConnectorAuth,
   CrashesContribution,
   ExtensionManifest,
@@ -1180,7 +1181,7 @@ describe('crashes', () => {
     const { server: _server, ...manifest } = crashesManifest();
 
     expect(issues(manifest)).toContain(
-      'server.baseUrl: Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, work destinations, ad networks and procedures all call your server.',
+      'server.baseUrl: Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, chat tools, work destinations, ad networks and procedures all call your server.',
     );
   });
 
@@ -1202,6 +1203,121 @@ describe('crashes', () => {
     expect(issues(manifest)).toEqual([
       'contributes.crashes.supports.1: supports lists groups twice. Declare each operation once.',
     ]);
+  });
+});
+
+function chatManifest(
+  chat: unknown = {
+    auth: { method: 'oauth', provider: 'slack', scopes: ['incoming-webhook'] },
+    destination: 'from_oauth',
+  },
+) {
+  const { contributes: _contributes, ...manifest } = base();
+  return {
+    ...manifest,
+    category: 'chat',
+    scopes: [
+      {
+        key: 'notifications:deliver',
+        justification:
+          'Posts the notifications you turn on into your Slack channel.',
+      },
+    ],
+    contributes: { chat },
+    server: { baseUrl: 'https://chat.example.com' },
+  };
+}
+
+describe('chat', () => {
+  const slackAuth = {
+    method: 'oauth',
+    provider: 'slack',
+    scopes: ['incoming-webhook'],
+  } as const;
+
+  it('accepts a chat contribution with from_oauth and with picked', () => {
+    expect(
+      issues(chatManifest({ auth: slackAuth, destination: 'from_oauth' })),
+    ).toEqual([]);
+    expect(
+      issues(chatManifest({ auth: slackAuth, destination: 'picked' })),
+    ).toEqual([]);
+  });
+
+  it('types the chat contribution', () => {
+    const chat: ChatContribution = {
+      auth: { method: 'oauth', provider: 'slack', scopes: ['chat:write'] },
+      destination: 'picked',
+    };
+    const manifest: ExtensionManifest = {
+      ...base(),
+      contributes: { chat },
+    };
+
+    expect(manifest.contributes.chat).toEqual(chat);
+    expect(issues(chatManifest(chat))).toEqual([]);
+  });
+
+  it('rejects chat without the notifications:deliver scope', () => {
+    const manifest = chatManifest();
+    const withoutDeliver = {
+      ...manifest,
+      scopes: manifest.scopes.filter(
+        scope => scope.key !== 'notifications:deliver',
+      ),
+    };
+
+    expect(issues(withoutDeliver)).toContain(
+      'scopes: Add the notifications:deliver scope: the extension posts project notifications into a chat channel.',
+    );
+  });
+
+  it('rejects chat without server.baseUrl', () => {
+    const { server: _server, ...manifest } = chatManifest();
+
+    expect(issues(manifest)).toContain(
+      'server.baseUrl: Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, chat tools, work destinations, ad networks and procedures all call your server.',
+    );
+  });
+
+  it('rejects an api_key sign-in', () => {
+    const manifest = chatManifest({
+      auth: { method: 'api_key', fields: [] },
+      destination: 'from_oauth',
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'A chat extension signs in with OAuth.',
+    );
+  });
+
+  it('rejects an empty scopes list', () => {
+    const manifest = chatManifest({
+      auth: { method: 'oauth', provider: 'slack', scopes: [] },
+      destination: 'from_oauth',
+    });
+
+    expect(issues(manifest).join()).toContain(
+      'contributes.chat.auth.scopes: Ask the chat tool for at least one scope',
+    );
+  });
+
+  it('rejects a destination other than from_oauth or picked', () => {
+    const manifest = chatManifest({ auth: slackAuth, destination: 'webhook' });
+
+    expect(
+      issues(manifest).some(issue =>
+        issue.startsWith('contributes.chat.destination:'),
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects an organization install', () => {
+    const manifest = { ...chatManifest(), installScope: 'organization' };
+
+    expect(issues(manifest)).toContain(
+      'installScope: A chat extension installs on a project, because a channel receives one project\'s notifications. Set installScope to "project".',
+    );
   });
 });
 

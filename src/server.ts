@@ -20,6 +20,8 @@ export type {
   NodeRequestListener,
 } from './server/adapters';
 export type * from './server/ads';
+export type * from './server/chat';
+export { CHAT_ERROR_CODES } from './server/chat';
 export { SERVER_ERROR_CODES } from './server/codes';
 export type { TapServerErrorCode } from './server/codes';
 export type * from './server/crashes';

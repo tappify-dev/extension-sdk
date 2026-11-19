@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  CHAT_DESTINATION_MODES,
   CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
@@ -105,6 +106,23 @@ describe('schema/extension-v2.json', () => {
     expect(readPath(crashes, ['properties', 'supports', 'maxItems'])).toBe(
       CRASHES_OPERATIONS.length,
     );
+  });
+
+  it('publishes the chat block an editor validates', () => {
+    const chat = readPath(manifestJsonSchema(), [
+      'properties',
+      'contributes',
+      'properties',
+      'chat',
+    ]);
+
+    expect(readPath(chat, ['required'])).toEqual(['auth', 'destination']);
+    expect(readPath(chat, ['properties', 'destination', 'enum'])).toEqual(
+      CHAT_DESTINATION_MODES,
+    );
+    expect(
+      readPath(chat, ['properties', 'auth', 'properties', 'method', 'const']),
+    ).toBe('oauth');
   });
 
   it('publishes optional connector token encoding with form omission behavior', () => {

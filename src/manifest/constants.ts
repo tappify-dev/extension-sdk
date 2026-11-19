@@ -188,6 +188,14 @@ export const SCOPES = [
     requiresSecurityReview: false,
     requiresJustification: true,
   },
+  {
+    key: 'notifications:deliver',
+    label: 'Deliver notifications to chat',
+    description:
+      'Post the project notifications owners turn on into the chat channels they connect',
+    requiresSecurityReview: false,
+    requiresJustification: true,
+  },
 ] as const;
 
 export type ScopeDefinition = (typeof SCOPES)[number];
@@ -247,6 +255,10 @@ export type KeywordDataPlatform = (typeof KEYWORD_DATA_PLATFORMS)[number];
 export const CRASHES_OPERATIONS = ['groups', 'details'] as const;
 /** What a crash reporter extension can answer: crash groups, and one group's details. */
 export type CrashesOperation = (typeof CRASHES_OPERATIONS)[number];
+
+export const CHAT_DESTINATION_MODES = ['from_oauth', 'picked'] as const;
+/** Where the owner chooses the channel a chat extension posts to. */
+export type ChatDestinationMode = (typeof CHAT_DESTINATION_MODES)[number];
 
 export const CHARTS = [
   'installs-activity',
@@ -336,6 +348,7 @@ export const KINDS = [
   'ads',
   'keywordData',
   'crashes',
+  'chat',
 ] as const;
 export type ContributionKind = (typeof KINDS)[number];
 

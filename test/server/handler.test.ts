@@ -1,6 +1,7 @@
 import { exportJWK, generateKeyPair, SignJWT, type JSONWebKeySet } from 'jose';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { TapServerError } from '../../src/client/errors';
+import { CHAT_ERROR_CODES } from '../../src/server/chat';
 import { SERVER_ERROR_CODES } from '../../src/server/codes';
 import { createTappifyHandler } from '../../src/server/handler';
 import type {
@@ -264,6 +265,105 @@ describe('createTappifyHandler', () => {
       error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
     });
     expect(smuggled).not.toHaveBeenCalled();
+  });
+
+  it('routes POST /tappify/chat/messages to chat.messages with the body input', async () => {
+    const response = await call(
+      {
+        chat: {
+          messages: request => {
+            expect(request.input.message.id).toBe('dl_1');
+            expect(request.input.destination.externalId).toBe('T1:C1');
+            return { delivered: true, reference: 'ts-1' };
+          },
+        },
+      },
+      '/tappify/chat/messages',
+      {
+        method: 'POST',
+        body: body({
+          message: {
+            id: 'dl_1',
+            type: 'build.failed',
+            title: 'Build 42 failed',
+            body: 'The iOS build failed while signing.',
+            url: 'https://app.tappify.dev/builds/42',
+            severity: 'critical',
+            project: { id: 'prj_1', name: 'Funnel' },
+            facts: [{ label: 'Build', value: '42' }],
+            occurredAt: '2026-11-19T10:00:00Z',
+          },
+          destination: {
+            externalId: 'T1:C1',
+            label: '#releases',
+            config: {},
+          },
+        }),
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      delivered: true,
+      reference: 'ts-1',
+    });
+  });
+
+  it('answers chat/destinations without a handler with TAP_HANDLER_MISSING', async () => {
+    const response = await call(
+      { chat: { disconnect: () => ({ ok: true }) } },
+      '/tappify/chat/destinations',
+      { method: 'POST', body: body({ tokens: {} }) },
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+  });
+
+  it('answers an unknown chat operation like an unknown ads operation', async () => {
+    const smuggled = vi.fn(() => ({ shouldNotRun: true }));
+    const undeclared: string = 'other';
+    const chat = await call(
+      { chat: { [undeclared]: smuggled } },
+      '/tappify/chat/other',
+      { method: 'POST', body: body() },
+    );
+    const ads = await call(
+      { ads: { [undeclared]: smuggled } },
+      '/tappify/ads/other',
+      { method: 'POST', body: body() },
+    );
+    expect(chat.status).toBe(404);
+    expect(chat.status).toBe(ads.status);
+    expect(await chat.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(await ads.json()).toMatchObject({
+      error: { code: SERVER_ERROR_CODES.HANDLER_MISSING },
+    });
+    expect(smuggled).not.toHaveBeenCalled();
+  });
+
+  it('answers a DESTINATION_GONE throw with 422 and the code', async () => {
+    const response = await call(
+      {
+        chat: {
+          messages: () => {
+            throw new TapServerError(
+              CHAT_ERROR_CODES.DESTINATION_GONE,
+              'The channel was deleted.',
+              422,
+            );
+          },
+        },
+      },
+      '/tappify/chat/messages',
+      { method: 'POST', body: body() },
+    );
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({
+      error: { code: 'DESTINATION_GONE', message: 'The channel was deleted.' },
+    });
   });
 
   it('routes POST /tappify/keywords/metrics to keywords.metrics with the body input', async () => {

@@ -14,6 +14,7 @@ import type {
   ToolInput,
 } from '../client/types';
 import type { AdsOperationMap } from './ads';
+import type { ChatOperationMap } from './chat';
 import type { CrashesOperationMap } from './crashes';
 import type {
   KeywordMetricsInput,
@@ -158,6 +159,9 @@ export type WorkOperation = keyof WorkServerOperationMap;
 /** The ads operations a handler's `ads` table can answer. */
 export type AdsOperation = keyof AdsOperationMap;
 
+/** The chat operations a handler's `chat` table can answer. */
+export type ChatOperation = keyof ChatOperationMap;
+
 /** SDK v2 compatibility routes, excluded from the current work protocol. */
 export interface LegacyWorkHandlers {
   /** @deprecated Implement set_status and use describe_container for status metadata. */
@@ -259,6 +263,13 @@ export interface TappifyHandlerOptions {
     [O in keyof CrashesOperationMap]?: TappifyRouteHandler<
       CrashesOperationMap[O]['input'],
       CrashesOperationMap[O]['output']
+    >;
+  };
+  /** One handler per chat operation, answering `POST /tappify/chat/<operation>`. */
+  chat?: {
+    [O in keyof ChatOperationMap]?: TappifyRouteHandler<
+      ChatOperationMap[O]['input'],
+      ChatOperationMap[O]['output']
     >;
   };
 }

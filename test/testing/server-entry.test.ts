@@ -61,6 +61,10 @@ describe('@tappify/extension-sdk/testing/server', () => {
         'validateKeywordSuggestionsResult',
         'validateCrashGroupsResult',
         'validateCrashDetails',
+        'validateChatConnectResponse',
+        'validateChatDestinationsResponse',
+        'validateChatMessageResponse',
+        'validateChatDisconnectResponse',
       ]),
     );
   });

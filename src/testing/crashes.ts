@@ -1,30 +1,9 @@
+import { found, list, record, textIssue } from './answers';
+
 const PLATFORMS = ['ios', 'android'];
 const TRENDS = ['up', 'down', 'stable'];
 const INSTANT =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
-
-function record(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
-function list(value: unknown): unknown[] | null {
-  return Array.isArray(value) ? value : null;
-}
-
-function found(value: unknown): string {
-  if (value === undefined) {
-    return 'missing';
-  }
-  return typeof value === 'number' ? String(value) : JSON.stringify(value);
-}
-
-function textIssue(path: string, value: unknown, rule: string): string | null {
-  return typeof value === 'string' && value !== ''
-    ? null
-    : `${path} is ${found(value)}. ${rule}`;
-}
 
 function countIssue(path: string, value: unknown): string | null {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0

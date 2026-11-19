@@ -7,6 +7,7 @@ import {
   CARD_KEYS,
   CATEGORIES,
   CHARTS,
+  CHAT_DESTINATION_MODES,
   CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
@@ -53,7 +54,20 @@ describe('registry mirror', () => {
       'ads:manage',
       'keywords:write',
       'crashes:write',
+      'notifications:deliver',
     ]);
+  });
+
+  it('names the chat destination modes and the notifications:deliver scope', () => {
+    expect(CHAT_DESTINATION_MODES).toEqual(['from_oauth', 'picked']);
+    expect(findScope('notifications:deliver')).toEqual({
+      key: 'notifications:deliver',
+      label: 'Deliver notifications to chat',
+      description:
+        'Post the project notifications owners turn on into the chat channels they connect',
+      requiresSecurityReview: false,
+      requiresJustification: true,
+    });
   });
 
   it('names the crashes operations and the crashes:write scope', () => {
@@ -132,6 +146,7 @@ describe('registry mirror', () => {
       'ads:manage',
       'keywords:write',
       'crashes:write',
+      'notifications:deliver',
     ]);
   });
 
@@ -197,6 +212,7 @@ describe('registry mirror', () => {
       'ads',
       'keywordData',
       'crashes',
+      'chat',
     ]);
     expect(CATEGORIES).toEqual([
       'market_data',

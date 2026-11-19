@@ -9,6 +9,7 @@ import { SERVER_ERROR_CODES, type TapServerErrorCode } from './codes';
 import { verifyTappifyToken } from './token';
 import type {
   AdsOperation,
+  ChatOperation,
   ContextBlock,
   LegacyWorkHandlers,
   MentionItems,
@@ -60,6 +61,13 @@ const ADS_OPERATIONS: readonly AdsOperation[] = [
   'list_accounts',
   'sync',
   'apply_change',
+];
+
+const CHAT_OPERATIONS: readonly ChatOperation[] = [
+  'connect',
+  'destinations',
+  'messages',
+  'disconnect',
 ];
 
 const TOKEN_FAILURES: readonly TapServerErrorCode[] = [
@@ -257,6 +265,13 @@ function resolveRoute(
     const operation = CRASHES_OPERATIONS.find(candidate => candidate === name);
     return route(
       operation === undefined ? undefined : options.crashes?.[operation],
+      bodyInput,
+    );
+  }
+  if (head === 'chat' && method === 'POST' && name !== undefined) {
+    const operation = CHAT_OPERATIONS.find(candidate => candidate === name);
+    return route(
+      operation === undefined ? undefined : options.chat?.[operation],
       bodyInput,
     );
   }

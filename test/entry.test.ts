@@ -87,6 +87,7 @@ describe('public entries', () => {
   it('exports every vendor server symbol spec §12.1 lists and nothing else', () => {
     expect(Object.keys(server).sort()).toEqual(
       [
+        'CHAT_ERROR_CODES',
         'DEFAULT_JWKS_URL',
         'SERVER_ERROR_CODES',
         'TapServerError',
@@ -149,6 +150,10 @@ describe('public entries', () => {
         'tapMatchers',
         'testJwks',
         'validateAdsSyncResponse',
+        'validateChatConnectResponse',
+        'validateChatDestinationsResponse',
+        'validateChatDisconnectResponse',
+        'validateChatMessageResponse',
         'validateCrashDetails',
         'validateCrashGroupsResult',
         'validateKeywordMetricsResult',
@@ -169,6 +174,10 @@ describe('public entries', () => {
         'signTestToken',
         'testJwks',
         'validateAdsSyncResponse',
+        'validateChatConnectResponse',
+        'validateChatDestinationsResponse',
+        'validateChatDisconnectResponse',
+        'validateChatMessageResponse',
         'validateCrashDetails',
         'validateCrashGroupsResult',
         'validateKeywordMetricsResult',

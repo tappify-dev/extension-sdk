@@ -75,7 +75,7 @@
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 25,
+      "maxItems": 26,
       "type": "array",
       "items": {
         "type": "object",
@@ -107,7 +107,8 @@
               "ads:sync",
               "ads:manage",
               "keywords:write",
-              "crashes:write"
+              "crashes:write",
+              "notifications:deliver"
             ],
             "description": "The scope key, from the scopes reference."
           },
@@ -836,7 +837,8 @@
                       "ads:sync",
                       "ads:manage",
                       "keywords:write",
-                      "crashes:write"
+                      "crashes:write",
+                      "notifications:deliver"
                     ],
                     "description": "The scope this action needs. Declare it under `scopes` as well."
                   },
@@ -1747,6 +1749,45 @@
           "required": ["supports"],
           "additionalProperties": false,
           "description": "The crash reporter this extension reads crash groups from, written into the project. Needs the `crashes:write` scope."
+        },
+        "chat": {
+          "type": "object",
+          "properties": {
+            "auth": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string",
+                  "const": "oauth"
+                },
+                "provider": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The OAuth provider identifier."
+                },
+                "scopes": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": "The scopes asked of the chat tool. These are that tool's scopes, not Tappify's."
+                }
+              },
+              "required": ["method", "provider", "scopes"],
+              "additionalProperties": false,
+              "description": "How owners sign in to the chat tool. Tappify runs the OAuth flow with the client set in the vendor portal and hands your server the token response."
+            },
+            "destination": {
+              "type": "string",
+              "enum": ["from_oauth", "picked"],
+              "description": "Where the owner chooses the channel: `from_oauth` when the chat tool's own consent screen asks for it, `picked` when Tappify shows the options your server answers on `/tappify/chat/destinations`."
+            }
+          },
+          "required": ["auth", "destination"],
+          "additionalProperties": false,
+          "description": "The chat tool this extension posts project notifications to: how owners sign in and where they choose the channel. Needs the `notifications:deliver` scope."
         }
       },
       "additionalProperties": false,
@@ -1844,7 +1885,7 @@
       },
       "required": ["baseUrl"],
       "additionalProperties": false,
-      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter or a procedure."
+      "description": "Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter, a chat tool or a procedure."
     },
     "telemetry": {
       "maxItems": 20,

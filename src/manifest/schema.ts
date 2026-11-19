@@ -6,6 +6,7 @@ import {
   ADS_SHARED_METRICS,
   CATEGORIES,
   CHARTS,
+  CHAT_DESTINATION_MODES,
   CRASHES_OPERATIONS,
   EVENTS,
   KEYWORD_DATA_OPERATIONS,
@@ -1097,6 +1098,37 @@ const crashesContribution = z
     }
   });
 
+const chatContribution = z
+  .object({
+    auth: z
+      .object({
+        method: z.literal('oauth', {
+          error:
+            'A chat extension signs in with OAuth. Set auth.method to "oauth"; Tappify takes no API keys or pasted webhook URLs for chat.',
+        }),
+        provider: z.string().min(1).describe('The OAuth provider identifier.'),
+        scopes: z
+          .array(z.string().min(1))
+          .min(
+            1,
+            'Ask the chat tool for at least one scope, such as "incoming-webhook".',
+          )
+          .describe(
+            "The scopes asked of the chat tool. These are that tool's scopes, not Tappify's.",
+          ),
+      })
+      .strict()
+      .describe(
+        'How owners sign in to the chat tool. Tappify runs the OAuth flow with the client set in the vendor portal and hands your server the token response.',
+      ),
+    destination: z
+      .enum(CHAT_DESTINATION_MODES)
+      .describe(
+        "Where the owner chooses the channel: `from_oauth` when the chat tool's own consent screen asks for it, `picked` when Tappify shows the options your server answers on `/tappify/chat/destinations`.",
+      ),
+  })
+  .strict();
+
 // Every field is optional so a vendor can fill the listing one value at a time;
 // the public-visibility refinement below requires all five before publishing.
 const listing = z
@@ -1314,6 +1346,11 @@ const manifestObject = z
             'The crash reporter this extension reads crash groups from, written into the project. Needs the `crashes:write` scope.',
           )
           .optional(),
+        chat: chatContribution
+          .describe(
+            'The chat tool this extension posts project notifications to: how owners sign in and where they choose the channel. Needs the `notifications:deliver` scope.',
+          )
+          .optional(),
       })
       .strict()
       .describe(
@@ -1357,7 +1394,7 @@ const manifestObject = z
       })
       .strict()
       .describe(
-        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter or a procedure.',
+        'Your own server: where the host calls it, and what it answers. Required once you declare a connector, a webhook, an assistant contribution, a work destination, an ad network, keyword data, a crash reporter, a chat tool or a procedure.',
       )
       .optional(),
     telemetry: z
@@ -1752,10 +1789,27 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
     );
   }
 
+  if (contributes.chat) {
+    requireScope(
+      'notifications:deliver',
+      ['scopes'],
+      'the extension posts project notifications into a chat channel.',
+    );
+    if (manifest.installScope === 'organization') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['installScope'],
+        message:
+          'A chat extension installs on a project, because a channel receives one project\'s notifications. Set installScope to "project".',
+      });
+    }
+  }
+
   const needsServer =
     contributes.ads !== undefined ||
     contributes.keywordData !== undefined ||
     contributes.crashes !== undefined ||
+    contributes.chat !== undefined ||
     contributes.connector !== undefined ||
     (contributes.webhooks?.length ?? 0) > 0 ||
     ai !== undefined ||
@@ -1767,7 +1821,7 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
       code: 'custom',
       path: ['server', 'baseUrl'],
       message:
-        'Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, work destinations, ad networks and procedures all call your server.',
+        'Set server.baseUrl: connectors, webhooks, assistant contributions, keyword data, crash reporters, chat tools, work destinations, ad networks and procedures all call your server.',
     });
   }
 

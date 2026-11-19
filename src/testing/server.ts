@@ -5,6 +5,12 @@
  * @module testing/server
  */
 export { validateAdsSyncResponse } from './ads';
+export {
+  validateChatConnectResponse,
+  validateChatDestinationsResponse,
+  validateChatDisconnectResponse,
+  validateChatMessageResponse,
+} from './chat';
 export { createTestClient, signTestToken, testJwks } from './client';
 export type { TestClient, TestClientDefaults } from './client';
 export { validateCrashDetails, validateCrashGroupsResult } from './crashes';

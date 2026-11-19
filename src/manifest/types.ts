@@ -2,6 +2,7 @@ import type {
   AdsChangeKind,
   AdsLevel,
   AdsSharedMetric,
+  ChatDestinationMode,
   ContributionKind,
   CrashesOperation,
   ExtensionCategory,
@@ -280,6 +281,20 @@ export interface CrashesContribution {
   supports: CrashesOperation[];
 }
 
+/** How owners sign in to the chat tool. Chat extensions sign in with OAuth only. */
+export type ChatAuth = Extract<WorkAuth, { method: 'oauth' }>;
+
+/**
+ * The chat tool this extension posts project notifications to. A work
+ * destination whose `kind` is `'chat'` is different: it sends work items into a
+ * chat tool.
+ */
+export interface ChatContribution {
+  auth: ChatAuth;
+  /** `from_oauth` when the chat tool's own consent screen asks for the channel, `picked` when Tappify lists the options your server answers. */
+  destination: ChatDestinationMode;
+}
+
 export interface WorkContribution {
   kind: 'tracker' | 'docs' | 'chat';
   creates: ('issue' | 'page' | 'message')[];
@@ -362,6 +377,8 @@ export interface ExtensionManifest {
     keywordData?: KeywordDataContribution;
     /** The crash reporter this extension reads crash groups from. Needs the `crashes:write` scope. */
     crashes?: CrashesContribution;
+    /** The chat tool this extension posts project notifications to. Needs the `notifications:deliver` scope. */
+    chat?: ChatContribution;
   };
   server?: {
     baseUrl: string;
