@@ -196,6 +196,21 @@ export const SCOPES = [
     requiresSecurityReview: false,
     requiresJustification: true,
   },
+  {
+    key: 'purchases:read',
+    label: 'Read purchase products',
+    description: 'Read product identities, names and status for this project',
+    requiresSecurityReview: false,
+    requiresJustification: false,
+  },
+  {
+    key: 'purchases:link',
+    label: 'Link to purchase products',
+    description:
+      'Link this extension’s own resources to products in this project',
+    requiresSecurityReview: false,
+    requiresJustification: true,
+  },
 ] as const;
 
 export type ScopeDefinition = (typeof SCOPES)[number];
@@ -414,7 +429,8 @@ export type DataQueryKind =
   | 'listing'
   | 'reviews'
   | 'crashes'
-  | 'revenue';
+  | 'revenue'
+  | 'purchases';
 
 export const QUERY_SCOPES: Record<DataQueryKind, ScopeKey> = {
   project: 'projects:read',
@@ -424,6 +440,7 @@ export const QUERY_SCOPES: Record<DataQueryKind, ScopeKey> = {
   reviews: 'reviews:read',
   crashes: 'crashes:read',
   revenue: 'revenue:read',
+  purchases: 'purchases:read',
 };
 
 /**

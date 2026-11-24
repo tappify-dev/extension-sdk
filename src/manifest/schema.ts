@@ -1253,7 +1253,7 @@ const manifestObject = z
       .min(1)
       .max(SCOPE_KEYS.length)
       .describe(
-        'The permissions an owner grants at install. Declare only what your contributions use.',
+        'The permissions an owner grants at install. Declare only what your contributions use. `purchases:read` and `purchases:link` require a project install. `purchases:link` requires a justification.',
       ),
     contributes: z
       .object({
@@ -1859,6 +1859,14 @@ export const manifestSchema = manifestObject.superRefine((manifest, ctx) => {
   }
 
   if (manifest.installScope === 'organization') {
+    if (granted.has('purchases:read') || granted.has('purchases:link')) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['installScope'],
+        message: 'Purchase scopes require a project install.',
+      });
+    }
+
     const forbidden = (['pages', 'tabs', 'widgets', 'series'] as const).filter(
       key => (contributes[key]?.length ?? 0) > 0,
     );

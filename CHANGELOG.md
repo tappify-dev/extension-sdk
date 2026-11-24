@@ -1,3 +1,9 @@
+## Unreleased
+
+### Features
+
+- **purchases:** add project grants to list purchase products and link them to an extension's own paywalls, entitlements, or offerings.
+
 ## [2.1.0-beta.7](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-11-19)
 
 ### Features

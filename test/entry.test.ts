@@ -137,6 +137,7 @@ describe('public entries', () => {
         'fixtureKeywords',
         'fixtureListings',
         'fixtureProject',
+        'fixturePurchases',
         'fixtureReleases',
         'fixtureRevenue',
         'fixtureReviews',

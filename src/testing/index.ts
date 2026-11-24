@@ -16,6 +16,7 @@ export {
   fixtureKeywords,
   fixtureListings,
   fixtureProject,
+  fixturePurchases,
   fixtureReleases,
   fixtureRevenue,
   fixtureReviews,

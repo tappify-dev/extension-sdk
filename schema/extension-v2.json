@@ -75,7 +75,7 @@
     },
     "scopes": {
       "minItems": 1,
-      "maxItems": 26,
+      "maxItems": 28,
       "type": "array",
       "items": {
         "type": "object",
@@ -108,7 +108,9 @@
               "ads:manage",
               "keywords:write",
               "crashes:write",
-              "notifications:deliver"
+              "notifications:deliver",
+              "purchases:read",
+              "purchases:link"
             ],
             "description": "The scope key, from the scopes reference."
           },
@@ -122,7 +124,7 @@
         "required": ["key"],
         "additionalProperties": false
       },
-      "description": "The permissions an owner grants at install. Declare only what your contributions use."
+      "description": "The permissions an owner grants at install. Declare only what your contributions use. `purchases:read` and `purchases:link` require a project install. `purchases:link` requires a justification."
     },
     "contributes": {
       "type": "object",
@@ -838,7 +840,9 @@
                       "ads:manage",
                       "keywords:write",
                       "crashes:write",
-                      "notifications:deliver"
+                      "notifications:deliver",
+                      "purchases:read",
+                      "purchases:link"
                     ],
                     "description": "The scope this action needs. Declare it under `scopes` as well."
                   },

@@ -89,6 +89,67 @@ export default function DownloadsWidget(_props: TapWidgetProps) {
 }
 ```
 
+## Link extension resources to purchase products
+
+A project-installed extension can list the project's in-app purchases and
+subscriptions, then link them to its own resources, such as paywalls,
+entitlements, or offerings. People create, edit, and submit purchases in Tappify.
+
+Add the grants your extension uses to `scopes` in `tappify.extension.json` and
+set `installScope` to `project`. The project owner grants access at install.
+For an existing install, the owner must approve the new grants before use.
+`purchases:link` requires a justification of 20 to 500 characters.
+
+```json
+{
+  "installScope": "project",
+  "scopes": [
+    { "key": "ui:render" },
+    { "key": "purchases:read" },
+    {
+      "key": "purchases:link",
+      "justification": "Connect our paywalls to the products you select in this project."
+    }
+  ]
+}
+```
+
+Use `useTapQuery({ kind: 'purchases' })` to render a product picker, or
+`await tap.data.query({ kind: 'purchases' })` to load the catalogue on demand.
+Both return `{ products }` across all apps in the project, including eligible
+products still being provisioned. The catalogue is independent of the date,
+platform, and country filters.
+
+Pass the selected product's Tappify UUID (`product.id`) as the link's
+`productId`. The catalogue's `product.productId` is the store identifier.
+Call `link` once for each selected product. Each call adds one association and
+returns the three fields you sent. Repeating a call with the same fields is safe.
+
+```ts
+import { useTap, useTapQuery } from '@tappify/extension-sdk';
+
+export function usePaywallProducts(paywallId: string) {
+  const tap = useTap();
+  const catalogue = useTapQuery({ kind: 'purchases' });
+
+  return {
+    catalogue,
+    linkProduct: (product: { id: string }) =>
+      tap.products.link({
+        productId: product.id,
+        resourceType: 'paywall',
+        resourceId: paywallId,
+      }),
+  };
+}
+```
+
+Choose a `resourceType` of up to 64 ASCII characters. It starts with a letter or
+digit and can also contain `.`, `_`, and `-`. Use your resource's stable ID as
+`resourceId`, up to 200 characters, with at least one non-whitespace character
+and no control characters. A call made without its grant rejects with
+`TAP_SCOPE_MISSING`.
+
 ## Migrating UI imports
 
 Version 2 replaces the legacy UI surface with One UI. Import frontend components

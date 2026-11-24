@@ -52,6 +52,7 @@ describe('fixtures', () => {
         range: { from: '2026-09-01', to: '2026-09-07' },
       }).currency,
     ).toBe('USD');
+    expect(answerFixtureQuery({ kind: 'purchases' }).products).toHaveLength(2);
     expect(fixtures.project.project.name).toBe('Northlight');
   });
 
@@ -99,6 +100,47 @@ describe('createTapMock', () => {
       (error: unknown) =>
         TapError.is(error) && error.code === 'TAP_SCOPE_MISSING',
     );
+  });
+
+  it('lists products with purchases:read and requires purchases:link to link them', async () => {
+    const mock = createTapMock({ scopes: ['purchases:read'] });
+    const { products } = await mock.tap.data.query({ kind: 'purchases' });
+
+    expect(products).toEqual(fixtures.purchases.products);
+    expect(products).not.toBe(fixtures.purchases.products);
+    await expect(
+      mock.tap.products.link({
+        productId: products[0].id,
+        resourceType: 'paywall',
+        resourceId: 'main',
+      }),
+    ).rejects.toMatchObject({
+      code: 'TAP_SCOPE_MISSING',
+      message: expect.stringContaining('purchases:link'),
+    });
+    expect(mock.calls.productLinks).toEqual([]);
+  });
+
+  it('records product links and returns the receipt with purchases:link alone', async () => {
+    const mock = createTapMock({ scopes: ['purchases:link'] });
+    const link = {
+      productId: fixtures.purchases.products[0].id,
+      resourceType: 'paywall',
+      resourceId: 'main',
+    };
+
+    await expect(
+      mock.tap.data.query({ kind: 'purchases' }),
+    ).rejects.toMatchObject({
+      code: 'TAP_SCOPE_MISSING',
+      message: expect.stringContaining('purchases:read'),
+    });
+    const receipt = await mock.tap.products.link(link);
+
+    expect(receipt).toEqual(link);
+    expect(mock.calls.productLinks).toEqual([link]);
+    receipt.resourceId = 'changed';
+    expect(mock.calls.productLinks).toEqual([link]);
   });
 
   it('refuses a storage write when storage:write was not granted', async () => {

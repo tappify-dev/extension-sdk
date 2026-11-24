@@ -5,6 +5,8 @@ import type {
   TapChatCard,
   TapFilters,
   TapProcedureName,
+  TapPurchaseLink,
+  TapPurchasesResult,
   TapQuery,
   TapResult,
   TapSettingsValues,
@@ -17,6 +19,20 @@ describe('bridge types', () => {
   it('narrows a data result by its query kind', () => {
     expectTypeOf<TapResult<{ kind: 'project' }>>().toHaveProperty('apps');
     expectTypeOf<TapResult<{ kind: 'keywords' }>>().toHaveProperty('keywords');
+    expectTypeOf<
+      TapResult<{ kind: 'purchases' }>
+    >().toEqualTypeOf<TapPurchasesResult>();
+  });
+
+  it('uses the product and resource IDs as the link input and receipt', () => {
+    expectTypeOf<TapPurchaseLink>().toEqualTypeOf<{
+      productId: string;
+      resourceType: string;
+      resourceId: string;
+    }>();
+    expectTypeOf<Tap['products']['link']>().toEqualTypeOf<
+      (input: TapPurchaseLink) => Promise<TapPurchaseLink>
+    >();
   });
 
   it('falls back to permissive shapes without a generated augmentation', () => {
@@ -81,6 +97,7 @@ describe('bridge types', () => {
     expectTypeOf<Tap>().toHaveProperty('format');
     expectTypeOf<Tap>().toHaveProperty('nav');
     expectTypeOf<Tap>().toHaveProperty('data');
+    expectTypeOf<Tap>().toHaveProperty('products');
     expectTypeOf<Tap>().toHaveProperty('server');
     expectTypeOf<Tap>().toHaveProperty('state');
     expectTypeOf<Tap>().toHaveProperty('ui');
@@ -107,6 +124,7 @@ describe('bridge types', () => {
       { kind: 'reviews', range: { from: '2026-08-01', to: '2026-09-01' } },
       { kind: 'crashes', range: { from: '2026-08-01', to: '2026-09-01' } },
       { kind: 'revenue', range: { from: '2026-08-01', to: '2026-09-01' } },
+      { kind: 'purchases' },
     ];
 
     expect(queries.map(query => query.kind)).toEqual([
@@ -117,6 +135,7 @@ describe('bridge types', () => {
       'reviews',
       'crashes',
       'revenue',
+      'purchases',
     ]);
   });
 });

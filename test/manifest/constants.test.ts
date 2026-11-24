@@ -55,7 +55,27 @@ describe('registry mirror', () => {
       'keywords:write',
       'crashes:write',
       'notifications:deliver',
+      'purchases:read',
+      'purchases:link',
     ]);
+  });
+
+  it('describes the purchase grants', () => {
+    expect(findScope('purchases:read')).toEqual({
+      key: 'purchases:read',
+      label: 'Read purchase products',
+      description: 'Read product identities, names and status for this project',
+      requiresSecurityReview: false,
+      requiresJustification: false,
+    });
+    expect(findScope('purchases:link')).toEqual({
+      key: 'purchases:link',
+      label: 'Link to purchase products',
+      description:
+        'Link this extension’s own resources to products in this project',
+      requiresSecurityReview: false,
+      requiresJustification: true,
+    });
   });
 
   it('names the chat destination modes and the notifications:deliver scope', () => {
@@ -147,6 +167,7 @@ describe('registry mirror', () => {
       'keywords:write',
       'crashes:write',
       'notifications:deliver',
+      'purchases:link',
     ]);
   });
 
@@ -276,6 +297,7 @@ describe('registry mirror', () => {
       reviews: 'reviews:read',
       crashes: 'crashes:read',
       revenue: 'revenue:read',
+      purchases: 'purchases:read',
     });
   });
 

@@ -215,10 +215,12 @@ function useHostQueryClient(): QueryClient {
  * @remarks
  * Each kind needs its own scope. `project` needs `projects:read`, `series` needs
  * `analytics:read`, `keywords` and `listing` need `store.metadata:read`, and
- * `reviews`, `crashes` and `revenue` need their own. A kind the install has not
- * granted comes back as a `TapError` with code `TAP_SCOPE_MISSING` in `error`. An
- * answer stays fresh for 30 seconds and a failed read is not retried, so
- * `refetch` is yours to call. The host adds only the country filter to the read:
+ * `reviews`, `crashes` and `revenue` need their own. `purchases` needs
+ * `purchases:read` and reads the project catalogue across all its apps. A kind
+ * the install has not granted comes back as a `TapError` with code
+ * `TAP_SCOPE_MISSING` in `error`. An answer stays fresh for 30 seconds and a
+ * failed read is not retried, so `refetch` is yours to call. The host adds only
+ * the country filter to the read:
  * pass `range` into a `series`, `reviews`, `crashes` or `revenue` query yourself,
  * and `platform` into a `series` query, which is the only kind that takes one.
  * Throws `TAP_NO_QUERY_CLIENT` when no Tappify mount provides the query client.

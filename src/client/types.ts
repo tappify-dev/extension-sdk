@@ -162,7 +162,8 @@ export type TapQuery =
   | { kind: 'listing' }
   | { kind: 'reviews'; range: TapDateRange }
   | { kind: 'crashes'; range: TapDateRange }
-  | { kind: 'revenue'; range: TapDateRange };
+  | { kind: 'revenue'; range: TapDateRange }
+  | { kind: 'purchases' };
 
 /** What a `project` query answers with. */
 export interface TapProjectResult {
@@ -229,6 +230,32 @@ export interface TapRevenueResult {
   points: TapSeriesPoint[];
 }
 
+/** An in-app purchase or subscription in the installed project's catalogue. */
+export interface TapPurchaseProduct {
+  /** The stable Tappify UUID to pass as `productId` to `tap.products.link`. */
+  id: string;
+  /** The product identifier configured for the store. */
+  productId: string;
+  kind: 'in-app-purchase' | 'subscription';
+  name: string;
+  status: 'active' | 'provisioning';
+}
+
+/** The catalogue across the project's apps, returned with `purchases:read`. */
+export interface TapPurchasesResult {
+  products: TapPurchaseProduct[];
+}
+
+/** The input and receipt for linking an extension resource to a product. */
+export interface TapPurchaseLink {
+  /** The catalogue product's `id`. */
+  productId: string;
+  /** A resource category your extension defines, such as `paywall`. */
+  resourceType: string;
+  /** The ID of the resource in your extension. */
+  resourceId: string;
+}
+
 /**
  * The result type a query of kind `Q` answers with, which is what
  * `tap.data.query` and `useTapQuery` return for it.
@@ -247,7 +274,9 @@ export type TapResult<Q extends TapQuery> = Q extends { kind: 'project' }
             ? TapCrashesResult
             : Q extends { kind: 'revenue' }
               ? TapRevenueResult
-              : never;
+              : Q extends { kind: 'purchases' }
+                ? TapPurchasesResult
+                : never;
 
 /**
  * The handle `tap.storage.<name>` exposes for a singleton collection, which holds
@@ -669,6 +698,14 @@ export interface Tap extends TapInternals {
       event: E,
       handler: (payload: TapHostEvents[E]) => void,
     ): () => void;
+  };
+  products: {
+    /**
+     * Adds one product association to a resource owned by this install. Linking
+     * the same product and resource again returns the same receipt. Rejects
+     * with `TAP_SCOPE_MISSING` when `purchases:link` is not granted.
+     */
+    link(input: TapPurchaseLink): Promise<TapPurchaseLink>;
   };
   server: TapProcedures;
   state: {

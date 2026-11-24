@@ -464,6 +464,44 @@ describe('manifestSchema', () => {
     );
   });
 
+  it('accepts justified purchase links and purchase reads on project installs', () => {
+    const manifest = base();
+    manifest.scopes.push(
+      { key: 'purchases:read' },
+      {
+        key: 'purchases:link',
+        justification: 'Connect our paywalls to products you select.',
+      },
+    );
+
+    expect(issues(manifest)).toEqual([]);
+  });
+
+  it('requires a justification to link purchase products', () => {
+    const manifest = base();
+    manifest.scopes.push({ key: 'purchases:link' });
+
+    expect(issues(manifest).join()).toContain(
+      'purchases:link needs a justification',
+    );
+  });
+
+  it.each(['purchases:read', 'purchases:link'] as const)(
+    'requires a project install for %s',
+    key => {
+      const manifest = base();
+      manifest.installScope = 'organization';
+      manifest.contributes = {};
+      manifest.scopes = [
+        { key, justification: 'Connect our paywalls to products you select.' },
+      ];
+
+      expect(issues(manifest)).toEqual([
+        'installScope: Purchase scopes require a project install.',
+      ]);
+    },
+  );
+
   it('requires server.baseUrl when procedures or ai exist', () => {
     const manifest = base();
     manifest.contributes.ai = {

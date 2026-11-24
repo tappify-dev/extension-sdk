@@ -20,6 +20,18 @@ describe('schema/extension-v2.json', () => {
     expect(published).toEqual(manifestJsonSchema());
   });
 
+  it('publishes both purchase scopes for manifest editor completion', () => {
+    const scopes = readPath(published, ['properties', 'scopes']);
+    const keys = readPath(scopes, ['items', 'properties', 'key', 'enum']);
+
+    expect(keys).toEqual(
+      expect.arrayContaining(['purchases:read', 'purchases:link']),
+    );
+    expect(readPath(scopes, ['description'])).toContain(
+      '`purchases:link` requires a justification.',
+    );
+  });
+
   it('describes the manifest an editor validates', () => {
     const document = manifestJsonSchema();
     const properties = document.properties;

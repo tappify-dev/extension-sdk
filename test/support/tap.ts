@@ -72,6 +72,9 @@ export function createStubTap(overrides: Partial<Tap> = {}): TapStub {
       query: () => Promise.reject(new Error('no data source in this stub')),
       subscribe: () => () => undefined,
     },
+    products: {
+      link: () => Promise.reject(new Error('no product links in this stub')),
+    },
     server: {},
     state: {
       get: <T>(key: string): T | undefined => {

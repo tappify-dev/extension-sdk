@@ -4,6 +4,7 @@ import type {
   TapKeyword,
   TapListing,
   TapProjectResult,
+  TapPurchasesResult,
   TapQuery,
   TapRelease,
   TapResult,
@@ -242,6 +243,26 @@ export const fixtureRevenue: TapRevenueResult = {
   })),
 };
 
+/** An active in-app purchase and a subscription being provisioned. */
+export const fixturePurchases: TapPurchasesResult = {
+  products: [
+    {
+      id: '4c827f02-c1bb-4c62-bff1-fa761b420b56',
+      productId: 'northlight.filters',
+      kind: 'in-app-purchase',
+      name: 'Filter Pack',
+      status: 'active',
+    },
+    {
+      id: 'c98549be-db26-48cf-a788-f6e919bddbd4',
+      productId: 'northlight.pro.monthly',
+      kind: 'subscription',
+      name: 'Northlight Pro Monthly',
+      status: 'provisioning',
+    },
+  ],
+};
+
 /** The shape of `fixtures`: every sandbox fixture under one name. */
 export interface TapFixtures {
   project: TapProjectResult;
@@ -252,6 +273,7 @@ export interface TapFixtures {
   reviews: TapReviewsResult;
   crashes: TapCrashesResult;
   revenue: TapRevenueResult;
+  purchases: TapPurchasesResult;
   /** `fixtureSeries`, so a series is built per metric rather than held. */
   series(metric: TapSeriesMetric): TapSeriesResult;
 }
@@ -284,6 +306,7 @@ export const fixtures: TapFixtures = {
   reviews: fixtureReviews,
   crashes: fixtureCrashes,
   revenue: fixtureRevenue,
+  purchases: fixturePurchases,
   series: fixtureSeries,
 };
 
@@ -296,7 +319,7 @@ export const fixtures: TapFixtures = {
  * splices a result cannot reach the fixture the next test reads. It checks no
  * scope. `createTapMock` refuses an ungranted kind before it gets here, and it
  * ignores the range and platform in the query, so the numbers are the same
- * whatever the filter bar says. The seven assertions inside are the one place
+ * whatever the filter bar says. The assertions inside are the one place
  * TypeScript cannot follow the distributive conditional in `TapResult<Q>` back
  * through a `switch`; each branch returns exactly the result its `case` selected.
  *
@@ -327,5 +350,7 @@ export function answerFixtureQuery<Q extends TapQuery>(query: Q): TapResult<Q> {
       return structuredClone(fixtureCrashes) as TapResult<Q>;
     case 'revenue':
       return structuredClone(fixtureRevenue) as TapResult<Q>;
+    case 'purchases':
+      return structuredClone(fixturePurchases) as TapResult<Q>;
   }
 }

@@ -8,6 +8,7 @@ import type {
   TapFilters,
   TapHostEvents,
   TapProcedures,
+  TapPurchaseLink,
   TapSingleton,
   TapSize,
   TapStorage,
@@ -38,6 +39,8 @@ export interface TapMockCalls {
   confirms: TapConfirmOptions[];
   /** One entry per `tap.actions.run`, which the mock records rather than refuses. */
   actions: { actionId: string; input: unknown }[];
+  /** One entry per `tap.products.link` call allowed by the mock's scopes. */
+  productLinks: TapPurchaseLink[];
   /** One entry per `tap.telemetry.event`. */
   telemetry: {
     name: string;
@@ -186,7 +189,8 @@ function asObject(value: unknown): object {
  * everything else the host would do is recorded in `calls`. Scopes default to all of
  * them: pass `scopes` to test the refused path, where a data query rejects with
  * `TAP_SCOPE_MISSING` for the kind's own scope and every storage call, reads
- * included, needs `storage:write`. A procedure needs either `server`, which answers
+ * included, needs `storage:write`. Product links need `purchases:link` and are
+ * recorded in `calls.productLinks`. A procedure needs either `server`, which answers
  * in process, or `handler`, which is called over a real `Request` with a token the
  * mock signs. That handler has to be built with `jwks: await testJwks()` and the
  * same `extensionId`; without either, `tap.server.<name>` rejects with
@@ -224,6 +228,7 @@ export function createTapMock(options: CreateTapMockOptions = {}): TapMock {
     toasts: [],
     confirms: [],
     actions: [],
+    productLinks: [],
     telemetry: [],
     chats: [],
     externals: [],
@@ -469,6 +474,16 @@ export function createTapMock(options: CreateTapMockOptions = {}): TapMock {
         return () => {
           set.delete(wrapped);
         };
+      },
+    },
+    products: {
+      link: ({ productId, resourceType, resourceId }) => {
+        if (!granted.has('purchases:link')) {
+          return Promise.reject(scopeError('purchases:link'));
+        }
+        const receipt = { productId, resourceType, resourceId };
+        calls.productLinks.push({ ...receipt });
+        return Promise.resolve(receipt);
       },
     },
     server: new Proxy(serverTarget, {
