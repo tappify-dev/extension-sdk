@@ -1,15 +1,3 @@
-## [2.1.0-beta.7](https://github.com/tappify-dev/extension-sdk/compare/v2.1.0-beta.6...v2.1.0-beta.7) (2026-11-26)
-
-### Features
-
-- **manifest:** add chat contribution, notifications:deliver scope and chat server routes ([7dbc81f](https://github.com/tappify-dev/extension-sdk/commit/7dbc81fd421dca884b9820c0168b181b207209ac))
-- **manifest:** purchases:read and purchases:link grants with product list and link client ([b0fc360](https://github.com/tappify-dev/extension-sdk/commit/b0fc3602b7bf948a7950abd713fad5b88b1ffddc))
-- **ui:** add metrics query, charts, Panel, Grid and KeyValueList ([62b08d0](https://github.com/tappify-dev/extension-sdk/commit/62b08d0d482cacf8c3f54f63d7a6057ccb1d24d6))
-
-### Bug Fixes
-
-- **docs:** let the testing reference build with the metrics and purchases results ([6c41a8a](https://github.com/tappify-dev/extension-sdk/commit/6c41a8a241ba16afc2e6b363509b310015210032))
-
 ## Unreleased
 
 ### Features
