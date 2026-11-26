@@ -60,3 +60,52 @@ export function Inline({
     />
   );
 }
+
+/** Props for a responsive grid of equal columns. */
+export interface GridProps extends ComponentPropsWithoutRef<'div'> {
+  gap?: Space;
+  /** The narrowest a column may get, in pixels, before the grid wraps. */
+  minColumnWidth?: number;
+}
+
+/**
+ * Lays children out in equal columns that wrap when the surface gets narrow.
+ *
+ * @example
+ * ```tsx
+ * import { Grid, Metric, Panel } from '@tappify/extension-sdk/ui';
+ *
+ * function Figures() {
+ *   return (
+ *     <Grid minColumnWidth={200}>
+ *       <Panel>
+ *         <Metric label="MRR" value="$24,860" />
+ *       </Panel>
+ *       <Panel>
+ *         <Metric label="Active trials" value="164" />
+ *       </Panel>
+ *     </Grid>
+ *   );
+ * }
+ * ```
+ */
+export function Grid({
+  className,
+  gap = 16,
+  minColumnWidth = 220,
+  style,
+  ...props
+}: GridProps) {
+  return (
+    <div
+      {...props}
+      className={cn('tap-grid', className)}
+      data-gap={gap}
+      data-slot="grid"
+      style={{
+        gridTemplateColumns: `repeat(auto-fit, minmax(min(${minColumnWidth}px, 100%), 1fr))`,
+        ...style,
+      }}
+    />
+  );
+}

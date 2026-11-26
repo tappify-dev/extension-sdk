@@ -10,8 +10,27 @@ export {
   CardTitle,
 } from './card';
 export type { CardProps } from './card';
+export { BarChart, Funnel, LineChart } from './charts';
+export type {
+  BarChartProps,
+  ChartProps,
+  ChartSeries,
+  ChartTone,
+  FunnelProps,
+  FunnelStep,
+  LineChartProps,
+} from './charts';
 export { cn } from './cn';
 export type { ClassValue } from './cn';
+export { KeyValueList, MetricBand, Panel, Tabs } from './data';
+export type {
+  KeyValueListProps,
+  KeyValueRow,
+  MetricBandProps,
+  PanelProps,
+  TabItem,
+  TabsProps,
+} from './data';
 export {
   Dialog,
   DialogBody,
@@ -40,9 +59,10 @@ export {
   Select,
   Textarea,
 } from './field';
-export type { CheckboxProps } from './field';
-export { Inline, Stack } from './layout';
+export type { CheckboxProps, SelectProps } from './field';
+export { Grid, Inline, Stack } from './layout';
 export type {
+  GridProps,
   InlineAlign,
   InlineJustify,
   InlineProps,

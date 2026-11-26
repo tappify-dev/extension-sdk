@@ -11,6 +11,8 @@
   --tappify-fg-disabled: var(--fg-disabled, #6f757d);
   --tappify-danger: var(--danger, #b42318);
   --tappify-on-accent: var(--on-accent, #ffffff);
+  --tappify-accent: var(--tap-accent, var(--tappify-deep-green));
+  --tappify-chart-muted: #9aa0a6;
   --tappify-space-4: 4px;
   --tappify-space-8: 8px;
   --tappify-space-12: 12px;
@@ -270,7 +272,7 @@
 
 .tap-card__title {
   font-size: 16px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.3;
 }
 
@@ -307,7 +309,7 @@
 .tap-page-header__title {
   margin: 0;
   font-size: 24px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -538,7 +540,7 @@
 .tap-dialog__title {
   margin: 0;
   font-size: 20px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.25;
 }
 
@@ -620,6 +622,10 @@
   height: 48px;
 }
 
+.tap-table__row[data-variant='body']:last-child {
+  border-bottom: 0;
+}
+
 .tap-table__head,
 .tap-table__cell {
   padding: var(--tappify-space-8) var(--tappify-space-12);
@@ -627,14 +633,24 @@
   white-space: nowrap;
 }
 
+.tap-table__head:first-child,
+.tap-table__cell:first-child {
+  padding-inline-start: 0;
+}
+
+.tap-table__head:last-child,
+.tap-table__cell:last-child {
+  padding-inline-end: 0;
+}
+
 .tap-table__head {
   color: var(--tappify-fg-sub);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .tap-table__cell {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .tap-metric {
@@ -650,22 +666,29 @@
 
 .tap-metric__label {
   grid-column: 1 / -1;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .tap-metric__value {
-  font-size: 28px;
-  font-weight: 650;
+  font-size: 24px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  line-height: 1.15;
+  line-height: 32px;
+}
+
+.tap-metric[data-size='lg'] .tap-metric__value {
+  font-size: 32px;
+  line-height: 40px;
 }
 
 .tap-metric__delta {
   align-self: end;
-  padding-bottom: 2px;
+  padding-bottom: 6px;
   color: var(--tappify-fg-sub);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .tap-metric__delta[data-direction='up'] {
@@ -691,7 +714,7 @@
   display: block;
   width: 100%;
   height: 12px;
-  border-radius: 999px;
+  border-radius: 4px;
   background: linear-gradient(
     90deg,
     var(--tappify-bg-light-gray) 25%,
@@ -711,16 +734,19 @@
 .tap-ui-state {
   align-items: center;
   justify-content: center;
-  min-height: 180px;
-  padding: var(--tappify-space-32) var(--tappify-space-24);
+  min-height: 120px;
+  padding: var(--tappify-space-24);
   text-align: center;
   color: var(--tappify-fg-sub);
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .tap-state__title {
   color: var(--tappify-fg-primary);
-  font-size: 18px;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .tap-ui-state--error .tap-state__title,
@@ -737,4 +763,401 @@
   .tap-skeleton__line {
     animation: none;
   }
+}
+
+.tap-grid {
+  display: grid;
+  min-width: 0;
+}
+
+.tap-ui-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-12);
+  min-width: 0;
+  padding: var(--tappify-space-16);
+  background: var(--tappify-bg-canvas);
+  border-radius: var(--tappify-radius-control);
+}
+
+.tap-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--tappify-space-12);
+}
+
+.tap-panel__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.tap-panel__caption {
+  color: var(--tappify-fg-sub);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tap-ui-metric-band {
+  display: flex;
+  align-items: stretch;
+  gap: var(--tappify-space-16);
+  min-width: 0;
+  padding: var(--tappify-space-16);
+  background: var(--tappify-bg-canvas);
+  border-radius: var(--tappify-radius-control);
+}
+
+.tap-metric-band__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.tap-metric-band__rule {
+  flex: 0 0 1px;
+  background: var(--tappify-divider);
+}
+
+@container tap-mount (max-width: 520px) {
+  .tap-ui-metric-band {
+    flex-direction: column;
+  }
+
+  .tap-metric-band__rule {
+    flex-basis: 1px;
+  }
+}
+
+.tap-ui-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--tappify-space-4);
+}
+
+.tap-tabs__tab {
+  min-height: 32px;
+  padding: 0 var(--tappify-space-12);
+  color: var(--tappify-fg-primary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--tappify-radius-control);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tap-tabs__tab[aria-selected='true'] {
+  background: var(--tappify-bg-canvas);
+  font-weight: 500;
+}
+
+.tap-tabs__tab:focus-visible {
+  outline: 2px solid var(--tappify-deep-green);
+  outline-offset: 2px;
+}
+
+.tap-ui-key-value-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.tap-key-value__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tappify-space-12);
+  padding: 10px 0;
+  border-top: 1px solid var(--tappify-divider);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.tap-key-value__row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.tap-key-value__row:last-child {
+  padding-bottom: 0;
+}
+
+.tap-key-value__label {
+  color: var(--tappify-fg-sub);
+}
+
+.tap-key-value__value {
+  min-width: 0;
+  margin: 0;
+  font-weight: 500;
+  text-align: end;
+}
+
+.tap-ui-chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-8);
+  min-width: 0;
+}
+
+.tap-chart__plot {
+  position: relative;
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(100% - 1px),
+    var(--tappify-divider) calc(100% - 1px)
+  );
+  background-size: 100% 25%;
+}
+
+.tap-chart__lines {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tap-chart__line {
+  fill: none;
+  stroke: var(--tappify-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.tap-chart__line[data-dashed] {
+  stroke-dasharray: 5 5;
+}
+
+.tap-chart__line[data-tone='ink'] {
+  stroke: var(--tappify-deep-green);
+}
+
+.tap-chart__line[data-tone='muted'] {
+  stroke: var(--tappify-chart-muted);
+}
+
+.tap-chart__groups {
+  display: flex;
+  height: 100%;
+}
+
+.tap-chart__group {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--tappify-space-4);
+  min-width: 0;
+}
+
+.tap-chart__bar {
+  width: min(14px, 30%);
+  background: var(--tappify-accent);
+  border-radius: 3px 3px 0 0;
+}
+
+.tap-chart__bar[data-tone='ink'],
+.tap-chart__swatch[data-tone='ink'] {
+  background: var(--tappify-deep-green);
+}
+
+.tap-chart__bar[data-tone='muted'],
+.tap-chart__swatch[data-tone='muted'] {
+  background: var(--tappify-chart-muted);
+}
+
+.tap-chart__body {
+  display: flex;
+  gap: var(--tappify-space-8);
+  min-width: 0;
+}
+
+.tap-chart__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tap-chart__scale {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--tappify-fg-sub);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: end;
+}
+
+.tap-chart__axis {
+  position: relative;
+  height: 18px;
+  margin-top: var(--tappify-space-4);
+  color: var(--tappify-fg-sub);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tap-chart__axis > span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.tap-chart__axis > span[data-edge='start'] {
+  transform: none;
+}
+
+.tap-chart__axis > span[data-edge='end'] {
+  transform: translateX(-100%);
+}
+
+.tap-chart__cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tappify-fg-sub);
+  pointer-events: none;
+}
+
+.tap-chart__tooltip {
+  position: absolute;
+  top: var(--tappify-space-8);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-4);
+  min-width: 140px;
+  padding: var(--tappify-space-8) var(--tappify-space-12);
+  color: var(--tappify-fg-primary);
+  background: var(--tappify-bg-paper);
+  border: 1px solid var(--tappify-divider);
+  border-radius: var(--tappify-radius-control);
+  font-size: 12px;
+  line-height: 18px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tap-chart__tooltip[data-side='end'] {
+  margin-left: var(--tappify-space-8);
+}
+
+.tap-chart__tooltip[data-side='start'] {
+  margin-left: calc(var(--tappify-space-8) * -1);
+  transform: translateX(-100%);
+}
+
+.tap-chart__tooltip-title {
+  color: var(--tappify-fg-sub);
+}
+
+.tap-chart__tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tappify-space-8);
+}
+
+.tap-chart__tooltip-row > strong {
+  margin-left: auto;
+  padding-left: var(--tappify-space-12);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.tap-chart__data {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tap-select[data-density='compact'] {
+  width: auto;
+  min-height: var(--tappify-control-height);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tap-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tappify-space-4) var(--tappify-space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tap-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tappify-space-8);
+}
+
+.tap-chart__swatch {
+  width: 14px;
+  height: 3px;
+  background: var(--tappify-accent);
+  border-radius: 1px;
+}
+
+.tap-chart__swatch[data-dashed] {
+  background: linear-gradient(
+    to right,
+    var(--tappify-chart-muted) 40%,
+    transparent 40% 60%,
+    var(--tappify-chart-muted) 60%
+  );
+}
+
+.tap-ui-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tap-funnel__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tappify-space-4);
+}
+
+.tap-funnel__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--tappify-space-12);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.tap-funnel__value {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.tap-funnel__track {
+  height: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--tappify-fg-primary) 8%, transparent);
+  border-radius: 4px;
+}
+
+.tap-funnel__fill {
+  display: block;
+  height: 100%;
+  background: var(--tappify-accent);
+  border-radius: 4px;
 }

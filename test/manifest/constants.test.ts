@@ -298,6 +298,7 @@ describe('registry mirror', () => {
       crashes: 'crashes:read',
       revenue: 'revenue:read',
       purchases: 'purchases:read',
+      metrics: 'metrics:write',
     });
   });
 

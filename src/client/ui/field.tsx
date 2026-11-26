@@ -193,31 +193,41 @@ export const Textarea = forwardRef<
   );
 });
 
+/** Props for the One UI native select. */
+export interface SelectProps extends ComponentPropsWithoutRef<'select'> {
+  /**
+   * `compact` sizes the select to its content at button height, for a filter
+   * in a toolbar. The default fills its field in a form.
+   */
+  density?: 'default' | 'compact';
+}
+
 /** Renders a One UI native select and consumes optional field context. */
-export const Select = forwardRef<
-  HTMLSelectElement,
-  ComponentPropsWithoutRef<'select'>
->(function Select(
-  {
-    className,
-    id,
-    'aria-describedby': describedBy,
-    'aria-invalid': invalid,
-    ...props
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  function Select(
+    {
+      className,
+      density = 'default',
+      id,
+      'aria-describedby': describedBy,
+      'aria-invalid': invalid,
+      ...props
+    },
+    ref,
+  ) {
+    const field = useContext(FieldContext);
+    return (
+      <select
+        {...props}
+        {...fieldControlProps(field, id, describedBy, invalid)}
+        className={cn('tap-ui-control tap-select', className)}
+        data-density={density}
+        data-slot="select"
+        ref={ref}
+      />
+    );
   },
-  ref,
-) {
-  const field = useContext(FieldContext);
-  return (
-    <select
-      {...props}
-      {...fieldControlProps(field, id, describedBy, invalid)}
-      className={cn('tap-ui-control tap-select', className)}
-      data-slot="select"
-      ref={ref}
-    />
-  );
-});
+);
 
 /** Props for the One UI checkbox primitive. */
 export interface CheckboxProps extends Omit<

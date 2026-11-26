@@ -3,6 +3,7 @@ import type {
   TapCrashesResult,
   TapKeyword,
   TapListing,
+  TapMetricsResult,
   TapProjectResult,
   TapPurchasesResult,
   TapQuery,
@@ -263,6 +264,46 @@ export const fixturePurchases: TapPurchasesResult = {
   ],
 };
 
+/** Two synced subscription metrics over the last seven days. */
+export const fixtureMetrics: TapMetricsResult = {
+  range: { from: '2026-09-01', to: '2026-09-07' },
+  metrics: [
+    {
+      key: 'subscriptions.mrr',
+      label: 'MRR',
+      definition: 'Active paid subscriptions normalised to one month.',
+      unit: 'currency',
+      platform: 'all',
+      currency: 'USD',
+      total: 41200,
+      previousTotal: 39600,
+      change: { absolute: 1600, percent: 4.04 },
+      lastSyncedAt: '2026-09-08T06:00:00.000Z',
+      stale: false,
+      points: [39800, 40100, 40300, 40500, 40900, 41000, 41200].map(
+        (value, index) => ({ at: `2026-09-0${index + 1}`, value }),
+      ),
+    },
+    {
+      key: 'subscriptions.trial_starts',
+      label: 'New trials',
+      definition: 'Free trials started in the period.',
+      unit: 'count',
+      platform: 'all',
+      currency: null,
+      total: 126,
+      previousTotal: 140,
+      change: { absolute: -14, percent: -10 },
+      lastSyncedAt: '2026-09-08T06:00:00.000Z',
+      stale: false,
+      points: [16, 21, 18, 14, 19, 22, 16].map((value, index) => ({
+        at: `2026-09-0${index + 1}`,
+        value,
+      })),
+    },
+  ],
+};
+
 /** The shape of `fixtures`: every sandbox fixture under one name. */
 export interface TapFixtures {
   project: TapProjectResult;
@@ -274,6 +315,7 @@ export interface TapFixtures {
   crashes: TapCrashesResult;
   revenue: TapRevenueResult;
   purchases: TapPurchasesResult;
+  metrics: TapMetricsResult;
   /** `fixtureSeries`, so a series is built per metric rather than held. */
   series(metric: TapSeriesMetric): TapSeriesResult;
 }
@@ -307,6 +349,7 @@ export const fixtures: TapFixtures = {
   crashes: fixtureCrashes,
   revenue: fixtureRevenue,
   purchases: fixturePurchases,
+  metrics: fixtureMetrics,
   series: fixtureSeries,
 };
 
@@ -352,5 +395,7 @@ export function answerFixtureQuery<Q extends TapQuery>(query: Q): TapResult<Q> {
       return structuredClone(fixtureRevenue) as TapResult<Q>;
     case 'purchases':
       return structuredClone(fixturePurchases) as TapResult<Q>;
+    case 'metrics':
+      return structuredClone(fixtureMetrics) as TapResult<Q>;
   }
 }

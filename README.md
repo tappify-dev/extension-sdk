@@ -150,6 +150,47 @@ digit and can also contain `.`, `_`, and `-`. Use your resource's stable ID as
 and no control characters. A call made without its grant rejects with
 `TAP_SCOPE_MISSING`.
 
+## Laying out a widget or page
+
+Tappify draws the frame around everything an extension renders: its logo and
+name, the title, the connection state and the loading and error states. A
+widget, tab or page returns only its content.
+
+- A widget sits on a grey surface. Return `Metric`, `MetricBand`, a chart or a
+  `Table` directly, without a `Card` or a title of its own.
+- A page sits on a white card. Group its content with `Panel` and `Grid`, and
+  leave `PageHeader` out.
+
+```tsx
+import { Grid, LineChart, Metric, Panel } from '@tappify/extension-sdk/ui';
+
+export default function Overview() {
+  return (
+    <Grid minColumnWidth={200}>
+      <Panel>
+        <Metric label="MRR" value="$24,860" delta={0.041} />
+      </Panel>
+      <Panel title="MRR" caption="Last 30 days">
+        <LineChart
+          label="MRR by day"
+          categories={['Nov 15', 'Nov 16', 'Nov 17', 'Nov 18', 'Nov 19']}
+          series={[{ name: 'MRR', values: [50, 52, 55, 58, 61] }]}
+        />
+      </Panel>
+    </Grid>
+  );
+}
+```
+
+Charts, bars and funnels are drawn in the extension's accent color. Set it
+once in the extension's stylesheet; everything else keeps Tappify's colors.
+
+```css
+.tap-root {
+  --tap-accent: #7856ff;
+}
+```
+
 ## Migrating UI imports
 
 Version 2 replaces the legacy UI surface with One UI. Import frontend components

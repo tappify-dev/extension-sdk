@@ -125,6 +125,7 @@ describe('bridge types', () => {
       { kind: 'crashes', range: { from: '2026-08-01', to: '2026-09-01' } },
       { kind: 'revenue', range: { from: '2026-08-01', to: '2026-09-01' } },
       { kind: 'purchases' },
+      { kind: 'metrics', period: '30d' },
     ];
 
     expect(queries.map(query => query.kind)).toEqual([
@@ -136,6 +137,7 @@ describe('bridge types', () => {
       'crashes',
       'revenue',
       'purchases',
+      'metrics',
     ]);
   });
 });

@@ -8,11 +8,19 @@ export interface MetricProps {
   delta?: number;
   description?: ReactNode;
   label: ReactNode;
+  /** `lg` sets the value larger, for the leading figure of a row. */
+  size?: 'default' | 'lg';
   value: ReactNode;
 }
 
 /** Displays a value with its label and optional trend context. */
-export function Metric({ delta, description, label, value }: MetricProps) {
+export function Metric({
+  delta,
+  description,
+  label,
+  size = 'default',
+  value,
+}: MetricProps) {
   const percent = delta === undefined ? undefined : Math.round(delta * 100);
   const direction =
     percent === undefined || percent === 0
@@ -21,7 +29,7 @@ export function Metric({ delta, description, label, value }: MetricProps) {
         ? 'up'
         : 'down';
   return (
-    <div className="tap-metric" data-slot="metric">
+    <div className="tap-metric" data-size={size} data-slot="metric">
       <div className="tap-metric__label" data-slot="metric-label">
         {label}
       </div>

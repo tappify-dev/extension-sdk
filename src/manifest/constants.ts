@@ -430,7 +430,8 @@ export type DataQueryKind =
   | 'reviews'
   | 'crashes'
   | 'revenue'
-  | 'purchases';
+  | 'purchases'
+  | 'metrics';
 
 export const QUERY_SCOPES: Record<DataQueryKind, ScopeKey> = {
   project: 'projects:read',
@@ -441,6 +442,7 @@ export const QUERY_SCOPES: Record<DataQueryKind, ScopeKey> = {
   crashes: 'crashes:read',
   revenue: 'revenue:read',
   purchases: 'purchases:read',
+  metrics: 'metrics:write',
 };
 
 /**

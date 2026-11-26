@@ -11,7 +11,14 @@ export interface PageHeaderProps extends Omit<
   title: ReactNode;
 }
 
-/** Introduces a page with a title, supporting copy, and optional actions. */
+/**
+ * Introduces a settings panel or a section with a title, supporting copy, and
+ * optional actions.
+ *
+ * @remarks
+ * Leave it out of a page: Tappify draws a page's header itself, with the
+ * extension's name, the page title and the connection state.
+ */
 export function PageHeader({
   actions,
   className,

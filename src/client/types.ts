@@ -163,7 +163,11 @@ export type TapQuery =
   | { kind: 'reviews'; range: TapDateRange }
   | { kind: 'crashes'; range: TapDateRange }
   | { kind: 'revenue'; range: TapDateRange }
-  | { kind: 'purchases' };
+  | { kind: 'purchases' }
+  | { kind: 'metrics'; period: TapMetricsPeriod; platform?: TapPlatform };
+
+/** The period a `metrics` query covers, ending yesterday in UTC. */
+export type TapMetricsPeriod = '7d' | '30d' | '90d';
 
 /** What a `project` query answers with. */
 export interface TapProjectResult {
@@ -246,6 +250,44 @@ export interface TapPurchasesResult {
   products: TapPurchaseProduct[];
 }
 
+/** One standard metric this install's connector has synced, for one store. */
+export interface TapSyncedMetric {
+  /** The standard metric key, such as `subscriptions.mrr`. */
+  key: string;
+  label: string;
+  /** What the metric measures, in a sentence. */
+  definition: string;
+  unit: 'count' | 'ratio' | 'currency' | 'seconds' | 'bytes';
+  /** `all` when the connector does not split the metric by store. */
+  platform: 'all' | TapPlatform;
+  /** The currency of a `currency` metric, `null` for every other unit. */
+  currency: string | null;
+  /** The period's value by the metric's own rule, `null` before any sync. */
+  total: number | null;
+  /** The same value for the period just before this one. */
+  previousTotal: number | null;
+  /** `percent` is `null` when the previous period was zero or unmeasured. */
+  change: { absolute: number | null; percent: number | null };
+  lastSyncedAt: string | null;
+  /** Whether the last sync is older than the connector's schedule allows. */
+  stale: boolean;
+  /** One point per UTC day that has a value. */
+  points: TapSeriesPoint[];
+}
+
+/**
+ * What a `metrics` query answers with: the standard metrics this install's
+ * own connector has synced, read from Tappify rather than from the provider.
+ *
+ * @remarks
+ * It needs the `metrics:write` scope the connector already holds. Metrics the
+ * manifest declares without a `standard` key are not included.
+ */
+export interface TapMetricsResult {
+  range: { from: string; to: string };
+  metrics: TapSyncedMetric[];
+}
+
 /** The input and receipt for linking an extension resource to a product. */
 export interface TapPurchaseLink {
   /** The catalogue product's `id`. */
@@ -276,7 +318,9 @@ export type TapResult<Q extends TapQuery> = Q extends { kind: 'project' }
               ? TapRevenueResult
               : Q extends { kind: 'purchases' }
                 ? TapPurchasesResult
-                : never;
+                : Q extends { kind: 'metrics' }
+                  ? TapMetricsResult
+                  : never;
 
 /**
  * The handle `tap.storage.<name>` exposes for a singleton collection, which holds
